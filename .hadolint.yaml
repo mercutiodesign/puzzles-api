@@ -1,0 +1,7 @@
+ignored:
+  # disable explicit version for apt-get install (debian)
+  - DL3008
+  # disable explicit version for apk install (alpine)
+  - DL3018
+trustedRegistries:
+  - docker.io
