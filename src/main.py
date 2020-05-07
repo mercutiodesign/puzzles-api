@@ -20,10 +20,11 @@ async def loopy(request, w, h, difficulty):
     assert difficulty in "entd"
 
     args = []
-    seed = request.args.get("seed", False)
-    if seed:
-        args.append("--seed")
-        args.append(seed[0])
+    for var in ["seed", "count"]:
+        value = request.args.get(var, False)
+        if value:
+            args.append(f"--{var}")
+            args.append(value[0])
 
     proc = await asyncio.create_subprocess_exec(
         "loopygenerator",
