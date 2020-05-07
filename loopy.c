@@ -90,6 +90,7 @@
 #define DEBUG_CACHES
 #define SHOW_WORKING
 #define DEBUG_DLINES
+#define DEBUG_ARGPARSE
 */
 
 /* ----------------------------------------------------------------------
@@ -3852,7 +3853,7 @@ int main(int argc, char **argv)
             count = (time_t)atoi(*++argv);
             argc--;
         } else if (*p == '-') {
-            fprintf(stderr, "%s: unrecognised option `%s'\n", argv[0], p);
+            fprintf(stderr, "%s: unrecognized option `%s'\n", argv[0], p);
             return 1;
         } else {
             if (params) usage_exit("too many arguments");
@@ -3874,8 +3875,9 @@ int main(int argc, char **argv)
     if (p->w <= 0) usage_exit("invalid width");
     if (p->h <= 0) usage_exit("invalid height");
 
-    /* debug params: */
+#ifdef DEBUG_ARGPARSE
     fprintf(stderr, "decoded params: w=%d,h=%d,diff=%d,type=%d => %s\n", p->w, p->h, p->diff, p->type, encode_params(p, true));
+#endif
 
     rs = random_new(seed, seedlen);
     while (--count >= 0) {
