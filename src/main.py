@@ -3,14 +3,19 @@
 import asyncio
 
 from sanic import Sanic
-from sanic.response import text
+from sanic.response import text, empty
 
 app = Sanic(name="puzzles")
 
 
 @app.route("/")
-async def home(_request):
+async def home(_):
     return text("home")
+
+
+@app.route("/favicon.ico")
+async def ignore(_):
+    return empty()
 
 
 @app.route("/loopy/<w:int>x<h:int>d<difficulty:[entd]>")
@@ -24,7 +29,7 @@ async def loopy(request, w, h, difficulty):
         value = request.args.get(var, False)
         if value:
             args.append(f"--{var}")
-            args.append(value[0])
+            args.append(value)
 
     proc = await asyncio.create_subprocess_exec(
         "loopygenerator",
