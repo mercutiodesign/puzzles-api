@@ -4,21 +4,33 @@
 #
 #    pip-compile
 #
-aiofiles==0.5.0           # via sanic
-certifi==2020.4.5.1       # via httpx
-chardet==3.0.4            # via httpx
-h11==0.8.1                # via httpx
-h2==3.2.0                 # via httpx
-hpack==3.0.0              # via h2
-hstspreload==2020.5.5     # via httpx
-httptools==0.1.1          # via sanic
-httpx==0.9.3              # via sanic
-hyperframe==5.2.0         # via h2
-idna==2.9                 # via httpx
-multidict==4.7.5          # via sanic
-rfc3986==1.4.0            # via httpx
-sanic==19.12.2            # via -r requirements.in
-sniffio==1.1.0            # via httpx
-ujson==2.0.3              # via sanic
-uvloop==0.14.0            # via sanic
-websockets==8.1           # via sanic
+aiofiles==0.8.0
+    # via sanic
+certifi==2020.4.5.1
+    # via httpx
+h11==0.8.1
+    # via httpcore
+httpcore==0.11.1
+    # via httpx
+httptools==0.1.1
+    # via sanic
+httpx==0.15.4
+    # via sanic
+idna==2.9
+    # via rfc3986
+multidict==5.2.0
+    # via sanic
+rfc3986[idna2008]==1.4.0
+    # via httpx
+sanic==20.12.6
+    # via -r requirements.in
+sniffio==1.1.0
+    # via
+    #   httpcore
+    #   httpx
+ujson==2.0.3
+    # via sanic
+uvloop==0.14.0
+    # via sanic
+websockets==8.1
+    # via sanic
