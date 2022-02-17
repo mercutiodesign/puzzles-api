@@ -157,3 +157,4 @@ include/
 /*.desktop
 .vscode
 loopygenerator
+gamelist.txt

@@ -97,6 +97,8 @@ puzzle(loopy
   OBJECTIVE "Draw a single closed loop, given clues about number of \
 adjacent edges.")
 solver(loopy)
+cliprogram(loopygenerator loopy.c
+  COMPILE_DEFINITIONS STANDALONE_GENERATOR)
 
 puzzle(magnets
   DISPLAYNAME "Magnets"
