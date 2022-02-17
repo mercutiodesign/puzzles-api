@@ -1589,21 +1589,12 @@ static void game_redraw(drawing *dr, game_drawstate *ds,
     int cur_x = -1, cur_y = -1;
 
     /*
-     * Clear the screen and draw the exterior barrier lines if this
-     * is our first call.
+     * Draw the exterior barrier lines if this is our first call.
      */
     if (!ds->started) {
         int phase;
 
         ds->started = true;
-
-        draw_rect(dr, 0, 0, 
-                  BORDER * 2 + WINDOW_OFFSET * 2 + TILE_SIZE * state->width + TILE_BORDER,
-                  BORDER * 2 + WINDOW_OFFSET * 2 + TILE_SIZE * state->height + TILE_BORDER,
-                  COL_BACKGROUND);
-        draw_update(dr, 0, 0, 
-                    BORDER * 2 + WINDOW_OFFSET*2 + TILE_SIZE*state->width + TILE_BORDER,
-                    BORDER * 2 + WINDOW_OFFSET*2 + TILE_SIZE*state->height + TILE_BORDER);
 
         for (phase = 0; phase < 2; phase++) {
 
@@ -1825,6 +1816,20 @@ static float game_flash_length(const game_state *oldstate,
     return 0.0F;
 }
 
+static void game_get_cursor_location(const game_ui *ui,
+                                     const game_drawstate *ds,
+                                     const game_state *state,
+                                     const game_params *params,
+                                     int *x, int *y, int *w, int *h)
+{
+    if(ui->cur_visible) {
+        *x = BORDER + WINDOW_OFFSET + TILE_SIZE * ui->cur_x;
+        *y = BORDER + WINDOW_OFFSET + TILE_SIZE * ui->cur_y;
+
+        *w = *h = TILE_SIZE;
+    }
+}
+
 static int game_status(const game_state *state)
 {
     return state->completed ? +1 : 0;
@@ -1879,6 +1884,7 @@ const struct game thegame = {
     game_redraw,
     game_anim_length,
     game_flash_length,
+    game_get_cursor_location,
     game_status,
     false, false, game_print_size, game_print,
     true,			       /* wants_statusbar */

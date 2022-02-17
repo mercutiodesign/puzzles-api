@@ -899,7 +899,7 @@ static const char *validate_desc(const game_params *params, const char *desc)
     int *link;
     int mains = 0;
     int i, tx, ty, minmoves;
-    char *ret;
+    const char *ret;
 
     active = snewn(wh, bool);
     link = snewn(wh, int);
@@ -1242,7 +1242,6 @@ struct game_drawstate {
     int tilesize;
     int w, h;
     unsigned long *grid;	       /* what's currently displayed */
-    bool started;
 };
 
 static char *interpret_move(const game_state *state, game_ui *ui,
@@ -1395,7 +1394,7 @@ static char *interpret_move(const game_state *state, game_ui *ui,
 	    sprintf(data, "M%d-%d", ui->drag_anchor, ui->drag_currpos);
 	    str = dupstr(data);
 	} else
-	    str = "";		       /* null move; just update the UI */
+	    str = UI_UPDATE;
 	
 	ui->dragging = false;
 	ui->drag_anchor = ui->drag_currpos = -1;
@@ -1680,7 +1679,6 @@ static game_drawstate *game_new_drawstate(drawing *dr, const game_state *state)
     ds->tilesize = 0;
     ds->w = w;
     ds->h = h;
-    ds->started = false;
     ds->grid = snewn(wh, unsigned long);
     for (i = 0; i < wh; i++)
 	ds->grid[i] = ~(unsigned long)0;
@@ -2129,17 +2127,6 @@ static void game_redraw(drawing *dr, game_drawstate *ds,
     int *dsf;
     int x, y, mainanchor, mainpos, dragpos, solvepos, solvesrc, solvedst;
 
-    if (!ds->started) {
-	/*
-	 * The initial contents of the window are not guaranteed
-	 * and can vary with front ends. To be on the safe side,
-	 * all games should start by drawing a big
-	 * background-colour rectangle covering the whole window.
-	 */
-	draw_rect(dr, 0, 0, 10*ds->tilesize, 10*ds->tilesize, COL_BACKGROUND);
-	ds->started = true;
-    }
-
     /*
      * Construct the board we'll be displaying (which may be
      * different from the one in state if ui describes a drag in
@@ -2297,6 +2284,14 @@ static float game_flash_length(const game_state *oldstate,
     return 0.0F;
 }
 
+static void game_get_cursor_location(const game_ui *ui,
+                                     const game_drawstate *ds,
+                                     const game_state *state,
+                                     const game_params *params,
+                                     int *x, int *y, int *w, int *h)
+{
+}
+
 static int game_status(const game_state *state)
 {
     return state->completed ? +1 : 0;
@@ -2351,6 +2346,7 @@ const struct game thegame = {
     game_redraw,
     game_anim_length,
     game_flash_length,
+    game_get_cursor_location,
     game_status,
     false, false, game_print_size, game_print,
     true,			       /* wants_statusbar */

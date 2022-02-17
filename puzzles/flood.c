@@ -1128,13 +1128,6 @@ static void game_redraw(drawing *dr, game_drawstate *ds,
     if (!ds->started) {
 	int coords[10];
 
-	draw_rect(dr, 0, 0,
-		  TILESIZE * w + 2 * BORDER,
-		  TILESIZE * h + 2 * BORDER, COL_BACKGROUND);
-	draw_update(dr, 0, 0,
-		    TILESIZE * w + 2 * BORDER,
-		    TILESIZE * h + 2 * BORDER);
-
 	/*
 	 * Recessed area containing the whole puzzle.
 	 */
@@ -1277,6 +1270,20 @@ static float game_anim_length(const game_state *oldstate,
     return 0.0F;
 }
 
+static void game_get_cursor_location(const game_ui *ui,
+                                     const game_drawstate *ds,
+                                     const game_state *state,
+                                     const game_params *params,
+                                     int *x, int *y, int *w, int *h)
+{
+    if(ui->cursor_visible)
+    {
+        *x = COORD(ui->cx);
+        *y = COORD(ui->cy);
+        *w = *h = TILESIZE;
+    }
+}
+
 static int game_status(const game_state *state)
 {
     if (state->complete && state->moves <= state->movelimit) {
@@ -1359,6 +1366,7 @@ const struct game thegame = {
     game_redraw,
     game_anim_length,
     game_flash_length,
+    game_get_cursor_location,
     game_status,
     false, false, game_print_size, game_print,
     true,			       /* wants_statusbar */

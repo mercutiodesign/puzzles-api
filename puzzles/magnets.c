@@ -2205,12 +2205,7 @@ static void game_redraw(drawing *dr, game_drawstate *ds,
     flash = (int)(flashtime * 5 / FLASH_TIME) % 2;
 
     if (!ds->started) {
-        /* draw background, corner +-. */
-        draw_rect(dr, 0, 0,
-                  TILE_SIZE * (w+2) + 2 * BORDER,
-                  TILE_SIZE * (h+2) + 2 * BORDER,
-                  COL_BACKGROUND);
-
+        /* draw corner +-. */
         draw_sym(dr, ds, -1, -1, POSITIVE, COL_TEXT);
         draw_sym(dr, ds, state->w, state->h, NEGATIVE, COL_TEXT);
 
@@ -2289,6 +2284,19 @@ static float game_flash_length(const game_state *oldstate,
         !oldstate->solved && !newstate->solved)
         return FLASH_TIME;
     return 0.0F;
+}
+
+static void game_get_cursor_location(const game_ui *ui,
+                                     const game_drawstate *ds,
+                                     const game_state *state,
+                                     const game_params *params,
+                                     int *x, int *y, int *w, int *h)
+{
+    if(ui->cur_visible) {
+        *x = COORD(ui->cur_x);
+        *y = COORD(ui->cur_y);
+        *w = *h = TILE_SIZE;
+    }
 }
 
 static int game_status(const game_state *state)
@@ -2432,6 +2440,7 @@ const struct game thegame = {
     game_redraw,
     game_anim_length,
     game_flash_length,
+    game_get_cursor_location,
     game_status,
     true, false, game_print_size, game_print,
     false,			       /* wants_statusbar */

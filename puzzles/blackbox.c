@@ -1098,6 +1098,20 @@ badmove:
     return NULL;
 }
 
+
+static void game_get_cursor_location(const game_ui *ui,
+                                     const game_drawstate *ds,
+                                     const game_state *state,
+                                     const game_params *params,
+                                     int *x, int *y, int *w, int *h)
+{
+    if(ui->cur_visible) {
+        *x = TODRAW(ui->cur_x);
+        *y = TODRAW(ui->cur_y);
+        *w = *h = TILE_SIZE;
+    }
+}
+
 /* ----------------------------------------------------------------------
  * Drawing routines.
  */
@@ -1363,10 +1377,6 @@ static void game_redraw(drawing *dr, game_drawstate *ds,
         int x0 = TODRAW(0)-1, y0 = TODRAW(0)-1;
         int x1 = TODRAW(state->w+2), y1 = TODRAW(state->h+2);
 
-        draw_rect(dr, 0, 0,
-                  TILE_SIZE * (state->w+3), TILE_SIZE * (state->h+3),
-                  COL_BACKGROUND);
-
         /* clockwise around the outline starting at pt behind (1,1). */
         draw_line(dr, x0+ts, y0+ts, x0+ts, y0,    COL_HIGHLIGHT);
         draw_line(dr, x0+ts, y0,    x1-ts, y0,    COL_HIGHLIGHT);
@@ -1413,14 +1423,14 @@ static void game_redraw(drawing *dr, game_drawstate *ds,
         int outline = (ui->cur_visible && ui->cur_x == 0 && ui->cur_y == 0)
             ? COL_CURSOR : COL_BALL;
         clip(dr, TODRAW(0)-1, TODRAW(0)-1, TILE_SIZE+1, TILE_SIZE+1);
-        draw_circle(dr, TODRAW(0) + ds->crad, TODRAW(0) + ds->crad, ds->crad,
+        draw_circle(dr, TODRAW(0) + ds->crad-1, TODRAW(0) + ds->crad-1, ds->crad-1,
                     outline, outline);
-        draw_circle(dr, TODRAW(0) + ds->crad, TODRAW(0) + ds->crad, ds->crad-2,
+        draw_circle(dr, TODRAW(0) + ds->crad-1, TODRAW(0) + ds->crad-1, ds->crad-3,
                     COL_BUTTON, COL_BUTTON);
 	unclip(dr);
     } else {
         draw_rect(dr, TODRAW(0)-1, TODRAW(0)-1,
-		  TILE_SIZE+1, TILE_SIZE+1, COL_BACKGROUND);
+		  TILE_SIZE, TILE_SIZE, COL_BACKGROUND);
     }
     draw_update(dr, TODRAW(0), TODRAW(0), TILE_SIZE, TILE_SIZE);
     ds->reveal = state->reveal;
@@ -1542,6 +1552,7 @@ const struct game thegame = {
     game_redraw,
     game_anim_length,
     game_flash_length,
+    game_get_cursor_location,
     game_status,
     false, false, game_print_size, game_print,
     true,			       /* wants_statusbar */

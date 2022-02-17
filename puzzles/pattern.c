@@ -20,6 +20,7 @@ enum {
     COL_GRID,
     COL_CURSOR,
     COL_ERROR,
+    COL_CURSOR_GUIDE,
     NCOLOURS
 };
 
@@ -437,6 +438,8 @@ static bool do_row(unsigned char *known, unsigned char *deduced,
 {
     int rowlen, i, freespace;
     bool done_any;
+
+    assert(len >= 0);   /* avoid compile warnings about the memsets below */
 
     freespace = len+1;
     for (rowlen = 0; data[rowlen]; rowlen++) {
@@ -1658,11 +1661,12 @@ static float *game_colours(frontend *fe, int *ncolours)
     frontend_default_colour(fe, &ret[COL_BACKGROUND * 3]);
 
     for (i = 0; i < 3; i++) {
-        ret[COL_GRID    * 3 + i] = 0.3F;
-        ret[COL_UNKNOWN * 3 + i] = 0.5F;
-        ret[COL_TEXT    * 3 + i] = 0.0F;
-        ret[COL_FULL    * 3 + i] = 0.0F;
-        ret[COL_EMPTY   * 3 + i] = 1.0F;
+        ret[COL_GRID         * 3 + i] = 0.3F;
+        ret[COL_UNKNOWN      * 3 + i] = 0.5F;
+        ret[COL_TEXT         * 3 + i] = 0.0F;
+        ret[COL_FULL         * 3 + i] = 0.0F;
+        ret[COL_EMPTY        * 3 + i] = 1.0F;
+        ret[COL_CURSOR_GUIDE * 3 + i] = 0.5F;
     }
     ret[COL_CURSOR * 3 + 0] = 1.0F;
     ret[COL_CURSOR * 3 + 1] = 0.25F;
@@ -1804,14 +1808,6 @@ static void game_redraw(drawing *dr, game_drawstate *ds,
 
     if (!ds->started) {
         /*
-         * The initial contents of the window are not guaranteed
-         * and can vary with front ends. To be on the safe side,
-         * all games should start by drawing a big background-
-         * colour rectangle covering the whole window.
-         */
-        draw_rect(dr, 0, 0, SIZE(ds->w), SIZE(ds->h), COL_BACKGROUND);
-
-        /*
          * Draw the grid outline.
          */
         draw_rect(dr, TOCOORD(ds->w, 0) - 1, TOCOORD(ds->h, 0) - 1,
@@ -1889,6 +1885,9 @@ static void game_redraw(drawing *dr, game_drawstate *ds,
      */
     for (i = 0; i < state->common->w + state->common->h; i++) {
         int colour = check_errors(state, i) ? COL_ERROR : COL_TEXT;
+        if (colour == COL_TEXT && ((cx >= 0 && i == cx) || (cy >= 0 && i == cy + ds->w))) {
+            colour = COL_CURSOR_GUIDE;
+        }
         if (ds->numcolours[i] != colour) {
             draw_numbers(dr, ds, state, i, true, colour);
             ds->numcolours[i] = colour;
@@ -1909,6 +1908,19 @@ static float game_flash_length(const game_state *oldstate,
 	!oldstate->cheated && !newstate->cheated)
         return FLASH_TIME;
     return 0.0F;
+}
+
+static void game_get_cursor_location(const game_ui *ui,
+                                     const game_drawstate *ds,
+                                     const game_state *state,
+                                     const game_params *params,
+                                     int *x, int *y, int *w, int *h)
+{
+    if(ui->cur_visible) {
+        *x = TOCOORD(ds->w, ui->cur_x);
+        *y = TOCOORD(ds->h, ui->cur_y);
+        *w = *h = TILE_SIZE;
+    }
 }
 
 static int game_status(const game_state *state)
@@ -2022,6 +2034,7 @@ const struct game thegame = {
     game_redraw,
     game_anim_length,
     game_flash_length,
+    game_get_cursor_location,
     game_status,
     true, false, game_print_size, game_print,
     false,			       /* wants_statusbar */

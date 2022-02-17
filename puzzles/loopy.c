@@ -280,6 +280,7 @@ static void check_caches(const solver_state* sstate);
     A("Penrose (rhombs)",PENROSE_P3,3,3)                        \
     A("Great-Great-Dodecagonal",GREATGREATDODECAGONAL,2,2)      \
     A("Kagome",KAGOME,3,3)                                      \
+    A("Compass-Dodecagonal",COMPASSDODECAGONAL,2,2)             \
     /* end of list */
 
 #define GRID_NAME(title,type,amin,omin) title,
@@ -553,6 +554,7 @@ static const game_params loopy_presets_more[] = {
     {  3,  3, DIFF_HARD,   LOOPY_GRID_DODECAGONAL },
     {  3,  3, DIFF_HARD,   LOOPY_GRID_GREATDODECAGONAL },
     {  3,  2, DIFF_HARD,   LOOPY_GRID_GREATGREATDODECAGONAL },
+    {  3,  3, DIFF_HARD,   LOOPY_GRID_COMPASSDODECAGONAL },
 #else
     { 10, 10, DIFF_HARD,   LOOPY_GRID_HONEYCOMB },
     {  5,  4, DIFF_HARD,   LOOPY_GRID_GREATHEXAGONAL },
@@ -562,6 +564,7 @@ static const game_params loopy_presets_more[] = {
     {  5,  4, DIFF_HARD,   LOOPY_GRID_DODECAGONAL },
     {  5,  4, DIFF_HARD,   LOOPY_GRID_GREATDODECAGONAL },
     {  5,  3, DIFF_HARD,   LOOPY_GRID_GREATGREATDODECAGONAL },
+    {  5,  4, DIFF_HARD,   LOOPY_GRID_COMPASSDODECAGONAL },
 #endif
 };
 
@@ -3538,6 +3541,14 @@ static float game_flash_length(const game_state *oldstate,
     return 0.0F;
 }
 
+static void game_get_cursor_location(const game_ui *ui,
+                                     const game_drawstate *ds,
+                                     const game_state *state,
+                                     const game_params *params,
+                                     int *x, int *y, int *w, int *h)
+{
+}
+
 static int game_status(const game_state *state)
 {
     return state->solved ? +1 : 0;
@@ -3676,6 +3687,7 @@ const struct game thegame = {
     game_redraw,
     game_anim_length,
     game_flash_length,
+    game_get_cursor_location,
     game_status,
     true, false, game_print_size, game_print,
     false /* wants_statusbar */,

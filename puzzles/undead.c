@@ -2605,8 +2605,6 @@ static void game_redraw(drawing *dr, game_drawstate *ds,
 
     /* Draw static grid components at startup */    
     if (!ds->started) { 
-        draw_rect(dr, 0, 0, 2*BORDER+(ds->w+2)*TILESIZE,
-                  2*BORDER+(ds->h+3)*TILESIZE, COL_BACKGROUND);
         draw_rect(dr, BORDER+TILESIZE-1, BORDER+2*TILESIZE-1,
                   (ds->w)*TILESIZE +3, (ds->h)*TILESIZE +3, COL_GRID);
         for (i=0;i<ds->w;i++)
@@ -2727,6 +2725,19 @@ static float game_flash_length(const game_state *oldstate,
             !newstate->cheated) ? FLASH_TIME : 0.0F;
 }
 
+static void game_get_cursor_location(const game_ui *ui,
+                                     const game_drawstate *ds,
+                                     const game_state *state,
+                                     const game_params *params,
+                                     int *x, int *y, int *w, int *h)
+{
+    if(ui->hshow) {
+        *x = BORDER + (ui->hx) * TILESIZE;
+        *y = BORDER + (ui->hy + 1) * TILESIZE;
+        *w = *h = TILESIZE;
+    }
+}
+
 static int game_status(const game_state *state)
 {
     return state->solved;
@@ -2781,6 +2792,7 @@ const struct game thegame = {
     game_redraw,
     game_anim_length,
     game_flash_length,
+    game_get_cursor_location,
     game_status,
     false, false, game_print_size, game_print,
     false,                 /* wants_statusbar */
