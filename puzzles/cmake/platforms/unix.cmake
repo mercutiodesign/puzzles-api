@@ -1,14 +1,19 @@
-set(PUZZLES_GTK_VERSION "ANY"
-  CACHE STRING "Which major version of GTK to build with")
-set_property(CACHE PUZZLES_GTK_VERSION
-  PROPERTY STRINGS ANY 3 2)
-
 set(STRICT OFF
   CACHE BOOL "Enable extra compiler warnings and make them errors")
 
 set(NAME_PREFIX ""
   CACHE STRING "Prefix to prepend to puzzle binary names to avoid clashes \
 in a crowded bin directory, e.g. \"sgt-\"")
+
+set(GTK OFF
+  CACHE BOOL "enable building with GTK")
+
+if(GTK)
+
+set(PUZZLES_GTK_VERSION "ANY"
+  CACHE STRING "Which major version of GTK to build with")
+set_property(CACHE PUZZLES_GTK_VERSION
+  PROPERTY STRINGS ANY 3 2)
 
 find_package(PkgConfig REQUIRED)
 
@@ -36,10 +41,12 @@ link_directories(${GTK_LIBRARY_DIRS})
 
 set(platform_common_sources gtk.c printing.c)
 set(platform_gui_libs ${GTK_LIBRARIES})
+set(build_icons TRUE)
+
+endif()
 
 set(platform_libs -lm)
 
-set(build_icons TRUE)
 if(CMAKE_CROSSCOMPILING)
   # The puzzle icons are built by compiling and running a preliminary
   # set of puzzle binaries. We can't do that if the binaries won't run
