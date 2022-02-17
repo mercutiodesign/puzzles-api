@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 
 import asyncio
+import re
 
 from sanic import Sanic
 from sanic.response import empty, text
 
+PARAMS = re.compile(r"(\d+)x(\d+)d[entd]")
 app = Sanic(name="puzzles")
 
 
@@ -18,11 +20,20 @@ async def ignore(_):
     return empty()
 
 
-@app.route("/loopy/<w:int>x<h:int>d<difficulty:[entd]>")
-async def loopy(request, w, h, difficulty):
-    assert w > 2
-    assert h > 2
-    assert difficulty in "entd"
+@app.route("/loopy/<params:str>")
+async def loopy(request, params: str):
+    m = PARAMS.fullmatch(params)
+    if not m:
+        return text(
+            f"invalid parameter, expected something like '4x7de', got {params}",
+            status=400,
+        )
+
+    w, h = m.groups()
+    if int(w) <= 2 or int(h) <= 2:
+        return text(
+            f"invalid width / height, require at least 3x3 not {w}x{h}", status=400
+        )
 
     args = []
     for var in ["seed", "count"]:
@@ -33,7 +44,7 @@ async def loopy(request, w, h, difficulty):
 
     proc = await asyncio.create_subprocess_exec(
         "loopygenerator",
-        f"{w}x{h}d{difficulty}",
+        params,
         *args,
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.STDOUT,
