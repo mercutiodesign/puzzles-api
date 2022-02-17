@@ -1,4 +1,4 @@
-FROM python:3.8.2-slim-buster as build-stage
+FROM python:3.10.2-slim-buster as build-stage
 
 RUN set -x \
   && apt-get update \
@@ -21,7 +21,7 @@ RUN set -x \
   && mv loopygenerator .. \
   && rm -rf ./*
 
-FROM python:3.8.2-slim-buster
+FROM python:3.10.2-slim-buster
 
 RUN mkdir /code
 WORKDIR /code

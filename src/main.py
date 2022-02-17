@@ -3,7 +3,7 @@
 import asyncio
 
 from sanic import Sanic
-from sanic.response import text, empty
+from sanic.response import empty, text
 
 app = Sanic(name="puzzles")
 
