@@ -998,7 +998,7 @@ static char *new_game_desc(const game_params *params_in, random_state *rs,
 	    int dy, dx;
             bool ok = true;
 
-            which = i + random_upto(rs, j);
+            which = i + random_upto(rs, w*h - i);
             tmp = order[which];
             order[which] = order[i];
             order[i] = tmp;
@@ -2411,14 +2411,6 @@ static void int_redraw(drawing *dr, game_drawstate *ds,
     }
 
     if (printing || !ds->started) {
-	if (!printing) {
-	    int ww, wh;
-	    game_compute_size(&state->p, TILESIZE, &ww, &wh);
-	    draw_rect(dr, 0, 0, ww, wh, COL_BACKGROUND);
-	    draw_update(dr, 0, 0, ww, wh);
-	    ds->started = true;
-	}
-
 	if (printing)
 	    print_line_width(dr, TILESIZE/64);
 
@@ -2554,6 +2546,19 @@ static float game_flash_length(const game_state *oldstate,
     return 0.0F;
 }
 
+static void game_get_cursor_location(const game_ui *ui,
+                                     const game_drawstate *ds,
+                                     const game_state *state,
+                                     const game_params *params,
+                                     int *x, int *y, int *w, int *h)
+{
+    if(ui->cdisp) {
+        *x = COORD(ui->cx);
+        *y = COORD(ui->cy);
+        *w = *h = TILESIZE;
+    }
+}
+
 static int game_status(const game_state *state)
 {
     return state->completed ? +1 : 0;
@@ -2630,6 +2635,7 @@ const struct game thegame = {
     game_redraw,
     game_anim_length,
     game_flash_length,
+    game_get_cursor_location,
     game_status,
     true, false, game_print_size, game_print,
     false,			       /* wants_statusbar */

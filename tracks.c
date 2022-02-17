@@ -2782,15 +2782,6 @@ static void game_redraw(drawing *dr, game_drawstate *ds, const game_state *oldst
     game_state *drag_state = NULL;
 
     if (!ds->started) {
-        /*
-         * The initial contents of the window are not guaranteed and
-         * can vary with front ends. To be on the safe side, all games
-         * should start by drawing a big background-colour rectangle
-         * covering the whole window.
-         */
-        draw_rect(dr, 0, 0, (w+2)*TILE_SIZE + 2*BORDER, (h+2)*TILE_SIZE + 2*BORDER,
-                  COL_BACKGROUND);
-
         draw_loop_ends(dr, ds, state, COL_CLUE);
 
         draw_rect(dr, COORD(0) - GRID_LINE_BR, COORD(0) - GRID_LINE_BR,
@@ -2852,6 +2843,37 @@ static float game_flash_length(const game_state *oldstate, const game_state *new
         return FLASH_TIME;
     else
         return 0.0F;
+}
+
+static void game_get_cursor_location(const game_ui *ui,
+                                     const game_drawstate *ds,
+                                     const game_state *state,
+                                     const game_params *params,
+                                     int *x, int *y, int *w, int *h)
+{
+    if(ui->cursor_active) {
+        int off = HALFSZ / 4;
+        int cx = COORD(ui->curx / 2) + off;
+        int cy = COORD(ui->cury / 2) + off;
+        int cw, ch;
+        cw = ch = TILE_SIZE - (2*off) + 1;
+
+        if(ui->curx % 2 == 0) {
+            /* left border */
+            cx -= off;
+            cw = 2 * off + 1;
+        }
+        if(ui->cury % 2 == 0) {
+            /* upper border */
+            cy -= off;
+            ch = 2 * off + 1;
+        }
+
+        *x = cx;
+        *y = cy;
+        *w = cw;
+        *h = ch;
+    }
 }
 
 static int game_status(const game_state *state)
@@ -2948,6 +2970,7 @@ const struct game thegame = {
     game_redraw,
     game_anim_length,
     game_flash_length,
+    game_get_cursor_location,
     game_status,
     true, false, game_print_size, game_print,
     false,			       /* wants_statusbar */

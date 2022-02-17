@@ -1659,6 +1659,10 @@ static char *new_game_desc(const game_params *params, random_state *rs,
 	    }
 	}
 
+        if (retlen + 10 >= retsize) {
+            retsize = retlen + 256;
+            ret = sresize(ret, retsize, char);
+        }
 	ret[retlen++] = 'a'-1 + run;
 	ret[retlen++] = ',';
 
@@ -2872,21 +2876,10 @@ static void game_redraw(drawing *dr, game_drawstate *ds,
         ds->drag_visible = false;
     }
 
-    /*
-     * The initial contents of the window are not guaranteed and
-     * can vary with front ends. To be on the safe side, all games
-     * should start by drawing a big background-colour rectangle
-     * covering the whole window.
-     */
     if (!ds->started) {
-	int ww, wh;
-
-	game_compute_size(&state->p, TILESIZE, &ww, &wh);
-	draw_rect(dr, 0, 0, ww, wh, COL_BACKGROUND);
 	draw_rect(dr, COORD(0), COORD(0), w*TILESIZE+1, h*TILESIZE+1,
 		  COL_GRID);
-
-	draw_update(dr, 0, 0, ww, wh);
+	draw_update(dr, COORD(0), COORD(0), w*TILESIZE+1, h*TILESIZE+1);
 	ds->started = true;
     }
 
@@ -3059,6 +3052,19 @@ static float game_flash_length(const game_state *oldstate,
 	return flash_length;
     } else
 	return 0.0F;
+}
+
+static void game_get_cursor_location(const game_ui *ui,
+                                     const game_drawstate *ds,
+                                     const game_state *state,
+                                     const game_params *params,
+                                     int *x, int *y, int *w, int *h)
+{
+    if(ui->cur_visible) {
+        *x = COORD(ui->cur_x);
+        *y = COORD(ui->cur_y);
+        *w = *h = TILESIZE;
+    }
 }
 
 static int game_status(const game_state *state)
@@ -3260,6 +3266,7 @@ const struct game thegame = {
     game_redraw,
     game_anim_length,
     game_flash_length,
+    game_get_cursor_location,
     game_status,
     true, true, game_print_size, game_print,
     false,			       /* wants_statusbar */

@@ -46,7 +46,7 @@ struct game_params {
     int w, h, k;
 };
 
-typedef char clue;
+typedef signed char clue;
 typedef unsigned char borderflag;
 
 typedef struct shared_state {
@@ -622,7 +622,7 @@ static char *new_game_desc(const game_params *params, random_state *rs,
 {
     int w = params->w, h = params->h, wh = w*h, k = params->k;
 
-    clue *numbers = snewn(wh + 1, clue), *p;
+    clue *numbers = snewn(wh + 1, clue);
     borderflag *rim = snewn(wh, borderflag);
     borderflag *scratch_borders = snewn(wh, borderflag);
 
@@ -682,7 +682,8 @@ static char *new_game_desc(const game_params *params, random_state *rs,
     sfree(shuf);
     sfree(dsf);
 
-    p = numbers;
+    char *output = snewn(wh + 1, char), *p = output;
+
     r = 0;
     for (i = 0; i < wh; ++i) {
         if (numbers[i] != EMPTY) {
@@ -699,7 +700,8 @@ static char *new_game_desc(const game_params *params, random_state *rs,
     }
     *p++ = '\0';
 
-    return sresize(numbers, p - numbers, clue);
+    sfree(numbers);
+    return sresize(output, p - output, char);
 }
 
 static const char *validate_desc(const game_params *params, const char *desc)
@@ -1174,7 +1176,6 @@ static void game_redraw(drawing *dr, game_drawstate *ds,
     if (!ds->grid) {
         char buf[40];
         int bgw = (w+1) * ds->tilesize, bgh = (h+1) * ds->tilesize;
-        draw_rect(dr, 0, 0, bgw, bgh, COL_BACKGROUND);
 
         for (r = 0; r <= h; ++r)
             for (c = 0; c <= w; ++c)
@@ -1272,6 +1273,19 @@ static float game_flash_length(const game_state *oldstate,
     if (newstate->completed && !newstate->cheated && !oldstate->completed)
         return FLASH_TIME;
     return 0.0F;
+}
+
+static void game_get_cursor_location(const game_ui *ui,
+                                     const game_drawstate *ds,
+                                     const game_state *state,
+                                     const game_params *params,
+                                     int *x, int *y, int *w, int *h)
+{
+    if(ui->show) {
+        *x = MARGIN + TILESIZE * ui->x;
+        *y = MARGIN + TILESIZE * ui->y;
+        *w = *h = TILESIZE;
+    }
 }
 
 static int game_status(const game_state *state)
@@ -1387,6 +1401,7 @@ const struct game thegame = {
     game_redraw,
     game_anim_length,
     game_flash_length,
+    game_get_cursor_location,
     game_status,
     true, false, game_print_size, game_print,
     true,                                     /* wants_statusbar */

@@ -2054,7 +2054,6 @@ static void game_changed_state(game_ui *ui, const game_state *oldstate,
 }
 
 struct game_drawstate {
-    bool started;
     int width, height;
     int tilesize;
     unsigned long *visible, *to_draw;
@@ -2441,7 +2440,6 @@ static game_drawstate *game_new_drawstate(drawing *dr, const game_state *state)
     game_drawstate *ds = snew(game_drawstate);
     int i, ncells;
 
-    ds->started = false;
     ds->width = state->width;
     ds->height = state->height;
     ncells = (state->width+2) * (state->height+2);
@@ -2838,23 +2836,6 @@ static void game_redraw(drawing *dr, game_drawstate *ds,
     int *loops;
     float angle = 0.0;
 
-    /*
-     * Clear the screen on our first call.
-     */
-    if (!ds->started) {
-        int w, h;
-        game_params params;
-
-        ds->started = true;
-
-        params.width = ds->width;
-        params.height = ds->height;
-        game_compute_size(&params, TILE_SIZE, &w, &h);
-
-        draw_rect(dr, 0, 0, w, h, COL_BACKGROUND);
-        draw_update(dr, 0, 0, w, h);
-    }
-
     tx = ty = -1;
     last_rotate_dir = dir==-1 ? oldstate->last_rotate_dir :
                                 state->last_rotate_dir;
@@ -3087,6 +3068,20 @@ static float game_flash_length(const game_state *oldstate,
     return 0.0F;
 }
 
+static void game_get_cursor_location(const game_ui *ui,
+                                     const game_drawstate *ds,
+                                     const game_state *state,
+                                     const game_params *params,
+                                     int *x, int *y, int *w, int *h)
+{
+    if(ui->cur_visible) {
+        *x = WINDOW_OFFSET + TILE_SIZE * ui->cur_x;
+        *y = WINDOW_OFFSET + TILE_SIZE * ui->cur_y;
+
+        *w = *h = TILE_SIZE;
+    }
+}
+
 static int game_status(const game_state *state)
 {
     return state->completed ? +1 : 0;
@@ -3268,6 +3263,7 @@ const struct game thegame = {
     game_redraw,
     game_anim_length,
     game_flash_length,
+    game_get_cursor_location,
     game_status,
     true, false, game_print_size, game_print,
     true,			       /* wants_statusbar */

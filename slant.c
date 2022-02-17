@@ -1638,7 +1638,6 @@ static void game_changed_state(game_ui *ui, const game_state *oldstate,
 
 struct game_drawstate {
     int tilesize;
-    bool started;
     long *grid;
     long *todraw;
 };
@@ -1832,7 +1831,6 @@ static game_drawstate *game_new_drawstate(drawing *dr, const game_state *state)
     struct game_drawstate *ds = snew(struct game_drawstate);
 
     ds->tilesize = 0;
-    ds->started = false;
     ds->grid = snewn((w+2)*(h+2), long);
     ds->todraw = snewn((w+2)*(h+2), long);
     for (i = 0; i < (w+2)*(h+2); i++)
@@ -1972,14 +1970,6 @@ static void game_redraw(drawing *dr, game_drawstate *ds,
     else
 	flashing = false;
 
-    if (!ds->started) {
-	int ww, wh;
-	game_compute_size(&state->p, TILESIZE, &ww, &wh);
-	draw_rect(dr, 0, 0, ww, wh, COL_BACKGROUND);
-	draw_update(dr, 0, 0, ww, wh);
-	ds->started = true;
-    }
-
     /*
      * Loop over the grid and work out where all the slashes are.
      * We need to do this because a slash in one square affects the
@@ -2062,6 +2052,19 @@ static float game_flash_length(const game_state *oldstate,
         return FLASH_TIME;
 
     return 0.0F;
+}
+
+static void game_get_cursor_location(const game_ui *ui,
+                                     const game_drawstate *ds,
+                                     const game_state *state,
+                                     const game_params *params,
+                                     int *x, int *y, int *w, int *h)
+{
+    if(ui->cur_visible) {
+        *x = COORD(ui->cur_x);
+        *y = COORD(ui->cur_y);
+        *w = *h = TILESIZE;
+    }
 }
 
 static int game_status(const game_state *state)
@@ -2181,6 +2184,7 @@ const struct game thegame = {
     game_redraw,
     game_anim_length,
     game_flash_length,
+    game_get_cursor_location,
     game_status,
     true, false, game_print_size, game_print,
     false,			       /* wants_statusbar */

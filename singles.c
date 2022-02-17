@@ -1708,7 +1708,6 @@ static void game_redraw(drawing *dr, game_drawstate *ds,
     if (!ds->started) {
         int wsz = TILE_SIZE * state->w + 2 * BORDER;
         int hsz = TILE_SIZE * state->h + 2 * BORDER;
-        draw_rect(dr, 0, 0, wsz, hsz, COL_BACKGROUND);
         draw_rect_outline(dr, COORD(0)-1, COORD(0)-1,
 			  TILE_SIZE * state->w + 2, TILE_SIZE * state->h + 2,
                           COL_GRID);
@@ -1756,6 +1755,19 @@ static float game_flash_length(const game_state *oldstate,
         newstate->completed && !newstate->used_solve)
         return FLASH_TIME;
     return 0.0F;
+}
+
+static void game_get_cursor_location(const game_ui *ui,
+                                     const game_drawstate *ds,
+                                     const game_state *state,
+                                     const game_params *params,
+                                     int *x, int *y, int *w, int *h)
+{
+    if(ui->cshow) {
+        *x = COORD(ui->cx);
+        *y = COORD(ui->cy);
+        *w = *h = TILE_SIZE;
+    }
 }
 
 static int game_status(const game_state *state)
@@ -1850,6 +1862,7 @@ const struct game thegame = {
     game_redraw,
     game_anim_length,
     game_flash_length,
+    game_get_cursor_location,
     game_status,
     true, false, game_print_size, game_print,
     false,			       /* wants_statusbar */

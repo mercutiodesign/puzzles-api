@@ -1253,7 +1253,6 @@ typedef struct drawcell {
 struct game_drawstate {
     int tilesize;
     drawcell *grid;
-    bool started;
 };
 
 #define TILESIZE (ds->tilesize)
@@ -1572,6 +1571,19 @@ static float game_flash_length(const game_state *from,
     return 0.0F;
 }
 
+static void game_get_cursor_location(const game_ui *ui,
+                                     const game_drawstate *ds,
+                                     const game_state *state,
+                                     const game_params *params,
+                                     int *x, int *y, int *w, int *h)
+{
+    if(ui->cursor_show) {
+        *x = BORDER + TILESIZE * ui->c;
+        *y = BORDER + TILESIZE * ui->r;
+        *w = *h = TILESIZE;
+    }
+}
+
 static int game_status(const game_state *state)
 {
     return state->was_solved ? +1 : 0;
@@ -1642,7 +1654,6 @@ static game_drawstate *game_new_drawstate(drawing *dr, const game_state *state)
     int i;
 
     ds->tilesize = 0;
-    ds->started = false;
 
     ds->grid = snewn(n, drawcell);
     for (i = 0; i < n; ++i)
@@ -1677,7 +1688,6 @@ static void game_redraw(drawing *dr, game_drawstate *ds,
                         float animtime, float flashtime)
 {
     int const w = state->params.w, h = state->params.h, n = w * h;
-    int const wpx = (w+1) * ds->tilesize, hpx = (h+1) * ds->tilesize;
     int const flash = ((int) (flashtime * 5 / FLASH_TIME)) % 2;
 
     int r, c, i;
@@ -1687,12 +1697,6 @@ static void game_redraw(drawing *dr, game_drawstate *ds,
     find_errors(state, errors);
 
     assert (oldstate == NULL); /* only happens if animating moves */
-
-    if (!ds->started) {
-        ds->started = true;
-        draw_rect(dr, 0, 0, wpx, hpx, COL_BACKGROUND);
-        draw_update(dr, 0, 0, wpx, hpx);
-    }
 
     for (i = r = 0; r < h; ++r) {
         for (c = 0; c < w; ++c, ++i) {
@@ -1823,6 +1827,7 @@ struct game const thegame = {
     game_redraw,
     game_anim_length,
     game_flash_length,
+    game_get_cursor_location,
     game_status,
     true, false, game_print_size, game_print,
     false, /* wants_statusbar */

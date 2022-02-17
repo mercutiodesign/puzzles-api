@@ -574,6 +574,38 @@ static int solver_hard(struct latin_solver *solver, void *vctx)
 #define SOLVER(upper,title,func,lower) func,
 static usersolver_t const towers_solvers[] = { DIFFLIST(SOLVER) };
 
+static bool towers_valid(struct latin_solver *solver, void *vctx)
+{
+    struct solver_ctx *ctx = (struct solver_ctx *)vctx;
+    int w = ctx->w;
+    int c, i, n, best, clue, start, step;
+    for (c = 0; c < 4*w; c++) {
+	clue = ctx->clues[c];
+	if (!clue)
+	    continue;
+
+        STARTSTEP(start, step, c, w);
+        n = best = 0;
+        for (i = 0; i < w; i++) {
+            if (solver->grid[start+i*step] > best) {
+                best = solver->grid[start+i*step];
+                n++;
+            }
+        }
+
+        if (n != clue) {
+#ifdef STANDALONE_SOLVER
+            if (solver_show_working)
+		printf("%*sclue %s %d is violated\n",
+			solver_recurse_depth*4, "",
+			cluepos[c/w], c%w+1);
+#endif
+            return false;
+        }
+    }
+    return true;
+}
+
 static int solver(int w, int *clues, digit *soln, int maxdiff)
 {
     int ret;
@@ -589,7 +621,7 @@ static int solver(int w, int *clues, digit *soln, int maxdiff)
     ret = latin_solver(soln, w, maxdiff,
 		       DIFF_EASY, DIFF_HARD, DIFF_EXTREME,
 		       DIFF_EXTREME, DIFF_UNREASONABLE,
-		       towers_solvers, &ctx, NULL, NULL);
+		       towers_solvers, towers_valid, &ctx, NULL, NULL);
 
     sfree(ctx.iscratch);
     sfree(ctx.dscratch);
@@ -1190,7 +1222,6 @@ static void game_changed_state(game_ui *ui, const game_state *oldstate,
 struct game_drawstate {
     int tilesize;
     bool three_d;       /* default 3D graphics are user-disableable */
-    bool started;
     long *tiles;		       /* (w+2)*(w+2) temp space */
     long *drawn;		       /* (w+2)*(w+2)*4: current drawn data */
     bool *errtmp;
@@ -1583,7 +1614,6 @@ static game_drawstate *game_new_drawstate(drawing *dr, const game_state *state)
 
     ds->tilesize = 0;
     ds->three_d = !getenv("TOWERS_2D");
-    ds->started = false;
     ds->tiles = snewn((w+2)*(w+2), long);
     ds->drawn = snewn((w+2)*(w+2)*4, long);
     for (i = 0; i < (w+2)*(w+2)*4; i++)
@@ -1789,20 +1819,6 @@ static void game_redraw(drawing *dr, game_drawstate *ds,
     int w = state->par.w /*, a = w*w */;
     int i, x, y;
 
-    if (!ds->started) {
-	/*
-	 * The initial contents of the window are not guaranteed and
-	 * can vary with front ends. To be on the safe side, all
-	 * games should start by drawing a big background-colour
-	 * rectangle covering the whole window.
-	 */
-	draw_rect(dr, 0, 0, SIZE(w), SIZE(w), COL_BACKGROUND);
-
-	draw_update(dr, 0, 0, SIZE(w), SIZE(w));
-
-	ds->started = true;
-    }
-
     check_errors(state, ds->errtmp);
 
     /*
@@ -1901,6 +1917,19 @@ static float game_flash_length(const game_state *oldstate,
 	!oldstate->cheated && !newstate->cheated)
         return FLASH_TIME;
     return 0.0F;
+}
+
+static void game_get_cursor_location(const game_ui *ui,
+                                     const game_drawstate *ds,
+                                     const game_state *state,
+                                     const game_params *params,
+                                     int *x, int *y, int *w, int *h)
+{
+    if(ui->hshow) {
+        *x = COORD(ui->hx);
+        *y = COORD(ui->hy);
+        *w = *h = TILESIZE;
+    }
 }
 
 static int game_status(const game_state *state)
@@ -2028,6 +2057,7 @@ const struct game thegame = {
     game_redraw,
     game_anim_length,
     game_flash_length,
+    game_get_cursor_location,
     game_status,
     true, false, game_print_size, game_print,
     false,			       /* wants_statusbar */

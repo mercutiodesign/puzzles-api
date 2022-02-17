@@ -2146,6 +2146,20 @@ struct game_drawstate {
     bool started, dragging;
 };
 
+
+static void game_get_cursor_location(const game_ui *ui,
+                                     const game_drawstate *ds,
+                                     const game_state *state,
+                                     const game_params *params,
+                                     int *x, int *y, int *w, int *h)
+{
+    if(ui->cur_visible) {
+        *x = COORD(ui->cur_x);
+        *y = COORD(ui->cur_y);
+        *w = *h = TILE_SIZE;
+    }
+}
+
 /*
  * The contents of ds->grid are complicated, because of the circular
  * islands which overlap their own grid square into neighbouring
@@ -2973,9 +2987,6 @@ static void game_redraw(drawing *dr, game_drawstate *ds,
 
     /* Clear screen, if required. */
     if (!ds->started) {
-        draw_rect(dr, 0, 0,
-                  TILE_SIZE * ds->w + 2 * BORDER,
-                  TILE_SIZE * ds->h + 2 * BORDER, COL_BACKGROUND);
 #ifdef DRAW_GRID
         draw_rect_outline(dr,
                           COORD(0)-1, COORD(0)-1,
@@ -3267,6 +3278,7 @@ const struct game thegame = {
     game_redraw,
     game_anim_length,
     game_flash_length,
+    game_get_cursor_location,
     game_status,
     true, false, game_print_size, game_print,
     false,			       /* wants_statusbar */

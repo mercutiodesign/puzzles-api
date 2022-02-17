@@ -1349,7 +1349,6 @@ static void game_redraw(drawing *dr, game_drawstate *ds,
     new_move = (state->next_go != ds->next_go) || !ds->started;
 
     if (!ds->started) {
-      draw_rect(dr, 0, 0, ds->w, ds->h, COL_BACKGROUND);
       draw_rect(dr, SOLN_OX, SOLN_OY - ds->gapsz - 1, SOLN_W, 2, COL_FRAME);
       draw_update(dr, 0, 0, ds->w, ds->h);
     }
@@ -1448,6 +1447,20 @@ static float game_flash_length(const game_state *oldstate,
     return 0.0F;
 }
 
+static void game_get_cursor_location(const game_ui *ui,
+                                     const game_drawstate *ds,
+                                     const game_state *state,
+                                     const game_params *params,
+                                     int *x, int *y, int *w, int *h)
+{
+    if(ui->display_cur && !state->solved) {
+        *x = GUESS_X(state->next_go, ui->peg_cur) - CGAP;
+        *y = GUESS_Y(state->next_go, ui->peg_cur) - CGAP;
+
+        *w = *h = 2 * (PEGRAD + CGAP) + 1;
+    }
+}
+
 static int game_status(const game_state *state)
 {
     /*
@@ -1508,6 +1521,7 @@ const struct game thegame = {
     game_redraw,
     game_anim_length,
     game_flash_length,
+    game_get_cursor_location,
     game_status,
     false, false, game_print_size, game_print,
     false,			       /* wants_statusbar */

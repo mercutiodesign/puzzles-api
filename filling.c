@@ -310,7 +310,7 @@ static void print_board(int *board, int w, int h) {
 static game_state *new_game(midend *, const game_params *, const char *);
 static void free_game(game_state *);
 
-#define SENTINEL sz
+#define SENTINEL (sz+1)
 
 static bool mark_region(int *board, int w, int h, int i, int n, int m) {
     int j;
@@ -414,10 +414,15 @@ retry:
             int merge = SENTINEL, min = maxsize - size + 1;
 	    bool error = false;
             int neighbour, neighbour_size, j;
+	    int directions[4];
+
+            for (j = 0; j < 4; ++j)
+		directions[j] = j;
+	    shuffle(directions, 4, sizeof(int), rs);
 
             for (j = 0; j < 4; ++j) {
-                const int x = (board[i] % w) + dx[j];
-                const int y = (board[i] / w) + dy[j];
+                const int x = (board[i] % w) + dx[directions[j]];
+                const int y = (board[i] / w) + dy[directions[j]];
                 if (x < 0 || x >= w || y < 0 || y >= h) continue;
 
                 neighbour = dsf_canonify(dsf, w*y + x);
@@ -429,7 +434,7 @@ retry:
                 /* find the smallest neighbour to merge with, which
                  * wouldn't make the region too large.  (This is
                  * guaranteed by the initial value of `min'.) */
-                if (neighbour_size < min) {
+                if (neighbour_size < min && random_upto(rs, 10)) {
                     min = neighbour_size;
                     merge = neighbour;
                 }
@@ -2016,17 +2021,8 @@ static void game_redraw(drawing *dr, game_drawstate *ds,
         (flashtime <= FLASH_TIME/3 || flashtime >= FLASH_TIME*2/3);
 
     if (!ds->started) {
-        /*
-         * The initial contents of the window are not guaranteed and
-         * can vary with front ends. To be on the safe side, all games
-         * should start by drawing a big background-colour rectangle
-         * covering the whole window.
-         */
-        draw_rect(dr, 0, 0, w*TILE_SIZE + 2*BORDER, h*TILE_SIZE + 2*BORDER,
-                  COL_BACKGROUND);
-
 	/*
-	 * Smaller black rectangle which is the main grid.
+	 * Black rectangle which is the main grid.
 	 */
 	draw_rect(dr, BORDER - BORDER_WIDTH, BORDER - BORDER_WIDTH,
 		  w*TILE_SIZE + 2*BORDER_WIDTH + 1,
@@ -2058,6 +2054,20 @@ static float game_flash_length(const game_state *oldstate,
 	!oldstate->cheated && !newstate->cheated)
         return FLASH_TIME;
     return 0.0F;
+}
+
+static void game_get_cursor_location(const game_ui *ui,
+                                     const game_drawstate *ds,
+                                     const game_state *state,
+                                     const game_params *params,
+                                     int *x, int *y, int *w, int *h)
+{
+    if(ui->cur_visible)
+    {
+	*x = BORDER + ui->cur_x * TILE_SIZE;
+	*y = BORDER + ui->cur_y * TILE_SIZE;
+	*w = *h = TILE_SIZE;
+    }
 }
 
 static int game_status(const game_state *state)
@@ -2165,6 +2175,7 @@ const struct game thegame = {
     game_redraw,
     game_anim_length,
     game_flash_length,
+    game_get_cursor_location,
     game_status,
     true, false, game_print_size, game_print,
     false,				   /* wants_statusbar */

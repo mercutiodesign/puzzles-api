@@ -83,14 +83,6 @@ enum {
 #define REQUIRE_NUMPAD ( 1 << 11 )
 /* end of `flags' word definitions */
 
-#ifdef _WIN32_WCE
-  /* Pocket PC devices have small, portrait screen that requires more vivid colours */
-  #define SMALL_SCREEN
-  #define PORTRAIT_SCREEN
-  #define VIVID_COLOURS
-  #define STYLUS_BASED
-#endif
-
 #define IGNOREARG(x) ( (x) = (x) )
 
 typedef struct frontend frontend;
@@ -256,7 +248,7 @@ void draw_text(drawing *dr, int x, int y, int fonttype, int fontsize,
                int align, int colour, const char *text);
 void draw_rect(drawing *dr, int x, int y, int w, int h, int colour);
 void draw_line(drawing *dr, int x1, int y1, int x2, int y2, int colour);
-void draw_polygon(drawing *dr, int *coords, int npoints,
+void draw_polygon(drawing *dr, const int *coords, int npoints,
                   int fillcolour, int outlinecolour);
 void draw_circle(drawing *dr, int cx, int cy, int radius,
                  int fillcolour, int outlinecolour);
@@ -347,6 +339,8 @@ const char *identify_game(char **name,
                           bool (*read)(void *ctx, void *buf, int len),
                           void *rctx);
 void midend_request_id_changes(midend *me, void (*notify)(void *), void *ctx);
+bool midend_get_cursor_location(midend *me, int *x, int *y, int *w, int *h);
+
 /* Printing functions supplied by the mid-end */
 const char *midend_print_puzzle(midend *me, document *doc, bool with_soln);
 int midend_tilesize(midend *me);
@@ -680,6 +674,11 @@ struct game {
                          const game_state *newstate, int dir, game_ui *ui);
     float (*flash_length)(const game_state *oldstate,
                           const game_state *newstate, int dir, game_ui *ui);
+    void (*get_cursor_location)(const game_ui *ui,
+                                const game_drawstate *ds,
+                                const game_state *state,
+                                const game_params *params,
+                                int *x, int *y, int *w, int *h);
     int (*status)(const game_state *state);
     bool can_print, can_print_in_colour;
     void (*print_size)(const game_params *params, float *x, float *y);
@@ -701,7 +700,7 @@ struct drawing_api {
     void (*draw_rect)(void *handle, int x, int y, int w, int h, int colour);
     void (*draw_line)(void *handle, int x1, int y1, int x2, int y2,
 		      int colour);
-    void (*draw_polygon)(void *handle, int *coords, int npoints,
+    void (*draw_polygon)(void *handle, const int *coords, int npoints,
 			 int fillcolour, int outlinecolour);
     void (*draw_circle)(void *handle, int cx, int cy, int radius,
 			int fillcolour, int outlinecolour);
