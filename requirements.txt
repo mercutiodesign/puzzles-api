@@ -10,7 +10,7 @@ httptools==0.3.0
     # via sanic
 multidict==5.2.0
     # via sanic
-sanic==21.12.1
+sanic==21.12.2
     # via -r requirements.in
 sanic-routing==0.7.2
     # via sanic
