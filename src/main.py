@@ -32,7 +32,7 @@ async def loopy(request, params: str):
         )
 
     w, h = m.groups()
-    if int(w) <= 2 or int(h) <= 2:
+    if int(w) <= 2 or (h and int(h) <= 2):
         return text(
             f"invalid width / height, require at least 3x3 not {w}x{h}", status=400
         )
