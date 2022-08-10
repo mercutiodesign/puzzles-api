@@ -6,7 +6,9 @@ import re
 from sanic import Sanic
 from sanic.response import empty, text
 
-PARAMS = re.compile(r"(\d+)x(\d+)d[entd]")
+# size: either {WIDTH}x{HEIGHT} or just one number for a square board
+# difficulty: easy (default), normal, tricky, hard
+PARAMS = re.compile(r"(\d+)(?:x(\d+))?(?:d[enth])?")
 app = Sanic(name="puzzles")
 
 
