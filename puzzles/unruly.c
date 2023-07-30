@@ -47,12 +47,16 @@
 #include <string.h>
 #include <assert.h>
 #include <ctype.h>
-#include <math.h>
+#ifdef NO_TGMATH_H
+#  include <math.h>
+#else
+#  include <tgmath.h>
+#endif
 
 #include "puzzles.h"
 
 #ifdef STANDALONE_SOLVER
-bool solver_verbose = false;
+static bool solver_verbose = false;
 #endif
 
 enum {
@@ -286,6 +290,8 @@ static const char *validate_params(const game_params *params, bool full)
         return "Width and height must both be even";
     if (params->w2 < 6 || params->h2 < 6)
         return "Width and height must be at least 6";
+    if (params->w2 > INT_MAX / params->h2)
+        return "Width times height must not be unreasonably large";
     if (params->unique) {
         static const long A177790[] = {
             /*
@@ -1392,6 +1398,8 @@ static char *new_game_desc(const game_params *params, random_state *rs,
             temp_verbose = solver_verbose;
             solver_verbose = false;
         }
+#else
+        (void)attempts;
 #endif
 
         unruly_free_scratch(scratch);
@@ -1511,7 +1519,7 @@ static game_ui *new_ui(const game_state *state)
     game_ui *ret = snew(game_ui);
 
     ret->cx = ret->cy = 0;
-    ret->cursor = false;
+    ret->cursor = getenv_bool("PUZZLES_SHOW_CURSOR", false);
 
     return ret;
 }
@@ -1521,18 +1529,30 @@ static void free_ui(game_ui *ui)
     sfree(ui);
 }
 
-static char *encode_ui(const game_ui *ui)
-{
-    return NULL;
-}
-
-static void decode_ui(game_ui *ui, const char *encoding)
-{
-}
-
 static void game_changed_state(game_ui *ui, const game_state *oldstate,
                                const game_state *newstate)
 {
+}
+
+static const char *current_key_label(const game_ui *ui,
+                                     const game_state *state, int button)
+{
+    int hx = ui->cx, hy = ui->cy;
+    int w2 = state->w2;
+    char i = state->grid[hy * w2 + hx];
+
+    if (ui->cursor && IS_CURSOR_SELECT(button)) {
+        if (state->common->immutable[hy * w2 + hx]) return "";
+        switch (i) {
+          case EMPTY:
+            return button == CURSOR_SELECT ? "Black" : "White";
+          case N_ONE:
+            return button == CURSOR_SELECT ? "White" : "Empty";
+          case N_ZERO:
+            return button == CURSOR_SELECT ? "Empty" : "Black";
+        }
+    }
+    return "";
 }
 
 struct game_drawstate {
@@ -1610,7 +1630,7 @@ static char *interpret_move(const game_state *state, game_ui *ui,
     if (IS_CURSOR_MOVE(button)) {
         move_cursor(button, &ui->cx, &ui->cy, w2, h2, false);
         ui->cursor = true;
-        return UI_UPDATE;
+        return MOVE_UI_UPDATE;
     }
 
     /* Place one */
@@ -1709,7 +1729,7 @@ static game_state *execute_move(const game_state *state, const char *move)
  */
 
 static void game_compute_size(const game_params *params, int tilesize,
-                              int *x, int *y)
+                              const game_ui *ui, int *x, int *y)
 {
     *x = tilesize * (params->w2 + 1);
     *y = tilesize * (params->h2 + 1);
@@ -1947,22 +1967,19 @@ static int game_status(const game_state *state)
     return state->completed ? +1 : 0;
 }
 
-static bool game_timing_state(const game_state *state, game_ui *ui)
-{
-    return true;
-}
-
-static void game_print_size(const game_params *params, float *x, float *y)
+static void game_print_size(const game_params *params, const game_ui *ui,
+                            float *x, float *y)
 {
     int pw, ph;
 
     /* Using 7mm squares */
-    game_compute_size(params, 700, &pw, &ph);
+    game_compute_size(params, 700, ui, &pw, &ph);
     *x = pw / 100.0F;
     *y = ph / 100.0F;
 }
 
-static void game_print(drawing *dr, const game_state *state, int tilesize)
+static void game_print(drawing *dr, const game_state *state, const game_ui *ui,
+                       int tilesize)
 {
     int w2 = state->w2, h2 = state->h2;
     int x, y;
@@ -2015,12 +2032,14 @@ const struct game thegame = {
     free_game,
     true, solve_game,
     true, game_can_format_as_text_now, game_text_format,
+    NULL, NULL, /* get_prefs, set_prefs */
     new_ui,
     free_ui,
-    encode_ui,
-    decode_ui,
+    NULL, /* encode_ui */
+    NULL, /* decode_ui */
     NULL, /* game_request_keys */
     game_changed_state,
+    current_key_label,
     interpret_move,
     execute_move,
     DEFAULT_TILE_SIZE, game_compute_size, game_set_size,
@@ -2034,7 +2053,7 @@ const struct game thegame = {
     game_status,
     true, false, game_print_size, game_print,
     false,                      /* wants_statusbar */
-    false, game_timing_state,
+    false, NULL,                       /* timing_state */
     0,                          /* flags */
 };
 
@@ -2048,7 +2067,7 @@ const struct game thegame = {
 
 /* Most of the standalone solver code was copied from unequal.c and singles.c */
 
-const char *quis;
+static const char *quis;
 
 static void usage_exit(const char *msg)
 {

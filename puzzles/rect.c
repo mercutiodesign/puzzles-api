@@ -26,7 +26,11 @@
 #include <string.h>
 #include <assert.h>
 #include <ctype.h>
-#include <math.h>
+#ifdef NO_TGMATH_H
+#  include <math.h>
+#else
+#  include <tgmath.h>
+#endif
 
 #include "puzzles.h"
 
@@ -218,6 +222,8 @@ static const char *validate_params(const game_params *params, bool full)
 {
     if (params->w <= 0 || params->h <= 0)
 	return "Width and height must both be greater than zero";
+    if (params->w > INT_MAX / params->h)
+        return "Width times height must not be unreasonably large";
     if (params->w*params->h < 2)
 	return "Grid area must be greater than one";
     if (params->expandfactor < 0.0F)
@@ -2204,7 +2210,7 @@ static game_ui *new_ui(const game_state *state)
     reset_ui(ui);
     ui->erasing = false;
     ui->cur_x = ui->cur_y = 0;
-    ui->cur_visible = false;
+    ui->cur_visible = getenv_bool("PUZZLES_SHOW_CURSOR", false);
     ui->cur_dragging = false;
     return ui;
 }
@@ -2212,15 +2218,6 @@ static game_ui *new_ui(const game_state *state)
 static void free_ui(game_ui *ui)
 {
     sfree(ui);
-}
-
-static char *encode_ui(const game_ui *ui)
-{
-    return NULL;
-}
-
-static void decode_ui(game_ui *ui, const char *encoding)
-{
 }
 
 static void coord_round(float x, float y, int *xr, int *yr)
@@ -2374,6 +2371,21 @@ struct game_drawstate {
     unsigned long *visible;
 };
 
+static const char *current_key_label(const game_ui *ui,
+                                     const game_state *state, int button)
+{
+    if (IS_CURSOR_SELECT(button) && ui->cur_visible &&
+        !(ui->drag_start_x >= 0 && !ui->cur_dragging)) {
+        if (ui->cur_dragging) {
+            if (!ui->dragged) return "Cancel";
+            if ((button == CURSOR_SELECT2) == ui->erasing) return "Done";
+            return "Cancel";
+        }
+        return button == CURSOR_SELECT ? "Mark" : "Erase";
+    }
+    return "";
+}
+
 static char *interpret_move(const game_state *from, game_ui *ui,
                             const game_drawstate *ds,
                             int x, int y, int button)
@@ -2406,7 +2418,7 @@ static char *interpret_move(const game_state *from, game_ui *ui,
         move_cursor(button, &ui->cur_x, &ui->cur_y, from->w, from->h, false);
         ui->cur_visible = true;
         active = true;
-        if (!ui->cur_dragging) return UI_UPDATE;
+        if (!ui->cur_dragging) return MOVE_UI_UPDATE;
         coord_round((float)ui->cur_x + 0.5F, (float)ui->cur_y + 0.5F, &xc, &yc);
     } else if (IS_CURSOR_SELECT(button)) {
         if (ui->drag_start_x >= 0 && !ui->cur_dragging) {
@@ -2419,7 +2431,7 @@ static char *interpret_move(const game_state *from, game_ui *ui,
         if (!ui->cur_visible) {
             assert(!ui->cur_dragging);
             ui->cur_visible = true;
-            return UI_UPDATE;
+            return MOVE_UI_UPDATE;
         }
         coord_round((float)ui->cur_x + 0.5F, (float)ui->cur_y + 0.5F, &xc, &yc);
         erasing = (button == CURSOR_SELECT2);
@@ -2440,7 +2452,7 @@ static char *interpret_move(const game_state *from, game_ui *ui,
             reset_ui(ui); /* cancel keyboard dragging */
             ui->cur_dragging = false;
         }
-        return UI_UPDATE;
+        return MOVE_UI_UPDATE;
     } else if (button != LEFT_DRAG && button != RIGHT_DRAG) {
         return NULL;
     }
@@ -2524,7 +2536,7 @@ static char *interpret_move(const game_state *from, game_ui *ui,
     if (ret)
 	return ret;		       /* a move has been made */
     else if (active)
-        return UI_UPDATE;
+        return MOVE_UI_UPDATE;
     else
 	return NULL;
 }
@@ -2618,7 +2630,7 @@ static game_state *execute_move(const game_state *from, const char *move)
 #define MAX4(x,y,z,w) ( max(max(x,y),max(z,w)) )
 
 static void game_compute_size(const game_params *params, int tilesize,
-                              int *x, int *y)
+                              const game_ui *ui, int *x, int *y)
 {
     /* Ick: fake up `ds->tilesize' for macro expansion purposes */
     struct { int tilesize; } ads, *ds = &ads;
@@ -2895,24 +2907,21 @@ static int game_status(const game_state *state)
     return state->completed ? +1 : 0;
 }
 
-static bool game_timing_state(const game_state *state, game_ui *ui)
-{
-    return true;
-}
-
-static void game_print_size(const game_params *params, float *x, float *y)
+static void game_print_size(const game_params *params, const game_ui *ui,
+                            float *x, float *y)
 {
     int pw, ph;
 
     /*
      * I'll use 5mm squares by default.
      */
-    game_compute_size(params, 500, &pw, &ph);
+    game_compute_size(params, 500, ui, &pw, &ph);
     *x = pw / 100.0F;
     *y = ph / 100.0F;
 }
 
-static void game_print(drawing *dr, const game_state *state, int tilesize)
+static void game_print(drawing *dr, const game_state *state, const game_ui *ui,
+                       int tilesize)
 {
     int w = state->w, h = state->h;
     int ink = print_mono_colour(dr, 0);
@@ -2986,12 +2995,14 @@ const struct game thegame = {
     free_game,
     true, solve_game,
     true, game_can_format_as_text_now, game_text_format,
+    NULL, NULL, /* get_prefs, set_prefs */
     new_ui,
     free_ui,
-    encode_ui,
-    decode_ui,
+    NULL, /* encode_ui */
+    NULL, /* decode_ui */
     NULL, /* game_request_keys */
     game_changed_state,
+    current_key_label,
     interpret_move,
     execute_move,
     PREFERRED_TILE_SIZE, game_compute_size, game_set_size,
@@ -3005,7 +3016,7 @@ const struct game thegame = {
     game_status,
     true, false, game_print_size, game_print,
     true,			       /* wants_statusbar */
-    false, game_timing_state,
+    false, NULL,                       /* timing_state */
     0,				       /* flags */
 };
 

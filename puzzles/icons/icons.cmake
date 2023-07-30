@@ -25,6 +25,7 @@ endif()
 # causing the first undone move in the undo chain to be redone, and
 # then it will stop this far through the move animation to take the
 # screenshot.
+set(cube_redo 0.15)
 set(fifteen_redo 0.3)
 set(flip_redo 0.3)
 set(netslide_redo 0.3)
@@ -80,19 +81,28 @@ set(untangle_crop 320x320 164x164+3+116)
 add_custom_target(icons)
 
 # All sizes of icon we make for any purpose.
-set(all_icon_sizes 96 48 32 16)
+set(all_icon_sizes 128 96 88 64 48 44 32 24 16)
 
 # Sizes of icon we put into the Windows .ico files.
 set(win_icon_sizes 48 32 16)
 
 # Border thickness for each icon size.
+set(border_128 8)
 set(border_96 4)
+set(border_88 4)
+set(border_64 4)
 set(border_48 4)
+set(border_44 4)
 set(border_32 2)
+set(border_24 1)
 set(border_16 1)
 
 set(icon_srcdir ${CMAKE_SOURCE_DIR}/icons)
 set(icon_bindir ${CMAKE_BINARY_DIR}/icons)
+
+# We'll need to point $SGT_PUZZLES_DIR at an empty directory, to avoid
+# the icons reflecting the building user's display preferences.
+set(empty_config_dir ${CMAKE_BINARY_DIR}/icons/config)
 
 function(build_icon name)
   set(output_icon_files)
@@ -110,17 +120,21 @@ function(build_icon name)
   # play, which will be the base image we make everything else out
   # out.
   if(DEFINED ${name}_redo)
-    set(redo_arg --redo ${name}_redo)
+    set(redo_arg --redo ${${name}_redo})
   else()
     set(redo_arg)
   endif()
   add_custom_command(OUTPUT ${icon_bindir}/${name}-base.png
-    COMMAND ${icon_bindir}/${name}-icon-maker
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${empty_config_dir}
+    COMMAND ${CMAKE_COMMAND} -E env
+      ASAN_OPTIONS=detect_leaks=0
+      SGT_PUZZLES_DIR=${empty_config_dir}
+      ${icon_bindir}/${name}-icon-maker
       ${redo_arg}
       --screenshot ${icon_bindir}/${name}-base.png
       --load ${icon_srcdir}/${name}.sav
     DEPENDS
-      ${name}-icon-maker)
+      ${name}-icon-maker ${icon_srcdir}/${name}.sav)
 
   # Shrink it to a fixed-size square image for the web page,
   # trimming boring border parts of the original image in the
@@ -134,6 +148,17 @@ function(build_icon name)
       ${icon_srcdir}/square.pl
       ${icon_bindir}/${name}-base.png)
   list(APPEND output_icon_files ${icon_bindir}/${name}-web.png)
+
+  # Shrink differently to an oblong for the KaiStore marketing
+  # banner.  This is dimmed behind the name of the application, so put
+  # it at a jaunty angle to avoid unfortunate interactions with the
+  # text.
+  add_custom_command(OUTPUT ${icon_bindir}/${name}-banner.jpg
+    COMMAND ${CONVERT} ${icon_bindir}/${name}-base.png
+      -crop 1:1+0+0 -rotate -10 +repage -shave 13% -resize 240 -crop x130+0+0
+      ${icon_bindir}/${name}-banner.jpg
+    DEPENDS ${icon_bindir}/${name}-base.png)
+  list(APPEND output_icon_files ${icon_bindir}/${name}-banner.jpg)
 
   # Make the base image for all the icons, by cropping out the most
   # interesting part of the whole screenshot.
@@ -245,6 +270,31 @@ function(build_icon name)
       ${icon_srcdir}/cicon.pl
       ${cicon_pl_infiles})
   list(APPEND output_icon_files ${icon_bindir}/${name}-icon.c)
+
+  # Make the KaiOS icons, which have rounded corners and shadows
+  # https://developer.kaiostech.com/docs/design-guide/launcher-icon
+  foreach(size 56 112)
+    math(EXPR srciconsize "${size} * 44 / 56")
+    math(EXPR borderwidth "(${size} - ${srciconsize}) / 2")
+    math(EXPR cornerradius "${size} * 5 / 56")
+    math(EXPR sizeminusone "${srciconsize} - 1")
+    math(EXPR shadowspread "${size} * 4 / 56")
+    math(EXPR shadowoffset "${size} * 2 / 56")
+    add_custom_command(OUTPUT ${icon_bindir}/${name}-${size}kai.png
+      COMMAND ${CONVERT}
+        ${icon_bindir}/${name}-${srciconsize}d24.png
+        -alpha Opaque
+        "\\(" -size ${srciconsize}x${srciconsize} -depth 8 canvas:none
+           -draw "roundRectangle 0,0,${sizeminusone},${sizeminusone},${cornerradius},${cornerradius}" "\\)"
+        -compose dst-in -composite
+        -compose over -bordercolor transparent -border ${borderwidth}
+        "\\(" +clone -background black
+           -shadow 30x${shadowspread}+0+${shadowoffset} "\\)"
+        +swap -background none -flatten -crop '${size}x${size}+0+0!' -depth 8
+        ${icon_bindir}/${name}-${size}kai.png
+      DEPENDS ${icon_bindir}/${name}-${srciconsize}d24.png)
+    list(APPEND output_icon_files ${icon_bindir}/${name}-${size}kai.png)
+  endforeach()
 
   add_custom_target(${name}-icons DEPENDS ${output_icon_files})
   add_dependencies(icons ${name}-icons)

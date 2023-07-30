@@ -14,7 +14,11 @@
 
 #include <assert.h>
 #include <ctype.h>
-#include <math.h>
+#ifdef NO_TGMATH_H
+#  include <math.h>
+#else
+#  include <tgmath.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -241,7 +245,7 @@ static const char *validate_params(const game_params *params, bool full)
     if (params->height < 3 || params->width < 3) {
         return "Minimal size is 3x3";
     }
-    if (params->height * params->width > MAX_TILES) {
+    if (params->height > MAX_TILES / params->width) {
         return MAX_TILES_ERROR;
     }
     return NULL;
@@ -405,7 +409,7 @@ static void count_clues_around(const game_params *params,
 static void mark_around(const game_params *params,
                         struct solution_cell *sol, int x, int y, int mark)
 {
-    int i, j, marked = 0;
+    int i, j;
     struct solution_cell *curr;
 
     for (i = -1; i < 2; i++) {
@@ -414,7 +418,6 @@ static void mark_around(const game_params *params,
             if (curr) {
                 if (curr->cell == STATE_UNMARKED) {
                     curr->cell = mark;
-                    marked++;
                 }
             }
         }
@@ -581,7 +584,7 @@ static bool solve_game_actual(const game_params *params,
     int board_size = params->height * params->width;
     struct solution_cell *sol = snewn(board_size, struct solution_cell);
     bool made_progress = true, error = false;
-    int solved = 0, iter = 0, curr = 0;
+    int solved = 0, curr = 0;
 
     memset(sol, 0, params->height * params->width * sizeof(*sol));
     solved = 0;
@@ -603,7 +606,6 @@ static bool solve_game_actual(const game_params *params,
                 solved += curr;
             }
         }
-        iter++;
     }
     if (sol_return) {
         *sol_return = sol;
@@ -832,20 +834,18 @@ static const char *validate_desc(const game_params *params,
                                  const char *desc)
 {
     int size_dest = params->height * params->width;
-    char *curr_desc = dupstr(desc);
-    char *desc_base = curr_desc;
     int length;
     length = 0;
 
-    while (*curr_desc != '\0') {
-        if (*curr_desc >= 'a' && *curr_desc <= 'z') {
-            length += *curr_desc - 'a';
-        }
+    while (*desc != '\0') {
+        if (*desc >= 'a' && *desc <= 'z') {
+            length += *desc - 'a';
+        } else if (*desc < '0' || *desc > '9')
+            return "Invalid character in game description";
         length++;
-        curr_desc++;
+        desc++;
     }
 
-    sfree(desc_base);
     if (length != size_dest) {
         return "Desc size mismatch";
     }
@@ -924,6 +924,7 @@ static void free_game(game_state *state)
     sfree(state->cells_contents);
     state->cells_contents = NULL;
     if (state->board->references <= 1) {
+        sfree(state->board->actual_board);
         sfree(state->board);
         state->board = NULL;
     } else {
@@ -1010,7 +1011,7 @@ static game_ui *new_ui(const game_state *state)
     ui->last_state = 0;
     ui->solved = false;
     ui->cur_x = ui->cur_y = 0;
-    ui->cur_visible = false;
+    ui->cur_visible = getenv_bool("PUZZLES_SHOW_CURSOR", false);
     return ui;
 }
 
@@ -1019,31 +1020,38 @@ static void free_ui(game_ui *ui)
     sfree(ui);
 }
 
-static char *encode_ui(const game_ui *ui)
-{
-    return NULL;
-}
-
-static void decode_ui(game_ui *ui, const char *encoding)
-{
-    ui->last_x = -1;
-    ui->last_y = -1;
-    ui->last_state = 0;
-    ui->solved = false;
-    ui->cur_x = ui->cur_y = 0;
-}
-
 static void game_changed_state(game_ui *ui, const game_state *oldstate,
                                const game_state *newstate)
 {
+}
+
+static const char *current_key_label(const game_ui *ui,
+                                     const game_state *state, int button)
+{
+    char *cell;
+
+    if (IS_CURSOR_SELECT(button)) {
+        if (!ui->cur_visible || state->not_completed_clues == 0) return "";
+        cell = get_coords(state, state->cells_contents, ui->cur_x, ui->cur_y);
+        switch (*cell & STATE_OK_NUM) {
+          case STATE_UNMARKED:
+            return button == CURSOR_SELECT ? "Black" : "White";
+          case STATE_MARKED:
+            return button == CURSOR_SELECT ? "White" : "Empty";
+          case STATE_BLANK:
+            return button == CURSOR_SELECT ? "Empty" : "Black";
+        }
+    }
+    return "";
 }
 
 static char *interpret_move(const game_state *state, game_ui *ui,
                             const game_drawstate *ds, int x, int y,
                             int button)
 {
-    int gameX, gameY, i, srcX = ui->last_x, srcY =
-        ui->last_y, dirX, dirY, diff;
+    int srcX = ui->last_x, srcY = ui->last_y;
+    int offsetX, offsetY, gameX, gameY, i;
+    int dirX, dirY, diff;
     char move_type;
     char move_desc[80];
     char *ret = NULL;
@@ -1052,8 +1060,13 @@ static char *interpret_move(const game_state *state, game_ui *ui,
     if (state->not_completed_clues == 0 && !IS_CURSOR_MOVE(button)) {
         return NULL;
     }
-    gameX = (x - (ds->tilesize / 2)) / ds->tilesize;
-    gameY = (y - (ds->tilesize / 2)) / ds->tilesize;
+    offsetX = x - (ds->tilesize / 2);
+    offsetY = y - (ds->tilesize / 2);
+    gameX = offsetX / ds->tilesize;
+    gameY = offsetY / ds->tilesize;
+    if ((IS_MOUSE_DOWN(button) || IS_MOUSE_DRAG(button) || IS_MOUSE_RELEASE(button))
+        && ((offsetX < 0) || (offsetY < 0)))
+        return NULL;
     if (button == LEFT_BUTTON || button == RIGHT_BUTTON) {
         cell_state =
             get_coords(state, state->cells_contents, gameX, gameY);
@@ -1179,13 +1192,13 @@ static char *interpret_move(const game_state *state, game_ui *ui,
         move_cursor(button, &ui->cur_x, &ui->cur_y, state->width,
                     state->height, false);
         ui->cur_visible = true;
-        return UI_UPDATE;
+        return MOVE_UI_UPDATE;
     } else if (IS_CURSOR_SELECT(button)) {
         if (!ui->cur_visible) {
             ui->cur_x = 0;
             ui->cur_y = 0;
             ui->cur_visible = true;
-            return UI_UPDATE;
+            return MOVE_UI_UPDATE;
         }
 
         if (button == CURSOR_SELECT2) {
@@ -1265,8 +1278,10 @@ static game_state *execute_move(const game_state *state, const char *move)
         move_params[i] = atoi(p);
         while (*p && isdigit((unsigned char)*p)) p++;
         if (i+1 < nparams) {
-            if (*p != ',')
+            if (*p != ',') {
+                free_game(new_state);
                 return NULL;
+            }
             p++;
         }
     }
@@ -1281,6 +1296,10 @@ static game_state *execute_move(const game_state *state, const char *move)
             return new_state;
         }
         cell = get_coords(new_state, new_state->cells_contents, x, y);
+        if (cell == NULL) {
+            free_game(new_state);
+            return NULL;
+        }
         if (*cell >= STATE_OK_NUM) {
             *cell &= STATE_OK_NUM;
         }
@@ -1347,6 +1366,10 @@ static game_state *execute_move(const game_state *state, const char *move)
         for (i = 0; i < diff; i++) {
             cell = get_coords(new_state, new_state->cells_contents,
                               x + (dirX * i), y + (dirY * i));
+            if (cell == NULL) {
+                free_game(new_state);
+                return NULL;
+            }
             if ((*cell & STATE_OK_NUM) == 0) {
                 *cell = last_state;
                 update_board_state_around(new_state, x + (dirX * i),
@@ -1373,7 +1396,7 @@ static game_state *execute_move(const game_state *state, const char *move)
  */
 
 static void game_compute_size(const game_params *params, int tilesize,
-                              int *x, int *y)
+                              const game_ui *ui, int *x, int *y)
 {
     *x = (params->width + 1) * tilesize;
     *y = (params->height + 1) * tilesize;
@@ -1563,19 +1586,6 @@ static int game_status(const game_state *state)
     return 0;
 }
 
-static bool game_timing_state(const game_state *state, game_ui *ui)
-{
-    return state->not_completed_clues > 0;
-}
-
-static void game_print_size(const game_params *params, float *x, float *y)
-{
-}
-
-static void game_print(drawing *dr, const game_state *state, int tilesize)
-{
-}
-
 #ifdef COMBINED
 #define thegame mosaic
 #endif
@@ -1597,12 +1607,14 @@ const struct game thegame = {
     free_game,
     true, solve_game,
     true, game_can_format_as_text_now, game_text_format,
+    NULL, NULL, /* get_prefs, set_prefs */
     new_ui,
     free_ui,
-    encode_ui,
-    decode_ui,
+    NULL, /* encode_ui */
+    NULL, /* decode_ui */
     NULL, /* game_request_keys */
     game_changed_state,
+    current_key_label,
     interpret_move,
     execute_move,
     DEFAULT_TILE_SIZE, game_compute_size, game_set_size,
@@ -1614,10 +1626,8 @@ const struct game thegame = {
     game_flash_length,
     game_get_cursor_location,
     game_status,
-#ifndef NO_PRINTING
-    false, false, game_print_size, game_print,     
-#endif
+    false, false, NULL, NULL,          /* print_size, print */
     true,			       /* wants_statusbar */
-    false, game_timing_state,
+    false, NULL,                       /* timing_state */
     0,				       /* flags */
 };

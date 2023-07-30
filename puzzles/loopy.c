@@ -11,7 +11,7 @@
 
 /*
  * Possible future solver enhancements:
- *
+ * 
  *  - There's an interesting deductive technique which makes use
  *    of topology rather than just graph theory. Each _face_ in
  *    the grid is either inside or outside the loop; you can tell
@@ -25,33 +25,33 @@
  *    outside respectively. So if you can track this for all
  *    faces, you figure out the state of the line between a pair
  *    once their relative insideness is known.
- *     + The way I envisage this working is simply to keep an edsf
+ *     + The way I envisage this working is simply to keep a flip dsf
  * 	 of all _faces_, which indicates whether they're on
  * 	 opposite sides of the loop from one another. We also
- * 	 include a special entry in the edsf for the infinite
+ * 	 include a special entry in the dsf for the infinite
  * 	 exterior "face".
  *     + So, the simple way to do this is to just go through the
  * 	 edges: every time we see an edge in a state other than
  * 	 LINE_UNKNOWN which separates two faces that aren't in the
- * 	 same edsf class, we can rectify that by merging the
+ * 	 same dsf class, we can rectify that by merging the
  * 	 classes. Then, conversely, an edge in LINE_UNKNOWN state
- * 	 which separates two faces that _are_ in the same edsf
+ * 	 which separates two faces that _are_ in the same dsf
  * 	 class can immediately have its state determined.
  *     + But you can go one better, if you're prepared to loop
  * 	 over all _pairs_ of edges. Suppose we have edges A and B,
  * 	 which respectively separate faces A1,A2 and B1,B2.
- * 	 Suppose that A,B are in the same edge-edsf class and that
- * 	 A1,B1 (wlog) are in the same face-edsf class; then we can
- * 	 immediately place A2,B2 into the same face-edsf class (as
+ * 	 Suppose that A,B are in the same edge-dsf class and that
+ * 	 A1,B1 (wlog) are in the same face-dsf class; then we can
+ * 	 immediately place A2,B2 into the same face-dsf class (as
  * 	 each other, not as A1 and A2) one way round or the other.
- * 	 And conversely again, if A1,B1 are in the same face-edsf
+ * 	 And conversely again, if A1,B1 are in the same face-dsf
  * 	 class and so are A2,B2, then we can put A,B into the same
- * 	 face-edsf class.
+ * 	 face-dsf class.
  * 	  * Of course, this deduction requires a quadratic-time
  * 	    loop over all pairs of edges in the grid, so it should
  * 	    be reserved until there's nothing easier left to be
  * 	    done.
- *
+ * 
  *  - The generalised grid support has made me (SGT) notice a
  *    possible extension to the loop-avoidance code. When you have
  *    a path of connected edges such that no other edges at all
@@ -77,7 +77,11 @@
 #include <string.h>
 #include <assert.h>
 #include <ctype.h>
-#include <math.h>
+#ifdef NO_TGMATH_H
+#  include <math.h>
+#else
+#  include <tgmath.h>
+#endif
 
 #include "puzzles.h"
 #include "tree234.h"
@@ -154,7 +158,7 @@ typedef struct solver_state {
     char *face_yes_count;
     char *face_no_count;
     bool *dot_solved, *face_solved;
-    int *dotdsf;
+    DSF *dotdsf;
 
     /* Information for Normal level deductions:
      * For each dline, store a bitmask for whether we know:
@@ -163,7 +167,7 @@ typedef struct solver_state {
     char *dlines;
 
     /* Hard level information */
-    int *linedsf;
+    DSF *linedsf;
 } solver_state;
 
 /*
@@ -281,6 +285,8 @@ static void check_caches(const solver_state* sstate);
     A("Great-Great-Dodecagonal",GREATGREATDODECAGONAL,2,2)      \
     A("Kagome",KAGOME,3,3)                                      \
     A("Compass-Dodecagonal",COMPASSDODECAGONAL,2,2)             \
+    A("Hats",HATS,6,6)                                          \
+    A("Spectres",SPECTRES,6,6)                                  \
     /* end of list */
 
 #define GRID_NAME(title,type,amin,omin) title,
@@ -382,7 +388,7 @@ static solver_state *new_solver_state(const game_state *state, int diff) {
     ret->solver_status = SOLVER_INCOMPLETE;
     ret->diff = diff;
 
-    ret->dotdsf = snew_dsf(num_dots);
+    ret->dotdsf = dsf_new(num_dots);
     ret->looplen = snewn(num_dots, int);
 
     for (i = 0; i < num_dots; i++) {
@@ -413,7 +419,7 @@ static solver_state *new_solver_state(const game_state *state, int diff) {
     if (diff < DIFF_HARD) {
         ret->linedsf = NULL;
     } else {
-        ret->linedsf = snew_dsf(state->game_grid->num_edges);
+        ret->linedsf = dsf_new_flip(state->game_grid->num_edges);
     }
 
     return ret;
@@ -422,7 +428,7 @@ static solver_state *new_solver_state(const game_state *state, int diff) {
 static void free_solver_state(solver_state *sstate) {
     if (sstate) {
         free_game(sstate->state);
-        sfree(sstate->dotdsf);
+        dsf_free(sstate->dotdsf);
         sfree(sstate->looplen);
         sfree(sstate->dot_solved);
         sfree(sstate->face_solved);
@@ -433,7 +439,7 @@ static void free_solver_state(solver_state *sstate) {
 
         /* OK, because sfree(NULL) is a no-op */
         sfree(sstate->dlines);
-        sfree(sstate->linedsf);
+        dsf_free(sstate->linedsf);
 
         sfree(sstate);
     }
@@ -451,10 +457,9 @@ static solver_state *dup_solver_state(const solver_state *sstate) {
     ret->solver_status = sstate->solver_status;
     ret->diff = sstate->diff;
 
-    ret->dotdsf = snewn(num_dots, int);
+    ret->dotdsf = dsf_new(num_dots);
     ret->looplen = snewn(num_dots, int);
-    memcpy(ret->dotdsf, sstate->dotdsf,
-           num_dots * sizeof(int));
+    dsf_copy(ret->dotdsf, sstate->dotdsf);
     memcpy(ret->looplen, sstate->looplen,
            num_dots * sizeof(int));
 
@@ -482,9 +487,8 @@ static solver_state *dup_solver_state(const solver_state *sstate) {
     }
 
     if (sstate->linedsf) {
-        ret->linedsf = snewn(num_edges, int);
-        memcpy(ret->linedsf, sstate->linedsf,
-               num_edges * sizeof(int));
+        ret->linedsf = dsf_new_flip(num_edges);
+        dsf_copy(ret->linedsf, sstate->linedsf);
     } else {
         ret->linedsf = NULL;
     }
@@ -555,6 +559,8 @@ static const game_params loopy_presets_more[] = {
     {  3,  3, DIFF_HARD,   LOOPY_GRID_GREATDODECAGONAL },
     {  3,  2, DIFF_HARD,   LOOPY_GRID_GREATGREATDODECAGONAL },
     {  3,  3, DIFF_HARD,   LOOPY_GRID_COMPASSDODECAGONAL },
+    {  6,  6, DIFF_HARD,   LOOPY_GRID_HATS },
+    {  6,  6, DIFF_HARD,   LOOPY_GRID_SPECTRES },
 #else
     { 10, 10, DIFF_HARD,   LOOPY_GRID_HONEYCOMB },
     {  5,  4, DIFF_HARD,   LOOPY_GRID_GREATHEXAGONAL },
@@ -565,6 +571,8 @@ static const game_params loopy_presets_more[] = {
     {  5,  4, DIFF_HARD,   LOOPY_GRID_GREATDODECAGONAL },
     {  5,  3, DIFF_HARD,   LOOPY_GRID_GREATGREATDODECAGONAL },
     {  5,  4, DIFF_HARD,   LOOPY_GRID_COMPASSDODECAGONAL },
+    { 10, 10, DIFF_HARD,   LOOPY_GRID_HATS },
+    { 10, 10, DIFF_HARD,   LOOPY_GRID_SPECTRES },
 #endif
 };
 
@@ -685,14 +693,17 @@ static game_params *custom_params(const config_item *cfg)
 
 static const char *validate_params(const game_params *params, bool full)
 {
+    const char *err;
     if (params->type < 0 || params->type >= NUM_GRID_TYPES)
         return "Illegal grid type";
     if (params->w < grid_size_limits[params->type].amin ||
-        params->h < grid_size_limits[params->type].amin)
+	params->h < grid_size_limits[params->type].amin)
         return grid_size_limits[params->type].aerr;
     if (params->w < grid_size_limits[params->type].omin &&
-        params->h < grid_size_limits[params->type].omin)
+	params->h < grid_size_limits[params->type].omin)
         return grid_size_limits[params->type].oerr;
+    err = grid_validate_params(grid_types[params->type], params->w, params->h);
+    if (err != NULL) return err;
 
     /*
      * This shouldn't be able to happen at all, since decode_params
@@ -775,10 +786,13 @@ static const char *validate_desc(const game_params *params, const char *desc)
      * know is the precise number of faces. */
     grid_desc = extract_grid_desc(&desc);
     ret = grid_validate_desc(grid_types[params->type], params->w, params->h, grid_desc);
-    if (ret) return ret;
+    if (ret) {
+        sfree(grid_desc);
+        return ret;
+    }
 
     g = loopy_generate_grid(params, grid_desc);
-    if (grid_desc) sfree(grid_desc);
+    sfree(grid_desc);
 
     for (; *desc; ++desc) {
         if ((*desc >= '0' && *desc <= '9') || (*desc >= 'A' && *desc <= 'Z')) {
@@ -789,13 +803,18 @@ static const char *validate_desc(const game_params *params, const char *desc)
             count += *desc - 'a' + 1;
             continue;
         }
+        grid_free(g);
         return "Unknown character in description";
     }
 
-    if (count < g->num_faces)
+    if (count < g->num_faces) {
+        grid_free(g);
         return "Description too short for board size";
-    if (count > g->num_faces)
+    }
+    if (count > g->num_faces) {
+        grid_free(g);
         return "Description too long for board size";
+    }
 
     grid_free(g);
 
@@ -840,12 +859,12 @@ static char *encode_solve_move(const game_state *state)
 
     for (i = 0; i < num_edges; i++) {
         switch (state->lines[i]) {
-          case LINE_YES:
-            p += sprintf(p, "%dy", i);
-            break;
-          case LINE_NO:
-            p += sprintf(p, "%dn", i);
-            break;
+	  case LINE_YES:
+	    p += sprintf(p, "%dy", i);
+	    break;
+	  case LINE_NO:
+	    p += sprintf(p, "%dn", i);
+	    break;
         }
     }
 
@@ -854,22 +873,98 @@ static char *encode_solve_move(const game_state *state)
     return ret;
 }
 
+struct game_ui {
+    /*
+     * User preference: should grid lines in LINE_NO state be drawn
+     * very faintly so users can still see where they are, or should
+     * they be completely invisible?
+     */
+    bool draw_faint_lines;
+
+    /*
+     * User preference: when clicking an edge that has only one
+     * possible edge connecting to one (or both) of its ends, should
+     * that edge also change to the same state as the edge we just
+     * clicked?
+     */
+    enum {
+        AF_OFF,     /* no, all grid edges are independent in the UI */
+        AF_FIXED,   /* yes, but only based on the grid itself */
+        AF_ADAPTIVE /* yes, and consider edges user has already set to NO */
+    } autofollow;
+};
+
+static void legacy_prefs_override(struct game_ui *ui_out)
+{
+    static bool initialised = false;
+    static int draw_faint_lines = -1;
+    static int autofollow = -1;
+
+    if (!initialised) {
+        char *env;
+
+        initialised = true;
+        draw_faint_lines = getenv_bool("LOOPY_FAINT_LINES", -1);
+
+        if ((env = getenv("LOOPY_AUTOFOLLOW")) != NULL) {
+            if (!strcmp(env, "off"))
+                autofollow = AF_OFF;
+            else if (!strcmp(env, "fixed"))
+                autofollow = AF_FIXED;
+            else if (!strcmp(env, "adaptive"))
+                autofollow = AF_ADAPTIVE;
+        }
+    }
+
+    if (draw_faint_lines != -1)
+        ui_out->draw_faint_lines = draw_faint_lines;
+    if (autofollow != -1)
+        ui_out->autofollow = autofollow;
+}
+
 static game_ui *new_ui(const game_state *state)
 {
-    return NULL;
+    game_ui *ui = snew(game_ui);
+    ui->draw_faint_lines = true;
+    ui->autofollow = AF_OFF;
+    legacy_prefs_override(ui);
+    return ui;
 }
 
 static void free_ui(game_ui *ui)
 {
+    sfree(ui);
 }
 
-static char *encode_ui(const game_ui *ui)
+static config_item *get_prefs(game_ui *ui)
 {
-    return NULL;
+    config_item *ret;
+
+    ret = snewn(3, config_item);
+
+    ret[0].name = "Draw excluded grid lines faintly";
+    ret[0].kw = "draw-faint-lines";
+    ret[0].type = C_BOOLEAN;
+    ret[0].u.boolean.bval = ui->draw_faint_lines;
+
+    ret[1].name = "Auto-follow unique paths of edges";
+    ret[1].kw = "auto-follow";
+    ret[1].type = C_CHOICES;
+    ret[1].u.choices.choicenames =
+        ":No:Based on grid only:Based on grid and game state";
+    ret[1].u.choices.choicekws = ":off:fixed:adaptive";
+    ret[1].u.choices.selected = ui->autofollow;
+
+    ret[2].name = NULL;
+    ret[2].type = C_END;
+
+    return ret;
 }
 
-static void decode_ui(game_ui *ui, const char *encoding)
+static void set_prefs(game_ui *ui, const config_item *cfg)
 {
+    ui->draw_faint_lines = cfg[0].u.boolean.bval;
+    ui->autofollow = cfg[1].u.choices.selected;
 }
 
 static void game_changed_state(game_ui *ui, const game_state *oldstate,
@@ -878,7 +973,7 @@ static void game_changed_state(game_ui *ui, const game_state *oldstate,
 }
 
 static void game_compute_size(const game_params *params, int tilesize,
-                              int *x, int *y)
+                              const game_ui *ui, int *x, int *y)
 {
     int grid_width, grid_height, rendered_width, rendered_height;
     int g_tilesize;
@@ -978,11 +1073,6 @@ static void game_free_drawstate(drawing *dr, game_drawstate *ds)
     sfree(ds);
 }
 
-static bool game_timing_state(const game_state *state, game_ui *ui)
-{
-    return true;
-}
-
 static float game_anim_length(const game_state *oldstate,
                               const game_state *newstate, int dir, game_ui *ui)
 {
@@ -1008,7 +1098,7 @@ static char *game_text_format(const game_state *state)
     assert(state->grid_type == 0);
 
     /* Work out the basic size unit */
-    f = g->faces; /* first face */
+    f = g->faces[0]; /* first face */
     assert(f->order == 4);
     /* The dots are ordered clockwise, so the two opposite
      * corners are guaranteed to span the square */
@@ -1031,7 +1121,7 @@ static char *game_text_format(const game_state *state)
 
     /* Fill in edge info */
     for (i = 0; i < g->num_edges; i++) {
-        grid_edge *e = g->edges + i;
+        grid_edge *e = g->edges[i];
         /* Cell coordinates, from (0,0) to (w-1,h-1) */
         int x1 = (e->dot1->x - g->lowest_x) / cell_size;
         int x2 = (e->dot2->x - g->lowest_x) / cell_size;
@@ -1042,30 +1132,30 @@ static char *game_text_format(const game_state *state)
         x = x1 + x2;
         y = y1 + y2;
         switch (state->lines[i]) {
-          case LINE_YES:
-            ret[y*W + x] = (y1 == y2) ? '-' : '|';
-            break;
-          case LINE_NO:
-            ret[y*W + x] = 'x';
-            break;
-          case LINE_UNKNOWN:
-            break; /* already a space */
-          default:
-            assert(!"Illegal line state");
+	  case LINE_YES:
+	    ret[y*W + x] = (y1 == y2) ? '-' : '|';
+	    break;
+	  case LINE_NO:
+	    ret[y*W + x] = 'x';
+	    break;
+	  case LINE_UNKNOWN:
+	    break; /* already a space */
+	  default:
+	    assert(!"Illegal line state");
         }
     }
 
     /* Fill in clues */
     for (i = 0; i < g->num_faces; i++) {
-        int x1, x2, y1, y2;
+	int x1, x2, y1, y2;
 
-        f = g->faces + i;
+        f = g->faces[i];
         assert(f->order == 4);
         /* Cell coordinates, from (0,0) to (w-1,h-1) */
-        x1 = (f->dots[0]->x - g->lowest_x) / cell_size;
-        x2 = (f->dots[2]->x - g->lowest_x) / cell_size;
-        y1 = (f->dots[0]->y - g->lowest_y) / cell_size;
-        y2 = (f->dots[2]->y - g->lowest_y) / cell_size;
+	x1 = (f->dots[0]->x - g->lowest_x) / cell_size;
+	x2 = (f->dots[2]->x - g->lowest_x) / cell_size;
+	y1 = (f->dots[0]->y - g->lowest_y) / cell_size;
+	y2 = (f->dots[2]->y - g->lowest_y) / cell_size;
         /* Midpoint, in canvas coordinates */
         x = x1 + x2;
         y = y1 + y2;
@@ -1139,26 +1229,26 @@ static bool solver_set_line(solver_state *sstate, int i,
 #endif
 
     g = state->game_grid;
-    e = g->edges + i;
+    e = g->edges[i];
 
     /* Update the cache for both dots and both faces affected by this. */
     if (line_new == LINE_YES) {
-        sstate->dot_yes_count[e->dot1 - g->dots]++;
-        sstate->dot_yes_count[e->dot2 - g->dots]++;
+        sstate->dot_yes_count[e->dot1->index]++;
+        sstate->dot_yes_count[e->dot2->index]++;
         if (e->face1) {
-            sstate->face_yes_count[e->face1 - g->faces]++;
+            sstate->face_yes_count[e->face1->index]++;
         }
         if (e->face2) {
-            sstate->face_yes_count[e->face2 - g->faces]++;
+            sstate->face_yes_count[e->face2->index]++;
         }
     } else {
-        sstate->dot_no_count[e->dot1 - g->dots]++;
-        sstate->dot_no_count[e->dot2 - g->dots]++;
+        sstate->dot_no_count[e->dot1->index]++;
+        sstate->dot_no_count[e->dot2->index]++;
         if (e->face1) {
-            sstate->face_no_count[e->face1 - g->faces]++;
+            sstate->face_no_count[e->face1->index]++;
         }
         if (e->face2) {
-            sstate->face_no_count[e->face2 - g->faces]++;
+            sstate->face_no_count[e->face2->index]++;
         }
     }
 
@@ -1182,10 +1272,10 @@ static bool merge_dots(solver_state *sstate, int edge_index)
 {
     int i, j, len;
     grid *g = sstate->state->game_grid;
-    grid_edge *e = g->edges + edge_index;
+    grid_edge *e = g->edges[edge_index];
 
-    i = e->dot1 - g->dots;
-    j = e->dot2 - g->dots;
+    i = e->dot1->index;
+    j = e->dot2->index;
 
     i = dsf_canonify(sstate->dotdsf, i);
     j = dsf_canonify(sstate->dotdsf, j);
@@ -1215,12 +1305,12 @@ static bool merge_lines(solver_state *sstate, int i, int j, bool inverse
     assert(i < sstate->state->game_grid->num_edges);
     assert(j < sstate->state->game_grid->num_edges);
 
-    i = edsf_canonify(sstate->linedsf, i, &inv_tmp);
+    i = dsf_canonify_flip(sstate->linedsf, i, &inv_tmp);
     inverse ^= inv_tmp;
-    j = edsf_canonify(sstate->linedsf, j, &inv_tmp);
+    j = dsf_canonify_flip(sstate->linedsf, j, &inv_tmp);
     inverse ^= inv_tmp;
 
-    edsf_merge(sstate->linedsf, i, j, inverse);
+    dsf_merge_flip(sstate->linedsf, i, j, inverse);
 
 #ifdef SHOW_WORKING
     if (i != j) {
@@ -1243,12 +1333,12 @@ static int dot_order(const game_state* state, int dot, char line_type)
 {
     int n = 0;
     grid *g = state->game_grid;
-    grid_dot *d = g->dots + dot;
+    grid_dot *d = g->dots[dot];
     int i;
 
     for (i = 0; i < d->order; i++) {
         grid_edge *e = d->edges[i];
-        if (state->lines[e - g->edges] == line_type)
+        if (state->lines[e->index] == line_type)
             ++n;
     }
     return n;
@@ -1260,12 +1350,12 @@ static int face_order(const game_state* state, int face, char line_type)
 {
     int n = 0;
     grid *g = state->game_grid;
-    grid_face *f = g->faces + face;
+    grid_face *f = g->faces[face];
     int i;
 
     for (i = 0; i < f->order; i++) {
         grid_edge *e = f->edges[i];
-        if (state->lines[e - g->edges] == line_type)
+        if (state->lines[e->index] == line_type)
             ++n;
     }
     return n;
@@ -1286,10 +1376,10 @@ static bool dot_setall(solver_state *sstate, int dot,
         return false;
 
     g = state->game_grid;
-    d = g->dots + dot;
+    d = g->dots[dot];
 
     for (i = 0; i < d->order; i++) {
-        int line_index = d->edges[i] - g->edges;
+        int line_index = d->edges[i]->index;
         if (state->lines[line_index] == old_type) {
             r = solver_set_line(sstate, line_index, new_type);
             assert(r);
@@ -1313,10 +1403,10 @@ static bool face_setall(solver_state *sstate, int face,
         return false;
 
     g = state->game_grid;
-    f = g->faces + face;
+    f = g->faces[face];
 
     for (i = 0; i < f->order; i++) {
-        int line_index = f->edges[i] - g->edges;
+        int line_index = f->edges[i]->index;
         if (state->lines[line_index] == old_type) {
             r = solver_set_line(sstate, line_index, new_type);
             assert(r);
@@ -1345,7 +1435,7 @@ static void add_full_clues(game_state *state, random_state *rs)
      * algorithm does work, and there aren't any GREY faces still there. */
     memset(clues, 0, g->num_faces);
     for (i = 0; i < g->num_edges; i++) {
-        grid_edge *e = g->edges + i;
+        grid_edge *e = g->edges[i];
         grid_face *f1 = e->face1;
         grid_face *f2 = e->face2;
         enum face_colour c1 = FACE_COLOUR(f1);
@@ -1353,8 +1443,8 @@ static void add_full_clues(game_state *state, random_state *rs)
         assert(c1 != FACE_GREY);
         assert(c2 != FACE_GREY);
         if (c1 != c2) {
-            if (f1) clues[f1 - g->faces]++;
-            if (f2) clues[f2 - g->faces]++;
+            if (f1) clues[f1->index]++;
+            if (f2) clues[f2->index]++;
         }
     }
     sfree(board);
@@ -1365,7 +1455,7 @@ static bool game_has_unique_soln(const game_state *state, int diff)
 {
     bool ret;
     solver_state *sstate_new;
-    solver_state *sstate = new_solver_state((game_state *)state, diff);
+    solver_state *sstate = new_solver_state(state, diff);
 
     sstate_new = solve_game_rec(sstate);
 
@@ -1522,7 +1612,7 @@ static game_state *new_game(midend *me, const game_params *params,
         n2 = *dp - 'A' + 10;
         if (n >= 0 && n < 10) {
             state->clues[i] = n;
-        } else if (n2 >= 10 && n2 < 36) {
+	} else if (n2 >= 10 && n2 < 36) {
             state->clues[i] = n2;
         } else {
             n = *dp - 'a' + 1;
@@ -1545,7 +1635,8 @@ static bool check_completion(game_state *state)
     grid *g = state->game_grid;
     int i;
     bool ret;
-    int *dsf, *component_state;
+    DSF *dsf;
+    int *component_state;
     int nsilly, nloop, npath, largest_comp, largest_size, total_pathsize;
     enum { COMP_NONE, COMP_LOOP, COMP_PATH, COMP_SILLY, COMP_EMPTY };
 
@@ -1630,13 +1721,13 @@ static bool check_completion(game_state *state)
      *    leave that one unhighlighted, and light the rest up in red.
      */
 
-    dsf = snew_dsf(g->num_dots);
+    dsf = dsf_new(g->num_dots);
 
     /* Build the dsf. */
     for (i = 0; i < g->num_edges; i++) {
         if (state->lines[i] == LINE_YES) {
-            grid_edge *e = g->edges + i;
-            int d1 = e->dot1 - g->dots, d2 = e->dot2 - g->dots;
+            grid_edge *e = g->edges[i];
+            int d1 = e->dot1->index, d2 = e->dot2->index;
             dsf_merge(dsf, d1, d2);
         }
     }
@@ -1661,10 +1752,10 @@ static bool check_completion(game_state *state)
         int unknown = dot_order(state, i, LINE_UNKNOWN);
         if ((yes == 1 && unknown == 0) || (yes >= 3)) {
             /* violation, so mark all YES edges as errors */
-            grid_dot *d = g->dots + i;
+            grid_dot *d = g->dots[i];
             int j;
             for (j = 0; j < d->order; j++) {
-                int e = d->edges[j] - g->edges;
+                int e = d->edges[j]->index;
                 if (state->lines[e] == LINE_YES)
                     state->line_errors[e] = true;
             }
@@ -1727,8 +1818,8 @@ static bool check_completion(game_state *state)
          */
         for (i = 0; i < g->num_edges; i++) {
             if (state->lines[i] == LINE_YES) {
-                grid_edge *e = g->edges + i;
-                int d1 = e->dot1 - g->dots; /* either endpoint is good enough */
+                grid_edge *e = g->edges[i];
+                int d1 = e->dot1->index; /* either endpoint is good enough */
                 int comp = dsf_canonify(dsf, d1);
                 if ((component_state[comp] == COMP_PATH &&
                      -1 != largest_comp) ||
@@ -1767,7 +1858,7 @@ static bool check_completion(game_state *state)
     }
 
     sfree(component_state);
-    sfree(dsf);
+    dsf_free(dsf);
 
     return ret;
 }
@@ -1786,7 +1877,7 @@ static bool check_completion(game_state *state)
  *   know both or neither is on that's already stored more directly.)
  *
  *   Advanced Mode
- *   Use edsf data structure to make equivalence classes of lines that are
+ *   Use flip dsf data structure to make equivalence classes of lines that are
  *   known identical to or opposite to one another.
  */
 
@@ -1826,11 +1917,10 @@ static int dline_index_from_dot(grid *g, grid_dot *d, int i)
     if (i2 == d->order) i2 = 0;
     e2 = d->edges[i2];
 #endif
-    ret = 2 * (e - g->edges) + ((e->dot1 == d) ? 1 : 0);
+    ret = 2 * (e->index) + ((e->dot1 == d) ? 1 : 0);
 #ifdef DEBUG_DLINES
     printf("dline_index_from_dot: d=%d,i=%d, edges [%d,%d] - %d\n",
-           (int)(d - g->dots), i, (int)(e - g->edges),
-           (int)(e2 - g->edges), ret);
+           (int)(d->index), i, (int)(e->index), (int)(e2 ->index), ret);
 #endif
     return ret;
 }
@@ -1849,11 +1939,10 @@ static int dline_index_from_face(grid *g, grid_face *f, int i)
     if (i2 < 0) i2 += f->order;
     e2 = f->edges[i2];
 #endif
-    ret = 2 * (e - g->edges) + ((e->dot1 == d) ? 1 : 0);
+    ret = 2 * (e->index) + ((e->dot1 == d) ? 1 : 0);
 #ifdef DEBUG_DLINES
     printf("dline_index_from_face: f=%d,i=%d, edges [%d,%d] - %d\n",
-           (int)(f - g->faces), i, (int)(e - g->edges),
-           (int)(e2 - g->edges), ret);
+           (int)(f->index), i, (int)(e->index), (int)(e2->index), ret);
 #endif
     return ret;
 }
@@ -1911,9 +2000,9 @@ static bool dline_set_opp_atleastone(solver_state *sstate,
         opp2 = opp + 1;
         if (opp2 == N) opp2 = 0;
         /* Check if opp, opp2 point to LINE_UNKNOWNs */
-        if (state->lines[d->edges[opp] - g->edges] != LINE_UNKNOWN)
+        if (state->lines[d->edges[opp]->index] != LINE_UNKNOWN)
             continue;
-        if (state->lines[d->edges[opp2] - g->edges] != LINE_UNKNOWN)
+        if (state->lines[d->edges[opp2]->index] != LINE_UNKNOWN)
             continue;
         /* Found opposite UNKNOWNS and they're next to each other */
         opp_dline_index = dline_index_from_dot(g, d, opp);
@@ -1935,24 +2024,24 @@ static bool face_setall_identical(solver_state *sstate, int face_index,
     bool retval = false;
     game_state *state = sstate->state;
     grid *g = state->game_grid;
-    grid_face *f = g->faces + face_index;
+    grid_face *f = g->faces[face_index];
     int N = f->order;
     int i, j;
     int can1, can2;
     bool inv1, inv2;
 
     for (i = 0; i < N; i++) {
-        int line1_index = f->edges[i] - g->edges;
+        int line1_index = f->edges[i]->index;
         if (state->lines[line1_index] != LINE_UNKNOWN)
             continue;
         for (j = i + 1; j < N; j++) {
-            int line2_index = f->edges[j] - g->edges;
+            int line2_index = f->edges[j]->index;
             if (state->lines[line2_index] != LINE_UNKNOWN)
                 continue;
 
             /* Found two UNKNOWNS */
-            can1 = edsf_canonify(sstate->linedsf, line1_index, &inv1);
-            can2 = edsf_canonify(sstate->linedsf, line2_index, &inv2);
+            can1 = dsf_canonify_flip(sstate->linedsf, line1_index, &inv1);
+            can2 = dsf_canonify_flip(sstate->linedsf, line2_index, &inv2);
             if (can1 == can2 && inv1 == inv2) {
                 solver_set_line(sstate, line1_index, line_new);
                 solver_set_line(sstate, line2_index, line_new);
@@ -1970,9 +2059,8 @@ static void find_unknowns(game_state *state,
     int *e /* Returned edge indices */)
 {
     int c = 0;
-    grid *g = state->game_grid;
     while (c < expected_count) {
-        int line_index = *edge_list - g->edges;
+        int line_index = (*edge_list)->index;
         if (state->lines[line_index] == LINE_UNKNOWN) {
             e[c] = line_index;
             c++;
@@ -1993,7 +2081,7 @@ static int parity_deductions(solver_state *sstate,
 {
     game_state *state = sstate->state;
     int diff = DIFF_MAX;
-    int *linedsf = sstate->linedsf;
+    DSF *linedsf = sstate->linedsf;
 
     if (unknown_count == 2) {
         /* Lines are known alike/opposite, depending on inv. */
@@ -2006,22 +2094,22 @@ static int parity_deductions(solver_state *sstate,
         int can[3]; /* canonical edges */
         bool inv[3]; /* whether can[x] is inverse to e[x] */
         find_unknowns(state, edge_list, 3, e);
-        can[0] = edsf_canonify(linedsf, e[0], inv);
-        can[1] = edsf_canonify(linedsf, e[1], inv+1);
-        can[2] = edsf_canonify(linedsf, e[2], inv+2);
+        can[0] = dsf_canonify_flip(linedsf, e[0], inv);
+        can[1] = dsf_canonify_flip(linedsf, e[1], inv+1);
+        can[2] = dsf_canonify_flip(linedsf, e[2], inv+2);
         if (can[0] == can[1]) {
             if (solver_set_line(sstate, e[2], (total_parity^inv[0]^inv[1]) ?
-                                LINE_YES : LINE_NO))
+				LINE_YES : LINE_NO))
                 diff = min(diff, DIFF_EASY);
         }
         if (can[0] == can[2]) {
             if (solver_set_line(sstate, e[1], (total_parity^inv[0]^inv[2]) ?
-                                LINE_YES : LINE_NO))
+				LINE_YES : LINE_NO))
                 diff = min(diff, DIFF_EASY);
         }
         if (can[1] == can[2]) {
             if (solver_set_line(sstate, e[0], (total_parity^inv[1]^inv[2]) ?
-                                LINE_YES : LINE_NO))
+				LINE_YES : LINE_NO))
                 diff = min(diff, DIFF_EASY);
         }
     } else if (unknown_count == 4) {
@@ -2029,10 +2117,10 @@ static int parity_deductions(solver_state *sstate,
         int can[4]; /* canonical edges */
         bool inv[4]; /* whether can[x] is inverse to e[x] */
         find_unknowns(state, edge_list, 4, e);
-        can[0] = edsf_canonify(linedsf, e[0], inv);
-        can[1] = edsf_canonify(linedsf, e[1], inv+1);
-        can[2] = edsf_canonify(linedsf, e[2], inv+2);
-        can[3] = edsf_canonify(linedsf, e[3], inv+3);
+        can[0] = dsf_canonify_flip(linedsf, e[0], inv);
+        can[1] = dsf_canonify_flip(linedsf, e[1], inv+1);
+        can[2] = dsf_canonify_flip(linedsf, e[2], inv+2);
+        can[3] = dsf_canonify_flip(linedsf, e[3], inv+3);
         if (can[0] == can[1]) {
             if (merge_lines(sstate, e[2], e[3], total_parity^inv[0]^inv[1]))
                 diff = min(diff, DIFF_HARD);
@@ -2101,7 +2189,7 @@ static int trivial_deductions(solver_state *sstate)
 
     /* Per-face deductions */
     for (i = 0; i < g->num_faces; i++) {
-        grid_face *f = g->faces + i;
+        grid_face *f = g->faces[i];
 
         if (sstate->face_solved[i])
             continue;
@@ -2159,22 +2247,22 @@ static int trivial_deductions(solver_state *sstate)
             int j, k, e1, e2, e, d;
 
             for (j = 0; j < f->order; j++) {
-                e1 = f->edges[j] - g->edges;
-                e2 = f->edges[j+1 < f->order ? j+1 : 0] - g->edges;
+                e1 = f->edges[j]->index;
+                e2 = f->edges[j+1 < f->order ? j+1 : 0]->index;
 
-                if (g->edges[e1].dot1 == g->edges[e2].dot1 ||
-                    g->edges[e1].dot1 == g->edges[e2].dot2) {
-                    d = g->edges[e1].dot1 - g->dots;
+                if (g->edges[e1]->dot1 == g->edges[e2]->dot1 ||
+                    g->edges[e1]->dot1 == g->edges[e2]->dot2) {
+                    d = g->edges[e1]->dot1->index;
                 } else {
-                    assert(g->edges[e1].dot2 == g->edges[e2].dot1 ||
-                           g->edges[e1].dot2 == g->edges[e2].dot2);
-                    d = g->edges[e1].dot2 - g->dots;
+                    assert(g->edges[e1]->dot2 == g->edges[e2]->dot1 ||
+                           g->edges[e1]->dot2 == g->edges[e2]->dot2);
+                    d = g->edges[e1]->dot2->index;
                 }
 
                 if (state->lines[e1] == LINE_UNKNOWN &&
                     state->lines[e2] == LINE_UNKNOWN) {
-                    for (k = 0; k < g->dots[d].order; k++) {
-                        int e = g->dots[d].edges[k] - g->edges;
+                    for (k = 0; k < g->dots[d]->order; k++) {
+                        int e = g->dots[d]->edges[k]->index;
                         if (state->lines[e] == LINE_YES)
                             goto found;    /* multi-level break */
                     }
@@ -2188,7 +2276,7 @@ static int trivial_deductions(solver_state *sstate)
              * they're e1 and e2.
              */
             for (j = 0; j < f->order; j++) {
-                e = f->edges[j] - g->edges;
+                e = f->edges[j]->index;
                 if (state->lines[e] == LINE_UNKNOWN && e != e1 && e != e2) {
                     bool r = solver_set_line(sstate, e, LINE_YES);
                     assert(r);
@@ -2202,7 +2290,7 @@ static int trivial_deductions(solver_state *sstate)
 
     /* Per-dot deductions */
     for (i = 0; i < g->num_dots; i++) {
-        grid_dot *d = g->dots + i;
+        grid_dot *d = g->dots[i];
         int yes, no, unknown;
 
         if (sstate->dot_solved[i])
@@ -2294,12 +2382,12 @@ static int dline_deductions(solver_state *sstate)
      * on that.  We check this with an assertion, in case someone decides to
      * make a grid which has larger faces than this.  Note, this algorithm
      * could get quite expensive if there are many large faces. */
-#define MAX_FACE_SIZE 12
+#define MAX_FACE_SIZE 14
 
     for (i = 0; i < g->num_faces; i++) {
         int maxs[MAX_FACE_SIZE][MAX_FACE_SIZE];
         int mins[MAX_FACE_SIZE][MAX_FACE_SIZE];
-        grid_face *f = g->faces + i;
+        grid_face *f = g->faces[i];
         int N = f->order;
         int j,m;
         int clue = state->clues[i];
@@ -2310,7 +2398,7 @@ static int dline_deductions(solver_state *sstate)
 
         /* Calculate the (j,j+1) entries */
         for (j = 0; j < N; j++) {
-            int edge_index = f->edges[j] - g->edges;
+            int edge_index = f->edges[j]->index;
             int dline_index;
             enum line_state line1 = state->lines[edge_index];
             enum line_state line2;
@@ -2321,7 +2409,7 @@ static int dline_deductions(solver_state *sstate)
             mins[j][k] = (line1 == LINE_YES) ? 1 : 0;
             /* Calculate the (j,j+2) entries */
             dline_index = dline_index_from_face(g, f, k);
-            edge_index = f->edges[k] - g->edges;
+            edge_index = f->edges[k]->index;
             line2 = state->lines[edge_index];
             k++;
             if (k >= N) k = 0;
@@ -2366,7 +2454,7 @@ static int dline_deductions(solver_state *sstate)
         for (j = 0; j < N; j++) {
             int k;
             grid_edge *e = f->edges[j];
-            int line_index = e - g->edges;
+            int line_index = e->index;
             int dline_index;
 
             if (state->lines[line_index] != LINE_UNKNOWN)
@@ -2401,16 +2489,16 @@ static int dline_deductions(solver_state *sstate)
             if (sstate->diff >= DIFF_TRICKY) {
                 /* Now see if we can make dline deduction for edges{j,j+1} */
                 e = f->edges[k];
-                if (state->lines[e - g->edges] != LINE_UNKNOWN)
+                if (state->lines[e->index] != LINE_UNKNOWN)
                     /* Only worth doing this for an UNKNOWN,UNKNOWN pair.
                      * Dlines where one of the edges is known, are handled in the
                      * dot-deductions */
                     continue;
-
+    
                 dline_index = dline_index_from_face(g, f, k);
                 k++;
                 if (k >= N) k = 0;
-
+    
                 /* minimum YESs in the complement of this dline */
                 if (mins[k][j] > clue - 2) {
                     /* Adding 2 YESs would break the clue */
@@ -2433,7 +2521,7 @@ static int dline_deductions(solver_state *sstate)
     /* ------ Dot deductions ------ */
 
     for (i = 0; i < g->num_dots; i++) {
-        grid_dot *d = g->dots + i;
+        grid_dot *d = g->dots[i];
         int N = d->order;
         int yes, no, unknown;
         int j;
@@ -2451,8 +2539,8 @@ static int dline_deductions(solver_state *sstate)
             k = j + 1;
             if (k >= N) k = 0;
             dline_index = dline_index_from_dot(g, d, j);
-            line1_index = d->edges[j] - g->edges;
-            line2_index = d->edges[k] - g->edges;
+            line1_index = d->edges[j]->index;
+            line2_index = d->edges[k] ->index;
             line1 = state->lines[line1_index];
             line2 = state->lines[line2_index];
 
@@ -2549,7 +2637,7 @@ static int dline_deductions(solver_state *sstate)
                                 int opp_index;
                                 if (opp == j || opp == k)
                                     continue;
-                                opp_index = d->edges[opp] - g->edges;
+                                opp_index = d->edges[opp]->index;
                                 if (state->lines[opp_index] == LINE_UNKNOWN) {
                                     solver_set_line(sstate, opp_index,
                                                     LINE_YES);
@@ -2600,7 +2688,7 @@ static int linedsf_deductions(solver_state *sstate)
         if (clue < 0)
             continue;
 
-        N = g->faces[i].order;
+        N = g->faces[i]->order;
         yes = sstate->face_yes_count[i];
         if (yes + 1 == clue) {
             if (face_setall_identical(sstate, i, LINE_NO))
@@ -2618,14 +2706,14 @@ static int linedsf_deductions(solver_state *sstate)
 
         /* Deductions with small number of LINE_UNKNOWNs, based on overall
          * parity of lines. */
-        diff_tmp = parity_deductions(sstate, g->faces[i].edges,
+        diff_tmp = parity_deductions(sstate, g->faces[i]->edges,
                                      (clue - yes) % 2, unknown);
         diff = min(diff, diff_tmp);
     }
 
     /* ------ Dot deductions ------ */
     for (i = 0; i < g->num_dots; i++) {
-        grid_dot *d = g->dots + i;
+        grid_dot *d = g->dots[i];
         int N = d->order;
         int j;
         int yes, no, unknown;
@@ -2638,17 +2726,17 @@ static int linedsf_deductions(solver_state *sstate)
             int can1, can2;
             bool inv1, inv2;
             int j2;
-            line1_index = d->edges[j] - g->edges;
+            line1_index = d->edges[j]->index;
             if (state->lines[line1_index] != LINE_UNKNOWN)
                 continue;
             j2 = j + 1;
             if (j2 == N) j2 = 0;
-            line2_index = d->edges[j2] - g->edges;
+            line2_index = d->edges[j2]->index;
             if (state->lines[line2_index] != LINE_UNKNOWN)
                 continue;
             /* Infer dline flags from linedsf */
-            can1 = edsf_canonify(sstate->linedsf, line1_index, &inv1);
-            can2 = edsf_canonify(sstate->linedsf, line2_index, &inv2);
+            can1 = dsf_canonify_flip(sstate->linedsf, line1_index, &inv1);
+            can2 = dsf_canonify_flip(sstate->linedsf, line2_index, &inv2);
             if (can1 == can2 && inv1 != inv2) {
                 /* These are opposites, so set dline atmostone/atleastone */
                 if (set_atmostone(dlines, dline_index))
@@ -2659,7 +2747,7 @@ static int linedsf_deductions(solver_state *sstate)
             }
             /* Infer linedsf from dline flags */
             if (is_atmostone(dlines, dline_index)
-                && is_atleastone(dlines, dline_index)) {
+		&& is_atleastone(dlines, dline_index)) {
                 if (merge_lines(sstate, line1_index, line2_index, true))
                     diff = min(diff, DIFF_HARD);
             }
@@ -2683,7 +2771,7 @@ static int linedsf_deductions(solver_state *sstate)
         int can;
         bool inv;
         enum line_state s;
-        can = edsf_canonify(sstate->linedsf, i, &inv);
+        can = dsf_canonify_flip(sstate->linedsf, i, &inv);
         if (can == i)
             continue;
         s = sstate->state->lines[can];
@@ -2708,7 +2796,6 @@ static int loop_deductions(solver_state *sstate)
     game_state *state = sstate->state;
     grid *g = state->game_grid;
     int shortest_chainlen = g->num_dots;
-    bool loop_found = false;
     int dots_connected;
     bool progress = false;
     int i;
@@ -2721,7 +2808,7 @@ static int loop_deductions(solver_state *sstate)
      */
     for (i = 0; i < g->num_edges; i++) {
         if (state->lines[i] == LINE_YES) {
-            loop_found |= merge_dots(sstate, i);
+            merge_dots(sstate, i);
             edgecount++;
         }
     }
@@ -2766,9 +2853,9 @@ static int loop_deductions(solver_state *sstate)
      * loop it would create is a solution.
      */
     for (i = 0; i < g->num_edges; i++) {
-        grid_edge *e = g->edges + i;
-        int d1 = e->dot1 - g->dots;
-        int d2 = e->dot2 - g->dots;
+        grid_edge *e = g->edges[i];
+        int d1 = e->dot1->index;
+        int d2 = e->dot2->index;
         int eqclass, val;
         if (state->lines[i] != LINE_UNKNOWN)
             continue;
@@ -2805,19 +2892,19 @@ static int loop_deductions(solver_state *sstate)
              */
             sm1_nearby = 0;
             if (e->face1) {
-                int f = e->face1 - g->faces;
+                int f = e->face1->index;
                 int c = state->clues[f];
                 if (c >= 0 && sstate->face_yes_count[f] == c - 1)
                     sm1_nearby++;
             }
             if (e->face2) {
-                int f = e->face2 - g->faces;
+                int f = e->face2->index;
                 int c = state->clues[f];
                 if (c >= 0 && sstate->face_yes_count[f] == c - 1)
                     sm1_nearby++;
             }
             if (sm1clues == sm1_nearby &&
-                sm1clues + satclues == clues) {
+		sm1clues + satclues == clues) {
                 val = LINE_YES;  /* loop is good! */
             }
         }
@@ -2862,7 +2949,7 @@ static solver_state *solve_game_rec(const solver_state *sstate_start)
 
     /* Index of the solver we should call next. */
     int i = 0;
-
+    
     /* As a speed-optimisation, we avoid re-running solvers that we know
      * won't make any progress.  This happens when a high-difficulty
      * solver makes a deduction that can only help other high-difficulty
@@ -2878,7 +2965,7 @@ static solver_state *solve_game_rec(const solver_state *sstate_start)
      */
     int threshold_diff = 0;
     int threshold_index = 0;
-
+    
     sstate = dup_solver_state(sstate_start);
 
     check_caches(sstate);
@@ -2976,7 +3063,7 @@ static char *interpret_move(const game_state *state, game_ui *ui,
     if (e == NULL)
         return NULL;
 
-    i = e - g->edges;
+    i = e->index;
 
     /* I think it's only possible to play this game with mouse clicks, sorry */
     /* Maybe will add mouse drag support some time */
@@ -2984,113 +3071,98 @@ static char *interpret_move(const game_state *state, game_ui *ui,
 
     switch (button) {
       case LEFT_BUTTON:
-        switch (old_state) {
-          case LINE_UNKNOWN:
-            button_char = 'y';
-            break;
-          case LINE_YES:
+	switch (old_state) {
+	  case LINE_UNKNOWN:
+	    button_char = 'y';
+	    break;
+	  case LINE_YES:
 #ifdef STYLUS_BASED
-            button_char = 'n';
-            break;
+	    button_char = 'n';
+	    break;
 #endif
-          case LINE_NO:
-            button_char = 'u';
-            break;
-        }
-        break;
+	  case LINE_NO:
+	    button_char = 'u';
+	    break;
+	}
+	break;
       case MIDDLE_BUTTON:
-        button_char = 'u';
-        break;
+	button_char = 'u';
+	break;
       case RIGHT_BUTTON:
-        switch (old_state) {
-          case LINE_UNKNOWN:
-            button_char = 'n';
-            break;
-          case LINE_NO:
+	switch (old_state) {
+	  case LINE_UNKNOWN:
+	    button_char = 'n';
+	    break;
+	  case LINE_NO:
 #ifdef STYLUS_BASED
-            button_char = 'y';
-            break;
+	    button_char = 'y';
+	    break;
 #endif
-          case LINE_YES:
-            button_char = 'u';
-            break;
-        }
-        break;
+	  case LINE_YES:
+	    button_char = 'u';
+	    break;
+	}
+	break;
       default:
-        return NULL;
+	return NULL;
     }
 
     movelen = 0;
     movesize = 80;
     movebuf = snewn(movesize, char);
     movelen = sprintf(movebuf, "%d%c", i, (int)button_char);
-    {
-        static enum { OFF, FIXED, ADAPTIVE, DUNNO } autofollow = DUNNO;
-        if (autofollow == DUNNO) {
-            const char *env = getenv("LOOPY_AUTOFOLLOW");
-            if (env && !strcmp(env, "off"))
-                autofollow = OFF;
-            else if (env && !strcmp(env, "fixed"))
-                autofollow = FIXED;
-            else if (env && !strcmp(env, "adaptive"))
-                autofollow = ADAPTIVE;
-            else
-                autofollow = OFF;
-        }
 
-        if (autofollow != OFF) {
-            int dotid;
-            for (dotid = 0; dotid < 2; dotid++) {
-                grid_dot *dot = (dotid == 0 ? e->dot1 : e->dot2);
-                grid_edge *e_this = e;
+    if (ui->autofollow != AF_OFF) {
+        int dotid;
+        for (dotid = 0; dotid < 2; dotid++) {
+            grid_dot *dot = (dotid == 0 ? e->dot1 : e->dot2);
+            grid_edge *e_this = e;
 
-                while (1) {
-                    int j, n_found;
-                    grid_edge *e_next = NULL;
+            while (1) {
+                int j, n_found;
+                grid_edge *e_next = NULL;
 
-                    for (j = n_found = 0; j < dot->order; j++) {
-                        grid_edge *e_candidate = dot->edges[j];
-                        int i_candidate = e_candidate - g->edges;
-                        if (e_candidate != e_this &&
-                            (autofollow == FIXED ||
-                             state->lines[i] == LINE_NO ||
-                             state->lines[i_candidate] != LINE_NO)) {
-                            e_next = e_candidate;
-                            n_found++;
-                        }
+                for (j = n_found = 0; j < dot->order; j++) {
+                    grid_edge *e_candidate = dot->edges[j];
+                    int i_candidate = e_candidate->index;
+                    if (e_candidate != e_this &&
+                        (ui->autofollow == AF_FIXED ||
+                         state->lines[i] == LINE_NO ||
+                         state->lines[i_candidate] != LINE_NO)) {
+                        e_next = e_candidate;
+                        n_found++;
                     }
-
-                    if (n_found != 1 ||
-                        state->lines[e_next - g->edges] != state->lines[i])
-                        break;
-
-                    if (e_next == e) {
-                        /*
-                         * Special case: we might have come all the
-                         * way round a loop and found our way back to
-                         * the same edge we started from. In that
-                         * situation, we must terminate not only this
-                         * while loop, but the 'for' outside it that
-                         * was tracing in both directions from the
-                         * starting edge, because if we let it trace
-                         * in the second direction then we'll only
-                         * find ourself traversing the same loop in
-                         * the other order and generate an encoded
-                         * move string that mentions the same set of
-                         * edges twice.
-                         */
-                        goto autofollow_done;
-                    }
-
-                    dot = (e_next->dot1 != dot ? e_next->dot1 : e_next->dot2);
-                    if (movelen > movesize - 40) {
-                        movesize = movesize * 5 / 4 + 128;
-                        movebuf = sresize(movebuf, movesize, char);
-                    }
-                    e_this = e_next;
-                    movelen += sprintf(movebuf+movelen, "%d%c",
-                                       (int)(e_this - g->edges), button_char);
                 }
+
+                if (n_found != 1 ||
+                    state->lines[e_next->index] != state->lines[i])
+                    break;
+
+                if (e_next == e) {
+                    /*
+                     * Special case: we might have come all the way
+                     * round a loop and found our way back to the same
+                     * edge we started from. In that situation, we
+                     * must terminate not only this while loop, but
+                     * the 'for' outside it that was tracing in both
+                     * directions from the starting edge, because if
+                     * we let it trace in the second direction then
+                     * we'll only find ourself traversing the same
+                     * loop in the other order and generate an encoded
+                     * move string that mentions the same set of edges
+                     * twice.
+                     */
+                    goto autofollow_done;
+                }
+
+                dot = (e_next->dot1 != dot ? e_next->dot1 : e_next->dot2);
+                if (movelen > movesize - 40) {
+                    movesize = movesize * 5 / 4 + 128;
+                    movebuf = sresize(movebuf, movesize, char);
+                }
+                e_this = e_next;
+                movelen += sprintf(movebuf+movelen, "%d%c",
+                                   (int)(e_this->index), button_char);
             }
           autofollow_done:;
         }
@@ -3115,17 +3187,17 @@ static game_state *execute_move(const game_state *state, const char *move)
             goto fail;
         move += strspn(move, "1234567890");
         switch (*(move++)) {
-          case 'y':
-            newstate->lines[i] = LINE_YES;
-            break;
-          case 'n':
-            newstate->lines[i] = LINE_NO;
-            break;
-          case 'u':
-            newstate->lines[i] = LINE_UNKNOWN;
-            break;
-          default:
-            goto fail;
+	  case 'y':
+	    newstate->lines[i] = LINE_YES;
+	    break;
+	  case 'n':
+	    newstate->lines[i] = LINE_NO;
+	    break;
+	  case 'u':
+	    newstate->lines[i] = LINE_UNKNOWN;
+	    break;
+	  default:
+	    goto fail;
         }
     }
 
@@ -3163,7 +3235,7 @@ static void grid_to_screen(const game_drawstate *ds, const grid *g,
 static void face_text_pos(const game_drawstate *ds, const grid *g,
                           grid_face *f, int *xret, int *yret)
 {
-    int faceindex = f - g->faces;
+    int faceindex = f->index;
 
     /*
      * Return the cached position for this face, if we've already
@@ -3196,17 +3268,17 @@ static void face_text_bbox(game_drawstate *ds, grid *g, grid_face *f,
     /* There seems to be a certain amount of trial-and-error involved
      * in working out the correct bounding-box for the text. */
 
-    *x = xx - ds->tilesize/4 - 1;
+    *x = xx - ds->tilesize * 5 / 4 - 1;
     *y = yy - ds->tilesize/4 - 3;
-    *w = ds->tilesize/2 + 2;
+    *w = ds->tilesize * 5 / 2 + 2;
     *h = ds->tilesize/2 + 5;
 }
 
 static void game_redraw_clue(drawing *dr, game_drawstate *ds,
-                             const game_state *state, int i)
+			     const game_state *state, int i)
 {
     grid *g = state->game_grid;
-    grid_face *f = g->faces + i;
+    grid_face *f = g->faces[i];
     int x, y;
     char c[20];
 
@@ -3214,10 +3286,10 @@ static void game_redraw_clue(drawing *dr, game_drawstate *ds,
 
     face_text_pos(ds, g, f, &x, &y);
     draw_text(dr, x, y,
-              FONT_VARIABLE, ds->tilesize/2,
-              ALIGN_VCENTRE | ALIGN_HCENTRE,
-              ds->clue_error[i] ? COL_MISTAKE :
-              ds->clue_satisfied[i] ? COL_SATISFIED : COL_FOREGROUND, c);
+	      FONT_VARIABLE, ds->tilesize/2,
+	      ALIGN_VCENTRE | ALIGN_HCENTRE,
+	      ds->clue_error[i] ? COL_MISTAKE :
+	      ds->clue_satisfied[i] ? COL_SATISFIED : COL_FOREGROUND, c);
 }
 
 static void edge_bbox(game_drawstate *ds, grid *g, grid_edge *e,
@@ -3232,10 +3304,10 @@ static void edge_bbox(game_drawstate *ds, grid *g, grid_edge *e,
     grid_to_screen(ds, g, x1, y1, &x1, &y1);
     grid_to_screen(ds, g, x2, y2, &x2, &y2);
     /* Allow extra margin for dots, and thickness of lines */
-    xmin = min(x1, x2) - 2;
-    xmax = max(x1, x2) + 2;
-    ymin = min(y1, y2) - 2;
-    ymax = max(y1, y2) + 2;
+    xmin = min(x1, x2) - (ds->tilesize + 15) / 16;
+    xmax = max(x1, x2) + (ds->tilesize + 15) / 16;
+    ymin = min(y1, y2) - (ds->tilesize + 15) / 16;
+    ymax = max(y1, y2) + (ds->tilesize + 15) / 16;
 
     *x = xmin;
     *y = ymin;
@@ -3247,13 +3319,19 @@ static void dot_bbox(game_drawstate *ds, grid *g, grid_dot *d,
                      int *x, int *y, int *w, int *h)
 {
     int x1, y1;
+    int xmin, xmax, ymin, ymax;
 
     grid_to_screen(ds, g, d->x, d->y, &x1, &y1);
 
-    *x = x1 - 2;
-    *y = y1 - 2;
-    *w = 5;
-    *h = 5;
+    xmin = x1 - (ds->tilesize * 5 + 63) / 64;
+    xmax = x1 + (ds->tilesize * 5 + 63) / 64;
+    ymin = y1 - (ds->tilesize * 5 + 63) / 64;
+    ymax = y1 + (ds->tilesize * 5 + 63) / 64;
+
+    *x = xmin;
+    *y = ymin;
+    *w = xmax - xmin + 1;
+    *h = ymax - ymin + 1;
 }
 
 static const int loopy_line_redraw_phases[] = {
@@ -3261,24 +3339,24 @@ static const int loopy_line_redraw_phases[] = {
 };
 #define NPHASES lenof(loopy_line_redraw_phases)
 
-static void game_redraw_line(drawing *dr, game_drawstate *ds,
-                             const game_state *state, int i, int phase)
+static void game_redraw_line(drawing *dr, game_drawstate *ds,const game_ui *ui,
+			     const game_state *state, int i, int phase)
 {
     grid *g = state->game_grid;
-    grid_edge *e = g->edges + i;
+    grid_edge *e = g->edges[i];
     int x1, x2, y1, y2;
     int line_colour;
 
     if (state->line_errors[i])
-        line_colour = COL_MISTAKE;
+	line_colour = COL_MISTAKE;
     else if (state->lines[i] == LINE_UNKNOWN)
-        line_colour = COL_LINEUNKNOWN;
+	line_colour = COL_LINEUNKNOWN;
     else if (state->lines[i] == LINE_NO)
-        line_colour = COL_FAINT;
+	line_colour = COL_FAINT;
     else if (ds->flashing)
-        line_colour = COL_HIGHLIGHT;
+	line_colour = COL_HIGHLIGHT;
     else
-        line_colour = COL_FOREGROUND;
+	line_colour = COL_FOREGROUND;
     if (line_colour != loopy_line_redraw_phases[phase])
         return;
 
@@ -3287,31 +3365,28 @@ static void game_redraw_line(drawing *dr, game_drawstate *ds,
     grid_to_screen(ds, g, e->dot2->x, e->dot2->y, &x2, &y2);
 
     if (line_colour == COL_FAINT) {
-        static int draw_faint_lines = -1;
-        if (draw_faint_lines < 0) {
-            char *env = getenv("LOOPY_FAINT_LINES");
-            draw_faint_lines = (!env || (env[0] == 'y' ||
-                                         env[0] == 'Y'));
-        }
-        if (draw_faint_lines)
-            draw_line(dr, x1, y1, x2, y2, line_colour);
+	if (ui->draw_faint_lines)
+            draw_thick_line(dr, ds->tilesize/24.0,
+                            x1 + 0.5, y1 + 0.5,
+                            x2 + 0.5, y2 + 0.5,
+                            line_colour);
     } else {
-        draw_thick_line(dr, 3.0,
-                        x1 + 0.5, y1 + 0.5,
-                        x2 + 0.5, y2 + 0.5,
-                        line_colour);
+	draw_thick_line(dr, ds->tilesize*3/32.0,
+			x1 + 0.5, y1 + 0.5,
+			x2 + 0.5, y2 + 0.5,
+			line_colour);
     }
 }
 
 static void game_redraw_dot(drawing *dr, game_drawstate *ds,
-                            const game_state *state, int i)
+			    const game_state *state, int i)
 {
     grid *g = state->game_grid;
-    grid_dot *d = g->dots + i;
+    grid_dot *d = g->dots[i];
     int x, y;
 
     grid_to_screen(ds, g, d->x, d->y, &x, &y);
-    draw_circle(dr, x, y, 2, COL_FOREGROUND, COL_FOREGROUND);
+    draw_circle(dr, x, y, ds->tilesize*2.5/32.0, COL_FOREGROUND, COL_FOREGROUND);
 }
 
 static bool boxes_intersect(int x0, int y0, int w0, int h0,
@@ -3326,7 +3401,7 @@ static bool boxes_intersect(int x0, int y0, int w0, int h0,
 }
 
 static void game_redraw_in_rect(drawing *dr, game_drawstate *ds,
-                                const game_state *state,
+                                const game_ui *ui, const game_state *state,
                                 int x, int y, int w, int h)
 {
     grid *g = state->game_grid;
@@ -3338,20 +3413,20 @@ static void game_redraw_in_rect(drawing *dr, game_drawstate *ds,
 
     for (i = 0; i < g->num_faces; i++) {
         if (state->clues[i] >= 0) {
-            face_text_bbox(ds, g, &g->faces[i], &bx, &by, &bw, &bh);
+            face_text_bbox(ds, g, g->faces[i], &bx, &by, &bw, &bh);
             if (boxes_intersect(x, y, w, h, bx, by, bw, bh))
                 game_redraw_clue(dr, ds, state, i);
         }
     }
     for (phase = 0; phase < NPHASES; phase++) {
         for (i = 0; i < g->num_edges; i++) {
-            edge_bbox(ds, g, &g->edges[i], &bx, &by, &bw, &bh);
+            edge_bbox(ds, g, g->edges[i], &bx, &by, &bw, &bh);
             if (boxes_intersect(x, y, w, h, bx, by, bw, bh))
-                game_redraw_line(dr, ds, state, i, phase);
+                game_redraw_line(dr, ds, ui, state, i, phase);
         }
     }
     for (i = 0; i < g->num_dots; i++) {
-        dot_bbox(ds, g, &g->dots[i], &bx, &by, &bw, &bh);
+        dot_bbox(ds, g, g->dots[i], &bx, &by, &bw, &bh);
         if (boxes_intersect(x, y, w, h, bx, by, bw, bh))
             game_redraw_dot(dr, ds, state, i);
     }
@@ -3402,7 +3477,7 @@ static void game_redraw(drawing *dr, game_drawstate *ds,
      */
 
     if (!ds->started) {
-        redraw_everything = true;
+	redraw_everything = true;
         /*
          * But we must still go through the upcoming loops, so that we
          * set up stuff in ds correctly for the initial redraw.
@@ -3411,7 +3486,7 @@ static void game_redraw(drawing *dr, game_drawstate *ds,
 
     /* First, trundle through the faces. */
     for (i = 0; i < g->num_faces; i++) {
-        grid_face *f = g->faces + i;
+        grid_face *f = g->faces[i];
         int sides = f->order;
         int yes_order, no_order;
         bool clue_mistake;
@@ -3504,27 +3579,27 @@ static void game_redraw(drawing *dr, game_drawstate *ds,
         int w = grid_width * ds->tilesize / g->tilesize;
         int h = grid_height * ds->tilesize / g->tilesize;
 
-        game_redraw_in_rect(dr, ds, state,
+        game_redraw_in_rect(dr, ds, ui, state,
                             0, 0, w + 2*border + 1, h + 2*border + 1);
     } else {
 
-        /* Right.  Now we roll up our sleeves. */
+	/* Right.  Now we roll up our sleeves. */
 
-        for (i = 0; i < nfaces; i++) {
-            grid_face *f = g->faces + faces[i];
-            int x, y, w, h;
+	for (i = 0; i < nfaces; i++) {
+	    grid_face *f = g->faces[faces[i]];
+	    int x, y, w, h;
 
             face_text_bbox(ds, g, f, &x, &y, &w, &h);
-            game_redraw_in_rect(dr, ds, state, x, y, w, h);
-        }
+            game_redraw_in_rect(dr, ds, ui, state, x, y, w, h);
+	}
 
-        for (i = 0; i < nedges; i++) {
-            grid_edge *e = g->edges + edges[i];
+	for (i = 0; i < nedges; i++) {
+	    grid_edge *e = g->edges[edges[i]];
             int x, y, w, h;
 
             edge_bbox(ds, g, e, &x, &y, &w, &h);
-            game_redraw_in_rect(dr, ds, state, x, y, w, h);
-        }
+            game_redraw_in_rect(dr, ds, ui, state, x, y, w, h);
+	}
     }
 
     ds->started = true;
@@ -3554,19 +3629,21 @@ static int game_status(const game_state *state)
     return state->solved ? +1 : 0;
 }
 
-static void game_print_size(const game_params *params, float *x, float *y)
+static void game_print_size(const game_params *params, const game_ui *ui,
+                            float *x, float *y)
 {
     int pw, ph;
 
     /*
      * I'll use 7mm "squares" by default.
      */
-    game_compute_size(params, 700, &pw, &ph);
+    game_compute_size(params, 700, ui, &pw, &ph);
     *x = pw / 100.0F;
     *y = ph / 100.0F;
 }
 
-static void game_print(drawing *dr, const game_state *state, int tilesize)
+static void game_print(drawing *dr, const game_state *state, const game_ui *ui,
+                       int tilesize)
 {
     int ink = print_mono_colour(dr, 0);
     int i;
@@ -3581,7 +3658,7 @@ static void game_print(drawing *dr, const game_state *state, int tilesize)
 
     for (i = 0; i < g->num_dots; i++) {
         int x, y;
-        grid_to_screen(ds, g, g->dots[i].x, g->dots[i].y, &x, &y);
+        grid_to_screen(ds, g, g->dots[i]->x, g->dots[i]->y, &x, &y);
         draw_circle(dr, x, y, ds->tilesize / 15, ink, ink);
     }
 
@@ -3589,7 +3666,7 @@ static void game_print(drawing *dr, const game_state *state, int tilesize)
      * Clues.
      */
     for (i = 0; i < g->num_faces; i++) {
-        grid_face *f = g->faces + i;
+        grid_face *f = g->faces[i];
         int clue = state->clues[i];
         if (clue >= 0) {
             char c[20];
@@ -3607,7 +3684,7 @@ static void game_print(drawing *dr, const game_state *state, int tilesize)
      */
     for (i = 0; i < g->num_edges; i++) {
         int thickness = (state->lines[i] == LINE_YES) ? 30 : 150;
-        grid_edge *e = g->edges + i;
+        grid_edge *e = g->edges[i];
         int x1, y1, x2, y2;
         grid_to_screen(ds, g, e->dot1->x, e->dot1->y, &x1, &y1);
         grid_to_screen(ds, g, e->dot2->x, e->dot2->y, &x2, &y2);
@@ -3619,18 +3696,18 @@ static void game_print(drawing *dr, const game_state *state, int tilesize)
             double d = sqrt(SQ((double)x1 - x2) + SQ((double)y1 - y2));
             double dx = (x2 - x1) / d;
             double dy = (y2 - y1) / d;
-            int points[8];
+	    int points[8];
 
             dx = (dx * ds->tilesize) / thickness;
             dy = (dy * ds->tilesize) / thickness;
-            points[0] = x1 + (int)dy;
-            points[1] = y1 - (int)dx;
-            points[2] = x1 - (int)dy;
-            points[3] = y1 + (int)dx;
-            points[4] = x2 - (int)dy;
-            points[5] = y2 + (int)dx;
-            points[6] = x2 + (int)dy;
-            points[7] = y2 - (int)dx;
+	    points[0] = x1 + (int)dy;
+	    points[1] = y1 - (int)dx;
+	    points[2] = x1 - (int)dy;
+	    points[3] = y1 + (int)dx;
+	    points[4] = x2 - (int)dy;
+	    points[5] = y2 + (int)dx;
+	    points[6] = x2 + (int)dy;
+	    points[7] = y2 - (int)dx;
             draw_polygon(dr, points, 4, ink, ink);
         }
         else
@@ -3670,14 +3747,16 @@ const struct game thegame = {
     new_game,
     dup_game,
     free_game,
-    1, solve_game,
+    true, solve_game,
     true, game_can_format_as_text_now, game_text_format,
+    get_prefs, set_prefs,
     new_ui,
     free_ui,
-    encode_ui,
-    decode_ui,
+    NULL, /* encode_ui */
+    NULL, /* decode_ui */
     NULL, /* game_request_keys */
     game_changed_state,
+    NULL, /* current_key_label */
     interpret_move,
     execute_move,
     PREFERRED_TILE_SIZE, game_compute_size, game_set_size,
@@ -3691,7 +3770,7 @@ const struct game thegame = {
     game_status,
     true, false, game_print_size, game_print,
     false /* wants_statusbar */,
-    false, game_timing_state,
+    false, NULL,                       /* timing_state */
     0,                                       /* mouse_priorities */
 };
 
@@ -3726,7 +3805,7 @@ int main(int argc, char **argv)
             really_verbose = true;
         } else
 #endif
-        if (!strcmp(p, "-g")) {
+	if (!strcmp(p, "-g")) {
             grade = true;
         } else if (*p == '-') {
             fprintf(stderr, "%s: unrecognised option `%s'\n", argv[0], p);
@@ -3764,58 +3843,58 @@ int main(int argc, char **argv)
      */
     ret = -1;			       /* placate optimiser */
     for (diff = 0; diff < DIFF_MAX; diff++) {
-        solver_state *sstate_new;
-        solver_state *sstate = new_solver_state((game_state *)s, diff);
+	solver_state *sstate_new;
+	solver_state *sstate = new_solver_state((game_state *)s, diff);
 
-        sstate_new = solve_game_rec(sstate);
+	sstate_new = solve_game_rec(sstate);
 
-        if (sstate_new->solver_status == SOLVER_MISTAKE)
-            ret = 0;
-        else if (sstate_new->solver_status == SOLVER_SOLVED)
-            ret = 1;
-        else
-            ret = 2;
+	if (sstate_new->solver_status == SOLVER_MISTAKE)
+	    ret = 0;
+	else if (sstate_new->solver_status == SOLVER_SOLVED)
+	    ret = 1;
+	else
+	    ret = 2;
 
-        free_solver_state(sstate_new);
-        free_solver_state(sstate);
+	free_solver_state(sstate_new);
+	free_solver_state(sstate);
 
-        if (ret < 2)
-            break;
+	if (ret < 2)
+	    break;
     }
 
     if (diff == DIFF_MAX) {
-        if (grade)
-            printf("Difficulty rating: harder than Hard, or ambiguous\n");
-        else
-            printf("Unable to find a unique solution\n");
+	if (grade)
+	    printf("Difficulty rating: harder than Hard, or ambiguous\n");
+	else
+	    printf("Unable to find a unique solution\n");
     } else {
-        if (grade) {
-            if (ret == 0)
-                printf("Difficulty rating: impossible (no solution exists)\n");
-            else if (ret == 1)
-                printf("Difficulty rating: %s\n", diffnames[diff]);
-        } else {
-            solver_state *sstate_new;
-            solver_state *sstate = new_solver_state((game_state *)s, diff);
+	if (grade) {
+	    if (ret == 0)
+		printf("Difficulty rating: impossible (no solution exists)\n");
+	    else if (ret == 1)
+		printf("Difficulty rating: %s\n", diffnames[diff]);
+	} else {
+	    solver_state *sstate_new;
+	    solver_state *sstate = new_solver_state((game_state *)s, diff);
 
-            /* If we supported a verbose solver, we'd set verbosity here */
+	    /* If we supported a verbose solver, we'd set verbosity here */
 
-            sstate_new = solve_game_rec(sstate);
+	    sstate_new = solve_game_rec(sstate);
 
-            if (sstate_new->solver_status == SOLVER_MISTAKE)
-                printf("Puzzle is inconsistent\n");
-            else {
-                assert(sstate_new->solver_status == SOLVER_SOLVED);
-                if (s->grid_type == 0) {
-                    fputs(game_text_format(sstate_new->state), stdout);
-                } else {
-                    printf("Unable to output non-square grids\n");
-                }
-            }
+	    if (sstate_new->solver_status == SOLVER_MISTAKE)
+		printf("Puzzle is inconsistent\n");
+	    else {
+		assert(sstate_new->solver_status == SOLVER_SOLVED);
+		if (s->grid_type == 0) {
+		    fputs(game_text_format(sstate_new->state), stdout);
+		} else {
+		    printf("Unable to output non-square grids\n");
+		}
+	    }
 
-            free_solver_state(sstate_new);
-            free_solver_state(sstate);
-        }
+	    free_solver_state(sstate_new);
+	    free_solver_state(sstate);
+	}
     }
 
     return 0;

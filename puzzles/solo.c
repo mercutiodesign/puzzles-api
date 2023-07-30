@@ -20,7 +20,7 @@
  *     + while I'm revamping this area, filling in the _last_
  *       number in a nearly-full row or column should certainly be
  *       permitted even at the lowest difficulty level.
- *     + also Owen noticed that `Basic' grids requiring numeric
+ *     + also Alex noticed that `Basic' grids requiring numeric
  *       elimination are actually very hard, so I wonder if a
  *       difficulty gradation between that and positional-
  *       elimination-only might be in order
@@ -87,11 +87,15 @@
 #include <string.h>
 #include <assert.h>
 #include <ctype.h>
-#include <math.h>
+#ifdef NO_TGMATH_H
+#  include <math.h>
+#else
+#  include <tgmath.h>
+#endif
 
 #ifdef STANDALONE_SOLVER
 #include <stdarg.h>
-int solver_show_working, solver_recurse_depth;
+static int solver_show_working, solver_recurse_depth;
 #endif
 
 #include "puzzles.h"
@@ -2638,6 +2642,7 @@ static void solver(int cr, struct block_structure *blocks,
     sfree(usage->row);
     sfree(usage->col);
     sfree(usage->blk);
+    sfree(usage->diag);
     if (usage->kblocks) {
 	free_block_structure(usage->kblocks);
 	free_block_structure(usage->extra_cages);
@@ -2969,6 +2974,7 @@ static bool gridgen(int cr, struct block_structure *blocks,
     sfree(usage->blk);
     sfree(usage->col);
     sfree(usage->row);
+    sfree(usage->diag);
     sfree(usage);
 
     return ret;
@@ -3222,7 +3228,7 @@ static char *encode_solve_move(int cr, digit *grid)
     return ret;
 }
 
-static void dsf_to_blocks(int *dsf, struct block_structure *blocks,
+static void dsf_to_blocks(DSF *dsf, struct block_structure *blocks,
 			  int min_expected, int max_expected)
 {
     int cr = blocks->c * blocks->r, area = cr * cr;
@@ -3654,10 +3660,11 @@ static char *new_game_desc(const game_params *params, random_state *rs,
      * the puzzle size: all 2x2 puzzles appear to be Trivial
      * (DIFF_BLOCK) so we cannot hold out for even a Basic
      * (DIFF_SIMPLE) one.
+     * Jigsaw puzzles of size 2 and 3 are also all trivial.
      */
     dlev.maxdiff = params->diff;
     dlev.maxkdiff = params->kdiff;
-    if (c == 2 && r == 2)
+    if ((c == 2 && r == 2) || (r == 1 && c < 4))
         dlev.maxdiff = DIFF_BLOCK;
 
     grid = snewn(area, digit);
@@ -3684,11 +3691,11 @@ static char *new_game_desc(const game_params *params, random_state *rs,
          * constructing the block structure.
          */
 	if (r == 1) {		       /* jigsaw mode */
-	    int *dsf = divvy_rectangle(cr, cr, cr, rs);
+	    DSF *dsf = divvy_rectangle(cr, cr, cr, rs);
 
 	    dsf_to_blocks (dsf, blocks, cr, cr);
 
-	    sfree(dsf);
+	    dsf_free(dsf);
 	} else {		       /* basic Sudoku mode */
 	    for (y = 0; y < cr; y++)
 		for (x = 0; x < cr; x++)
@@ -3903,14 +3910,14 @@ static const char *spec_to_grid(const char *desc, digit *grid, int area)
  * end of the block spec, and return an error string or NULL if everything
  * is OK. The DSF is stored in *PDSF.
  */
-static const char *spec_to_dsf(const char **pdesc, int **pdsf,
+static const char *spec_to_dsf(const char **pdesc, DSF **pdsf,
                                int cr, int area)
 {
     const char *desc = *pdesc;
     int pos = 0;
-    int *dsf;
+    DSF *dsf;
 
-    *pdsf = dsf = snew_dsf(area);
+    *pdsf = dsf = dsf_new(area);
 
     while (*desc && *desc != ',') {
 	int c;
@@ -3921,7 +3928,7 @@ static const char *spec_to_dsf(const char **pdesc, int **pdsf,
 	else if (*desc >= 'a' && *desc <= 'z')
 	    c = *desc - 'a' + 1;
 	else {
-	    sfree(dsf);
+	    dsf_free(dsf);
 	    return "Invalid character in game description";
 	}
 	desc++;
@@ -3936,7 +3943,7 @@ static const char *spec_to_dsf(const char **pdesc, int **pdsf,
 	     * side of it.
 	     */
 	    if (pos >= 2*cr*(cr-1)) {
-                sfree(dsf);
+                dsf_free(dsf);
                 return "Too much data in block structure specification";
             }
 
@@ -3966,7 +3973,7 @@ static const char *spec_to_dsf(const char **pdesc, int **pdsf,
      * edge at the end.
      */
     if (pos != 2*cr*(cr-1)+1) {
-	sfree(dsf);
+	dsf_free(dsf);
 	return "Not enough data in block structure specification";
     }
 
@@ -4008,7 +4015,7 @@ static const char *validate_block_desc(const char **pdesc, int cr, int area,
                                        int min_nr_squares, int max_nr_squares)
 {
     const char *err;
-    int *dsf;
+    DSF *dsf;
 
     err = spec_to_dsf(pdesc, &dsf, cr, area);
     if (err) {
@@ -4037,7 +4044,7 @@ static const char *validate_block_desc(const char **pdesc, int cr, int area,
 		if (canons[c] == j) {
 		    counts[c]++;
 		    if (counts[c] > max_nr_squares) {
-			sfree(dsf);
+			dsf_free(dsf);
 			sfree(canons);
 			sfree(counts);
 			return "A jigsaw block is too big";
@@ -4047,7 +4054,7 @@ static const char *validate_block_desc(const char **pdesc, int cr, int area,
 
 	    if (c == ncanons) {
 		if (ncanons >= max_nr_blocks) {
-		    sfree(dsf);
+		    dsf_free(dsf);
 		    sfree(canons);
 		    sfree(counts);
 		    return "Too many distinct jigsaw blocks";
@@ -4059,14 +4066,14 @@ static const char *validate_block_desc(const char **pdesc, int cr, int area,
 	}
 
 	if (ncanons < min_nr_blocks) {
-	    sfree(dsf);
+	    dsf_free(dsf);
 	    sfree(canons);
 	    sfree(counts);
 	    return "Not enough distinct jigsaw blocks";
 	}
 	for (c = 0; c < ncanons; c++) {
 	    if (counts[c] < min_nr_squares) {
-		sfree(dsf);
+		dsf_free(dsf);
 		sfree(canons);
 		sfree(counts);
 		return "A jigsaw block is too small";
@@ -4076,7 +4083,7 @@ static const char *validate_block_desc(const char **pdesc, int cr, int area,
 	sfree(counts);
     }
 
-    sfree(dsf);
+    dsf_free(dsf);
     return NULL;
 }
 
@@ -4161,13 +4168,13 @@ static game_state *new_game(midend *me, const game_params *params,
 
     if (r == 1) {
 	const char *err;
-	int *dsf;
+	DSF *dsf;
 	assert(*desc == ',');
 	desc++;
 	err = spec_to_dsf(&desc, &dsf, cr, area);
 	assert(err == NULL);
 	dsf_to_blocks(dsf, state->blocks, cr, cr);
-	sfree(dsf);
+	dsf_free(dsf);
     } else {
 	int x, y;
 
@@ -4179,13 +4186,13 @@ static game_state *new_game(midend *me, const game_params *params,
 
     if (params->killer) {
 	const char *err;
-	int *dsf;
+	DSF *dsf;
 	assert(*desc == ',');
 	desc++;
 	err = spec_to_dsf(&desc, &dsf, cr, area);
 	assert(err == NULL);
 	dsf_to_blocks(dsf, state->kblocks, cr, area);
-	sfree(dsf);
+	dsf_free(dsf);
 	make_blocks_from_whichblock(state->kblocks);
 
 	assert(*desc == ',');
@@ -4558,8 +4565,7 @@ static game_ui *new_ui(const game_state *state)
 
     ui->hx = ui->hy = 0;
     ui->hpencil = false;
-    ui->hshow = false;
-    ui->hcursor = false;
+    ui->hshow = ui->hcursor = getenv_bool("PUZZLES_SHOW_CURSOR", false);
 
     return ui;
 }
@@ -4567,15 +4573,6 @@ static game_ui *new_ui(const game_state *state)
 static void free_ui(game_ui *ui)
 {
     sfree(ui);
-}
-
-static char *encode_ui(const game_ui *ui)
-{
-    return NULL;
-}
-
-static void decode_ui(game_ui *ui, const char *encoding)
-{
 }
 
 static void game_changed_state(game_ui *ui, const game_state *oldstate,
@@ -4592,6 +4589,14 @@ static void game_changed_state(game_ui *ui, const game_state *oldstate,
         newstate->grid[ui->hy * cr + ui->hx] != 0) {
         ui->hshow = false;
     }
+}
+
+static const char *current_key_label(const game_ui *ui,
+                                     const game_state *state, int button)
+{
+    if (ui->hshow && (button == CURSOR_SELECT))
+        return ui->hpencil ? "Ink" : "Pencil";
+    return "";
 }
 
 struct game_drawstate {
@@ -4632,7 +4637,7 @@ static char *interpret_move(const game_state *state, game_ui *ui,
                 ui->hpencil = false;
             }
             ui->hcursor = false;
-            return UI_UPDATE;
+            return MOVE_UI_UPDATE;
         }
         if (button == RIGHT_BUTTON) {
             /*
@@ -4652,20 +4657,20 @@ static char *interpret_move(const game_state *state, game_ui *ui,
                 ui->hshow = false;
             }
             ui->hcursor = false;
-            return UI_UPDATE;
+            return MOVE_UI_UPDATE;
         }
     }
     if (IS_CURSOR_MOVE(button)) {
         move_cursor(button, &ui->hx, &ui->hy, cr, cr, false);
         ui->hshow = true;
         ui->hcursor = true;
-        return UI_UPDATE;
+        return MOVE_UI_UPDATE;
     }
     if (ui->hshow &&
         (button == CURSOR_SELECT)) {
         ui->hpencil = !ui->hpencil;
         ui->hcursor = true;
-        return UI_UPDATE;
+        return MOVE_UI_UPDATE;
     }
 
     if (ui->hshow &&
@@ -4694,6 +4699,26 @@ static char *interpret_move(const game_state *state, game_ui *ui,
          */
         if (ui->hpencil && state->grid[ui->hy*cr+ui->hx])
             return NULL;
+
+        /*
+         * If you ask to fill a square with what it already contains,
+         * or blank it when it's already empty, that has no effect...
+         */
+        if ((!ui->hpencil || n == 0) && state->grid[ui->hy*cr+ui->hx] == n) {
+            bool anypencil = false;
+            int i;
+            for (i = 0; i < cr; i++)
+                anypencil = anypencil ||
+                    state->pencil[(ui->hy*cr+ui->hx) * cr + i];
+            if (!anypencil) {
+                /* ... expect to remove the cursor in mouse mode. */
+                if (!ui->hcursor) {
+                    ui->hshow = false;
+                    return MOVE_UI_UPDATE;
+                }
+                return NULL;
+            }
+        }
 
 	sprintf(buf, "%c%d,%d,%d",
 		(char)(ui->hpencil && n > 0 ? 'P' : 'R'), ui->hx, ui->hy, n);
@@ -4787,7 +4812,7 @@ static game_state *execute_move(const game_state *from, const char *move)
 #define GETTILESIZE(cr, w) ( (double)(w-1) / (double)(cr+1) )
 
 static void game_compute_size(const game_params *params, int tilesize,
-                              int *x, int *y)
+                              const game_ui *ui, int *x, int *y)
 {
     /* Ick: fake up `ds->tilesize' for macro expansion purposes */
     struct { int tilesize; } ads, *ds = &ads;
@@ -5104,7 +5129,7 @@ static void draw_number(drawing *dr, game_drawstate *ds,
 		fw = (pr - pl) / (float)pw;
 		fh = (pb - pt) / (float)ph;
 		fs = min(fw, fh);
-		if (fs > bestsize) {
+		if (fs >= bestsize) {
 		    bestsize = fs;
 		    pbest = pw;
 		}
@@ -5307,14 +5332,8 @@ static int game_status(const game_state *state)
     return state->completed ? +1 : 0;
 }
 
-static bool game_timing_state(const game_state *state, game_ui *ui)
-{
-    if (state->completed)
-	return false;
-    return true;
-}
-
-static void game_print_size(const game_params *params, float *x, float *y)
+static void game_print_size(const game_params *params, const game_ui *ui,
+                            float *x, float *y)
 {
     int pw, ph;
 
@@ -5323,7 +5342,7 @@ static void game_print_size(const game_params *params, float *x, float *y)
      * for this game, because players will want to jot down no end
      * of pencil marks in the squares.
      */
-    game_compute_size(params, 900, &pw, &ph);
+    game_compute_size(params, 900, ui, &pw, &ph);
     *x = pw / 100.0F;
     *y = ph / 100.0F;
 }
@@ -5497,7 +5516,8 @@ static void outline_block_structure(drawing *dr, game_drawstate *ds,
     sfree(coords);
 }
 
-static void game_print(drawing *dr, const game_state *state, int tilesize)
+static void game_print(drawing *dr, const game_state *state, const game_ui *ui,
+                       int tilesize)
 {
     int cr = state->cr;
     int ink = print_mono_colour(dr, 0);
@@ -5612,12 +5632,14 @@ const struct game thegame = {
     free_game,
     true, solve_game,
     true, game_can_format_as_text_now, game_text_format,
+    NULL, NULL, /* get_prefs, set_prefs */
     new_ui,
     free_ui,
-    encode_ui,
-    decode_ui,
+    NULL, /* encode_ui */
+    NULL, /* decode_ui */
     game_request_keys,
     game_changed_state,
+    current_key_label,
     interpret_move,
     execute_move,
     PREFERRED_TILE_SIZE, game_compute_size, game_set_size,
@@ -5631,7 +5653,7 @@ const struct game thegame = {
     game_status,
     true, false, game_print_size, game_print,
     false,			       /* wants_statusbar */
-    false, game_timing_state,
+    false, NULL,                       /* timing_state */
     REQUIRE_RBUTTON | REQUIRE_NUMPAD,  /* flags */
 };
 

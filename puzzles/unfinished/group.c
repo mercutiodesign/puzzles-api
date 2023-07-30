@@ -31,7 +31,11 @@
 #include <string.h>
 #include <assert.h>
 #include <ctype.h>
-#include <math.h>
+#ifdef NO_TGMATH_H
+#  include <math.h>
+#else
+#  include <tgmath.h>
+#endif
 
 #include "puzzles.h"
 #include "latin.h"
@@ -123,7 +127,7 @@ static game_params *default_params(void)
     return ret;
 }
 
-const static struct game_params group_presets[] = {
+static const struct game_params group_presets[] = {
     {  6, DIFF_NORMAL, true },
     {  6, DIFF_NORMAL, false },
     {  8, DIFF_NORMAL, true },
@@ -580,13 +584,11 @@ static int solver(const game_params *params, digit *grid, int maxdiff)
     int w = params->w;
     int ret;
     struct latin_solver solver;
+
 #ifdef STANDALONE_SOLVER
     char *p, text[100], *names[50];
     int i;
-#endif
 
-    latin_solver_alloc(&solver, grid, w);
-#ifdef STANDALONE_SOLVER
     for (i = 0, p = text; i < w; i++) {
 	names[i] = p;
 	*p++ = TOCHAR(i+1, params->id);
@@ -595,10 +597,13 @@ static int solver(const game_params *params, digit *grid, int maxdiff)
     solver.names = names;
 #endif
 
-    ret = latin_solver_main(&solver, maxdiff,
-			    DIFF_TRIVIAL, DIFF_HARD, DIFF_EXTREME,
-			    DIFF_EXTREME, DIFF_UNREASONABLE,
-			    group_solvers, group_valid, NULL, NULL, NULL);
+    if (latin_solver_alloc(&solver, grid, w))
+        ret = latin_solver_main(&solver, maxdiff,
+                                DIFF_TRIVIAL, DIFF_HARD, DIFF_EXTREME,
+                                DIFF_EXTREME, DIFF_UNREASONABLE,
+                                group_solvers, group_valid, NULL, NULL, NULL);
+    else
+        ret = diff_impossible;
 
     latin_solver_free(&solver);
 
@@ -1267,15 +1272,6 @@ static void free_ui(game_ui *ui)
     sfree(ui);
 }
 
-static char *encode_ui(const game_ui *ui)
-{
-    return NULL;
-}
-
-static void decode_ui(game_ui *ui, const char *encoding)
-{
-}
-
 static void game_changed_state(game_ui *ui, const game_state *oldstate,
                                const game_state *newstate)
 {
@@ -1324,6 +1320,26 @@ static void game_changed_state(game_ui *ui, const game_state *oldstate,
                 ui->ohy = i;
         }
     }
+}
+
+static const char *current_key_label(const game_ui *ui,
+                                     const game_state *state, int button)
+{
+    if (ui->hshow && button == CURSOR_SELECT)
+        return ui->hpencil ? "Ink" : "Pencil";
+    if (ui->hshow && button == CURSOR_SELECT2) {
+        int w = state->par.w;
+        int i;
+        for (i = 0; i < ui->odn; i++) {
+            int x = state->sequence[ui->ohx + i*ui->odx];
+            int y = state->sequence[ui->ohy + i*ui->ody];
+            int index = y*w+x;
+            if (ui->hpencil && state->grid[index]) return "";
+            if (state->common->immutable[index]) return "";
+        }
+        return "Clear";
+    }
+    return "";
 }
 
 #define PREFERRED_TILESIZE 48
@@ -1503,13 +1519,13 @@ static char *interpret_move(const game_state *state, game_ui *ui,
             ui->drag |= 4;             /* some movement has happened */
             if (tcoord >= 0 && tcoord < w) {
                 ui->dragpos = tcoord;
-                return UI_UPDATE;
+                return MOVE_UI_UPDATE;
             }
         } else if (IS_MOUSE_RELEASE(button)) {
             if (ui->drag & 4) {
                 ui->drag = 0;          /* end drag */
                 if (state->sequence[ui->dragpos] == ui->dragnum)
-                    return UI_UPDATE;  /* drag was a no-op overall */
+                    return MOVE_UI_UPDATE;  /* drag was a no-op overall */
                 sprintf(buf, "D%d,%d", ui->dragnum, ui->dragpos);
                 return dupstr(buf);
             } else {
@@ -1520,7 +1536,7 @@ static char *interpret_move(const game_state *state, game_ui *ui,
                             state->sequence[ui->edgepos]);
                     return dupstr(buf);
                 } else
-                    return UI_UPDATE;  /* no-op */
+                    return MOVE_UI_UPDATE;  /* no-op */
             }
         }
     } else if (IS_MOUSE_DOWN(button)) {
@@ -1543,7 +1559,7 @@ static char *interpret_move(const game_state *state, game_ui *ui,
                     ui->hpencil = false;
                 }
                 ui->hcursor = false;
-                return UI_UPDATE;
+                return MOVE_UI_UPDATE;
             }
             if (button == RIGHT_BUTTON) {
                 /*
@@ -1567,20 +1583,20 @@ static char *interpret_move(const game_state *state, game_ui *ui,
                     ui->hshow = false;
                 }
                 ui->hcursor = false;
-                return UI_UPDATE;
+                return MOVE_UI_UPDATE;
             }
         } else if (tx >= 0 && tx < w && ty == -1) {
             ui->drag = 2;
             ui->dragnum = state->sequence[tx];
             ui->dragpos = tx;
             ui->edgepos = FROMCOORD(x + TILESIZE/2);
-            return UI_UPDATE;
+            return MOVE_UI_UPDATE;
         } else if (ty >= 0 && ty < w && tx == -1) {
             ui->drag = 1;
             ui->dragnum = state->sequence[ty];
             ui->dragpos = ty;
             ui->edgepos = FROMCOORD(y + TILESIZE/2);
-            return UI_UPDATE;
+            return MOVE_UI_UPDATE;
         }
     } else if (IS_MOUSE_DRAG(button)) {
         if (!ui->hpencil &&
@@ -1593,7 +1609,7 @@ static char *interpret_move(const game_state *state, game_ui *ui,
             ui->odx = ui->ody = 0;
             ui->odn = 1;
         }
-        return UI_UPDATE;
+        return MOVE_UI_UPDATE;
     }
 
     if (IS_CURSOR_MOVE(button)) {
@@ -1604,13 +1620,13 @@ static char *interpret_move(const game_state *state, game_ui *ui,
         ui->hy = state->sequence[cy];
         ui->hshow = true;
         ui->hcursor = true;
-        return UI_UPDATE;
+        return MOVE_UI_UPDATE;
     }
     if (ui->hshow &&
         (button == CURSOR_SELECT)) {
         ui->hpencil = !ui->hpencil;
         ui->hcursor = true;
-        return UI_UPDATE;
+        return MOVE_UI_UPDATE;
     }
 
     if (ui->hshow &&
@@ -1791,7 +1807,7 @@ static game_state *execute_move(const game_state *from, const char *move)
 #define SIZE(w) ((w) * TILESIZE + 2*BORDER + LEGEND)
 
 static void game_compute_size(const game_params *params, int tilesize,
-                              int *x, int *y)
+                              const game_ui *ui, int *x, int *y)
 {
     /* Ick: fake up `ds->tilesize' for macro expansion purposes */
     struct { int tilesize; } ads, *ds = &ads;
@@ -2208,19 +2224,21 @@ static bool game_timing_state(const game_state *state, game_ui *ui)
     return true;
 }
 
-static void game_print_size(const game_params *params, float *x, float *y)
+static void game_print_size(const game_params *params, const game_ui *ui,
+                            float *x, float *y)
 {
     int pw, ph;
 
     /*
      * We use 9mm squares by default, like Solo.
      */
-    game_compute_size(params, 900, &pw, &ph);
+    game_compute_size(params, 900, ui, &pw, &ph);
     *x = pw / 100.0F;
     *y = ph / 100.0F;
 }
 
-static void game_print(drawing *dr, const game_state *state, int tilesize)
+static void game_print(drawing *dr, const game_state *state, const game_ui *ui,
+                       int tilesize)
 {
     int w = state->par.w;
     int ink = print_mono_colour(dr, 0);
@@ -2305,12 +2323,14 @@ const struct game thegame = {
     free_game,
     true, solve_game,
     true, game_can_format_as_text_now, game_text_format,
+    NULL, NULL, /* get_prefs, set_prefs */
     new_ui,
     free_ui,
-    encode_ui,
-    decode_ui,
+    NULL, /* encode_ui */
+    NULL, /* decode_ui */
     NULL, /* game_request_keys */
     game_changed_state,
+    current_key_label,
     interpret_move,
     execute_move,
     PREFERRED_TILESIZE, game_compute_size, game_set_size,
