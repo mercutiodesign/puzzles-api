@@ -58,13 +58,17 @@
 #include <string.h>
 #include <assert.h>
 #include <ctype.h>
-#include <math.h>
+#ifdef NO_TGMATH_H
+#  include <math.h>
+#else
+#  include <tgmath.h>
+#endif
 
 #include "puzzles.h"
 #include "latin.h"
 
 #ifdef STANDALONE_SOLVER
-bool verbose = false;
+static bool verbose = false;
 #endif
 
 #define PREFERRED_TILE_SIZE 32
@@ -82,7 +86,7 @@ bool verbose = false;
 #define FLASH_TIME 0.7F
 
 enum {
-    COL_BACKGROUND, COL_HIGHLIGHT, COL_LOWLIGHT,
+    COL_BACKGROUND, COL_UNUSED1, COL_LOWLIGHT,
     COL_BLACK, COL_WHITE, COL_BLACKNUM, COL_GRID,
     COL_CURSOR, COL_ERROR,
     NCOLOURS
@@ -417,7 +421,7 @@ static void debug_state(const char *desc, game_state *state) {
     sfree(dbg);
 }
 
-static void connect_if_same(game_state *state, int *dsf, int i1, int i2)
+static void connect_if_same(game_state *state, DSF *dsf, int i1, int i2)
 {
     int c1, c2;
 
@@ -429,13 +433,13 @@ static void connect_if_same(game_state *state, int *dsf, int i1, int i2)
     dsf_merge(dsf, c1, c2);
 }
 
-static void connect_dsf(game_state *state, int *dsf)
+static void connect_dsf(game_state *state, DSF *dsf)
 {
     int x, y, i;
 
     /* Construct a dsf array for connected blocks; connections
      * tracked to right and down. */
-    dsf_init(dsf, state->n);
+    dsf_reinit(dsf);
     for (x = 0; x < state->w; x++) {
         for (y = 0; y < state->h; y++) {
             i = y*state->w + x;
@@ -494,7 +498,7 @@ static int check_rowcol(game_state *state, int starti, int di, int sz, unsigned 
 
 static bool check_complete(game_state *state, unsigned flags)
 {
-    int *dsf = snewn(state->n, int);
+    DSF *dsf = dsf_new(state->n);
     int x, y, i, error = 0, nwhite, w = state->w, h = state->h;
 
     if (flags & CC_MARK_ERRORS) {
@@ -558,7 +562,7 @@ static bool check_complete(game_state *state, unsigned flags)
         }
     }
 
-    sfree(dsf);
+    dsf_free(dsf);
     return !(error > 0);
 }
 
@@ -1446,7 +1450,7 @@ static game_ui *new_ui(const game_state *state)
     game_ui *ui = snew(game_ui);
 
     ui->cx = ui->cy = 0;
-    ui->cshow = false;
+    ui->cshow = getenv_bool("PUZZLES_SHOW_CURSOR", false);
     ui->show_black_nums = false;
 
     return ui;
@@ -1457,20 +1461,23 @@ static void free_ui(game_ui *ui)
     sfree(ui);
 }
 
-static char *encode_ui(const game_ui *ui)
-{
-    return NULL;
-}
-
-static void decode_ui(game_ui *ui, const char *encoding)
-{
-}
-
 static void game_changed_state(game_ui *ui, const game_state *oldstate,
                                const game_state *newstate)
 {
     if (!oldstate->completed && newstate->completed)
         ui->cshow = false;
+}
+
+static const char *current_key_label(const game_ui *ui,
+                                     const game_state *state, int button)
+{
+    if (IS_CURSOR_SELECT(button) && ui->cshow) {
+        unsigned int f = state->flags[ui->cy * state->w + ui->cx];
+        if (f & F_BLACK) return "Restore";
+        if (f & F_CIRCLE) return "Remove";
+        return button == CURSOR_SELECT ? "Black" : "Circle";
+    }
+    return "";
 }
 
 #define DS_BLACK        0x1
@@ -1526,7 +1533,7 @@ static char *interpret_move(const game_state *state, game_ui *ui,
             action = TOGGLE_CIRCLE;
         }
     }
-    if (action == UI) return UI_UPDATE;
+    if (action == UI) return MOVE_UI_UPDATE;
 
     if (action == TOGGLE_BLACK || action == TOGGLE_CIRCLE) {
         i = y * state->w + x;
@@ -1587,7 +1594,7 @@ badmove:
  */
 
 static void game_compute_size(const game_params *params, int tilesize,
-                              int *x, int *y)
+                              const game_ui *ui, int *x, int *y)
 {
     /* Ick: fake up `ds->tilesize' for macro expansion purposes */
     struct { int tilesize; } ads, *ds = &ads;
@@ -1608,12 +1615,13 @@ static float *game_colours(frontend *fe, int *ncolours)
     float *ret = snewn(3 * NCOLOURS, float);
     int i;
 
-    game_mkhighlight(fe, ret, COL_BACKGROUND, COL_HIGHLIGHT, COL_LOWLIGHT);
+    game_mkhighlight(fe, ret, COL_BACKGROUND, -1, COL_LOWLIGHT);
     for (i = 0; i < 3; i++) {
         ret[COL_BLACK * 3 + i] = 0.0F;
         ret[COL_BLACKNUM * 3 + i] = 0.4F;
         ret[COL_WHITE * 3 + i] = 1.0F;
         ret[COL_GRID * 3 + i] = ret[COL_LOWLIGHT * 3 + i];
+        ret[COL_UNUSED1 * 3 + i] = 0.0F; /* To placate an assertion. */
     }
     ret[COL_CURSOR * 3 + 0] = 0.2F;
     ret[COL_CURSOR * 3 + 1] = 0.8F;
@@ -1775,22 +1783,19 @@ static int game_status(const game_state *state)
     return state->completed ? +1 : 0;
 }
 
-static bool game_timing_state(const game_state *state, game_ui *ui)
-{
-    return true;
-}
-
-static void game_print_size(const game_params *params, float *x, float *y)
+static void game_print_size(const game_params *params, const game_ui *ui,
+                            float *x, float *y)
 {
     int pw, ph;
 
     /* 8mm squares by default. */
-    game_compute_size(params, 800, &pw, &ph);
+    game_compute_size(params, 800, ui, &pw, &ph);
     *x = pw / 100.0F;
     *y = ph / 100.0F;
 }
 
-static void game_print(drawing *dr, const game_state *state, int tilesize)
+static void game_print(drawing *dr, const game_state *state, const game_ui *ui,
+                       int tilesize)
 {
     int ink = print_mono_colour(dr, 0);
     int paper = print_mono_colour(dr, 1);
@@ -1847,12 +1852,14 @@ const struct game thegame = {
     free_game,
     true, solve_game,
     true, game_can_format_as_text_now, game_text_format,
+    NULL, NULL, /* get_prefs, set_prefs */
     new_ui,
     free_ui,
-    encode_ui,
-    decode_ui,
+    NULL, /* encode_ui */
+    NULL, /* decode_ui */
     NULL, /* game_request_keys */
     game_changed_state,
+    current_key_label,
     interpret_move,
     execute_move,
     PREFERRED_TILE_SIZE, game_compute_size, game_set_size,
@@ -1866,7 +1873,7 @@ const struct game thegame = {
     game_status,
     true, false, game_print_size, game_print,
     false,			       /* wants_statusbar */
-    false, game_timing_state,
+    false, NULL,                       /* timing_state */
     REQUIRE_RBUTTON,		       /* flags */
 };
 

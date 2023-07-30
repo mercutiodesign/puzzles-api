@@ -8,6 +8,16 @@ set(build_gui_programs TRUE)
 set(build_icons FALSE)
 set(need_c_icons FALSE)
 
+# Don't disable assertions, even in release mode.  Our assertions
+# generally aren't expensive and protect against more annoying crashes
+# and memory corruption.
+string(REPLACE "/DNDEBUG" "" CMAKE_C_FLAGS_MINSIZEREL "${CMAKE_C_FLAGS_MINSIZEREL}")
+string(REPLACE "-DNDEBUG" "" CMAKE_C_FLAGS_MINSIZEREL "${CMAKE_C_FLAGS_MINSIZEREL}")
+string(REPLACE "/DNDEBUG" "" CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE}")
+string(REPLACE "-DNDEBUG" "" CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE}")
+string(REPLACE "/DNDEBUG" "" CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO}")
+string(REPLACE "-DNDEBUG" "" CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO}")
+
 # Include one of platforms/*.cmake to define platform-specific stuff.
 # Each of these is expected to:
 #  - define get_platform_puzzle_extra_source_files(), used below
@@ -37,6 +47,39 @@ check_include_file(stdint.h HAVE_STDINT_H)
 if(NOT HAVE_STDINT_H)
   add_compile_definitions(NO_STDINT_H)
 endif()
+check_include_file(tgmath.h HAVE_TGMATH_H)
+if(NOT HAVE_TGMATH_H)
+  add_compile_definitions(NO_TGMATH_H)
+endif()
+
+# Try to normalise source file pathnames as seen in __FILE__ (e.g.
+# assertion failure messages). Partly to avoid bloating the binaries
+# with file prefixes like /home/simon/stuff/things/tmp-7x6c5d54/, but
+# also to make the builds more deterministic - building from the same
+# source should give the same binary even if you do it in a
+# differently named temp directory.
+function(map_pathname src dst)
+  if(CMAKE_SYSTEM_NAME MATCHES "NestedVM")
+    # Do nothing: the NestedVM gcc is unfortunately too old to support
+    # this option.
+  elseif(CMAKE_C_COMPILER_ID MATCHES "Clang" AND
+      CMAKE_C_COMPILER_FRONTEND_VARIANT MATCHES "MSVC")
+    # -fmacro-prefix-map isn't available as a clang-cl option, so we
+    # prefix it with -Xclang to pass it straight through to the
+    # underlying clang -cc1 invocation, which spells the option the
+    # same way.
+    set(CMAKE_C_FLAGS
+      "${CMAKE_C_FLAGS} -Xclang -fmacro-prefix-map=${src}=${dst}"
+      PARENT_SCOPE)
+  elseif(CMAKE_C_COMPILER_ID MATCHES "GNU" OR
+      CMAKE_C_COMPILER_ID MATCHES "Clang")
+    set(CMAKE_C_FLAGS
+      "${CMAKE_C_FLAGS} -fmacro-prefix-map=${src}=${dst}"
+      PARENT_SCOPE)
+  endif()
+endfunction()
+map_pathname(${CMAKE_SOURCE_DIR} /puzzles)
+map_pathname(${CMAKE_BINARY_DIR} /build)
 
 include(icons/icons.cmake)
 
@@ -105,12 +148,18 @@ endfunction()
 # a command-line helper tool.
 function(cliprogram NAME)
   cmake_parse_arguments(OPT
-    "" "COMPILE_DEFINITIONS" "" ${ARGN})
+    "CORE_LIB" "" "COMPILE_DEFINITIONS" ${ARGN})
+
+  if(OPT_CORE_LIB)
+    set(lib core)
+  else()
+    set(lib common)
+  endif()
 
   if(build_cli_programs)
     add_executable(${NAME} ${CMAKE_SOURCE_DIR}/nullfe.c
       ${OPT_UNPARSED_ARGUMENTS})
-    target_link_libraries(${NAME} common ${platform_libs})
+    target_link_libraries(${NAME} ${lib} ${platform_libs})
     if(OPT_COMPILE_DEFINITIONS)
       target_compile_definitions(${NAME} PRIVATE ${OPT_COMPILE_DEFINITIONS})
     endif()
@@ -121,10 +170,10 @@ endfunction()
 # the normal puzzle frontend.
 function(guiprogram NAME)
   cmake_parse_arguments(OPT
-    "" "COMPILE_DEFINITIONS" "" ${ARGN})
+    "" "" "COMPILE_DEFINITIONS" ${ARGN})
 
   if(build_gui_programs)
-    get_platform_puzzle_extra_source_files(extra_files nullgame)
+    get_platform_puzzle_extra_source_files(extra_files ${NAME})
     add_executable(${NAME} ${OPT_UNPARSED_ARGUMENTS} ${extra_files})
     target_link_libraries(${NAME}
       common ${platform_gui_libs} ${platform_libs})
@@ -145,13 +194,16 @@ endfunction()
 function(write_generated_games_header)
   set(generated_include_dir ${CMAKE_CURRENT_BINARY_DIR}/include)
   set(generated_include_dir ${generated_include_dir} PARENT_SCOPE)
+  set(header_pre ${generated_include_dir}/generated-games.h.pre)
+  set(header ${generated_include_dir}/generated-games.h)
 
   file(MAKE_DIRECTORY ${generated_include_dir})
-  file(WRITE ${generated_include_dir}/generated-games.h "")
+  file(WRITE ${header_pre} "")
   list(SORT puzzle_names)
   foreach(name ${puzzle_names})
-    file(APPEND ${generated_include_dir}/generated-games.h "GAME(${name})\n")
+    file(APPEND ${header_pre} "GAME(${name})\n")
   endforeach()
+  configure_file(${header_pre} ${header} COPYONLY)
 endfunction()
 
 # This has to be run from the unfinished subdirectory, so that the

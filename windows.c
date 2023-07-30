@@ -7,6 +7,7 @@
 #ifndef NO_HTMLHELP
 #include <htmlhelp.h>
 #endif /* NO_HTMLHELP */
+#include <io.h>
 
 #include <stdio.h>
 #include <assert.h>
@@ -34,10 +35,14 @@
 #define IDM_SAVE      0x00E0
 #define IDM_LOAD      0x00F0
 #define IDM_PRINT     0x0100
-#define IDM_PRESETS   0x0110
-#define IDM_GAMES     0x0300
+#define IDM_PREFS     0x0110
 
-#define IDM_KEYEMUL   0x0400
+/* Menu items for preset game_params go up from IDM_PRESET_BASE in
+ * steps of MENUITEM_STEP = 0x20. Menu items for selecting different
+ * games (in -DCOMBINED mode) go up from IDM_GAME_BASE similarly. */
+#define IDM_PRESET_BASE   0x0120
+#define IDM_GAME_BASE     0x0130
+#define MENUITEM_STEP     0x0020
 
 #define HELP_FILE_NAME  "puzzles.hlp"
 #define HELP_CNT_NAME   "puzzles.cnt"
@@ -73,7 +78,7 @@ static FILE *debug_fp = NULL;
 static HANDLE debug_hdl = INVALID_HANDLE_VALUE;
 static int debug_got_console = 0;
 
-void dputs(char *buf)
+static void dputs(char *buf)
 {
     /*DWORD dw;
 
@@ -104,7 +109,7 @@ void debug_printf(const char *fmt, ...)
     static int debugging = -1;
 
     if (debugging == -1)
-        debugging = getenv("DEBUG_PUZZLES") ? 1 : 0;
+        debugging = getenv_bool("DEBUG_PUZZLES", false);
 
     if (debugging) {
         va_start(ap, fmt);
@@ -119,6 +124,8 @@ void debug_printf(const char *fmt, ...)
 		      (WS_MAXIMIZEBOX | WS_OVERLAPPED))
 
 static void new_game_size(frontend *fe, float scale);
+static void load_prefs(midend *me);
+static char *save_prefs(midend *me);
 
 struct font {
     HFONT font;
@@ -935,6 +942,7 @@ void print(frontend *fe)
 		game_params *params;
 
 		nme = midend_new(NULL, fe->game, NULL, NULL);
+                load_prefs(nme);
 
 		/*
 		 * Set the non-interactive mid-end to have the same
@@ -1285,7 +1293,7 @@ static bool check_window_resize(frontend *fe, int cx, int cy,
      * See if we actually got the window size we wanted, and adjust
      * the puzzle size if not.
      */
-    midend_size(fe->me, &x, &y, true);
+    midend_size(fe->me, &x, &y, true, 1.0);
     if (x != cx || y != cy) {
         /*
          * Resize the window, now we know what size we _really_
@@ -1442,6 +1450,7 @@ static midend *midend_for_new_game(frontend *fe, const game *cgame,
     if (!arg) {
         if (me) midend_free(me);
         me = midend_new(fe, cgame, &win_drawing, fe);
+        load_prefs(me);
         midend_new_game(me);
     } else {
         FILE *fp;
@@ -1482,6 +1491,7 @@ static midend *midend_for_new_game(frontend *fe, const game *cgame,
             if (!err_load) {
                 if (me) midend_free(me);
                 me = midend_new(fe, loadgame, &win_drawing, fe);
+                load_prefs(me);
                 err_load = midend_deserialise(me, savefile_read, fp);
             }
         } else {
@@ -1494,6 +1504,7 @@ static midend *midend_for_new_game(frontend *fe, const game *cgame,
              */
             if (me) midend_free(me);
             me = midend_new(fe, cgame, &win_drawing, fe);
+            load_prefs(me);
             err_param = midend_game_id(me, arg);
             if (!err_param) {
                 midend_new_game(me);
@@ -1532,7 +1543,8 @@ static void populate_preset_menu(frontend *fe,
         UINT flags = MF_ENABLED;
 
         if (entry->params) {
-            id_or_sub = (UINT_PTR)(IDM_PRESETS + 0x10 * entry->id);
+            id_or_sub = (UINT_PTR)(
+                IDM_PRESET_BASE + MENUITEM_STEP * entry->id);
 
             fe->preset_menuitems[entry->id].which_menu = winmenu;
             fe->preset_menuitems[entry->id].item_index =
@@ -1611,7 +1623,7 @@ static int fe_set_midend(frontend *fe, midend *me)
         fe->statusbar = NULL;
 
     get_max_puzzle_size(fe, &x, &y);
-    midend_size(fe->me, &x, &y, false);
+    midend_size(fe->me, &x, &y, false, 1.0);
 
     r.left = r.top = 0;
     r.right = x;
@@ -1694,7 +1706,9 @@ static int fe_set_midend(frontend *fe, midend *me)
                 if (strcmp(gamelist[i]->name, fe->game->name) != 0) {
                     /* only include those games that aren't the same as the
                      * game we're currently playing. */
-                    AppendMenu(games, MF_ENABLED, IDM_GAMES + i, gamelist[i]->name);
+                    AppendMenu(games, MF_ENABLED,
+                               IDM_GAME_BASE + MENUITEM_STEP * i,
+                               gamelist[i]->name);
                 }
             }
         }
@@ -1718,6 +1732,8 @@ static int fe_set_midend(frontend *fe, midend *me)
 	    AppendMenu(menu, MF_SEPARATOR, 0, 0);
 	    AppendMenu(menu, MF_ENABLED, IDM_SOLVE, TEXT("Sol&ve"));
 	}
+	AppendMenu(menu, MF_SEPARATOR, 0, 0);
+	AppendMenu(menu, MF_ENABLED, IDM_PREFS, TEXT("Pre&ferences"));
 	AppendMenu(menu, MF_SEPARATOR, 0, 0);
 	AppendMenu(menu, MF_ENABLED, IDM_QUIT, TEXT("E&xit"));
 	menu = CreateMenu();
@@ -2374,12 +2390,12 @@ static void new_game_size(frontend *fe, float scale)
     int x, y;
 
     get_max_puzzle_size(fe, &x, &y);
-    midend_size(fe->me, &x, &y, false);
+    midend_size(fe->me, &x, &y, false, 1.0);
 
     if (scale != 1.0) {
         x = (int)((float)x * fe->puzz_scale);
         y = (int)((float)y * fe->puzz_scale);
-        midend_size(fe->me, &x, &y, true);
+        midend_size(fe->me, &x, &y, true, 1.0);
     }
     fe->ymin = (fe->xmin * y) / x;
 
@@ -2488,6 +2504,138 @@ static void update_type_menu_tick(frontend *fe)
     DrawMenuBar(fe->hwnd);
 }
 
+static char *prefs_dir(void)
+{
+    const char *var;
+    if ((var = getenv("APPDATA")) != NULL) {
+        size_t size = strlen(var) + 80;
+        char *dir = snewn(size, char);
+        sprintf(dir, "%s\\Simon Tatham's Portable Puzzle Collection", var);
+        return dir;
+    }
+    return NULL;
+}
+
+static char *prefs_path_general(const game *game, const char *suffix)
+{
+    char *dir, *path;
+
+    dir = prefs_dir();
+    if (!dir)
+        return NULL;
+
+    path = make_prefs_path(dir, "\\", game, suffix);
+
+    sfree(dir);
+    return path;
+}
+
+static char *prefs_path(const game *game)
+{
+    return prefs_path_general(game, ".conf");
+}
+
+static char *prefs_tmp_path(const game *game)
+{
+    return prefs_path_general(game, ".tmp");
+}
+
+static void load_prefs(midend *me)
+{
+    const game *game = midend_which_game(me);
+    char *path = prefs_path(game);
+    if (!path)
+        return;
+    FILE *fp = fopen(path, "r");
+    if (!fp)
+        return;
+    const char *err = midend_load_prefs(me, savefile_read, fp);
+    fclose(fp);
+    if (err)
+        fprintf(stderr, "Unable to load preferences file %s:\n%s\n",
+                path, err);
+    sfree(path);
+}
+
+static char *save_prefs(midend *me)
+{
+    const game *game = midend_which_game(me);
+    char *dir_path = prefs_dir();
+    char *file_path = prefs_path(game);
+    char *tmp_path = prefs_tmp_path(game);
+    HANDLE fh;
+    FILE *fp;
+    bool cleanup_dir = false, cleanup_tmpfile = false;
+    char *err = NULL;
+
+    if (!dir_path || !file_path || !tmp_path) {
+        sprintf(err = snewn(256, char),
+                "Unable to save preferences:\n"
+                "Could not determine pathname for configuration files");
+        goto out;
+    }
+
+    if (!CreateDirectory(dir_path, NULL)) {
+        /* Ignore errors while trying to make the directory. It may
+         * well already exist, and even if we got some error code
+         * other than EEXIST, it's still worth at least _trying_ to
+         * make the file inside it, and see if that goes wrong. */
+    } else {
+        cleanup_dir = true;
+    }
+
+    fh = CreateFile(tmp_path, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS,
+                    FILE_ATTRIBUTE_NORMAL, NULL);
+    if (fh == INVALID_HANDLE_VALUE) {
+        char *os_err = geterrstr();
+        sprintf(err = snewn(256 + strlen(tmp_path) + strlen(os_err), char),
+                "Unable to save preferences:\n"
+                "Unable to create file '%s':\n%s", tmp_path, os_err);
+        sfree(os_err);
+        goto out;
+    } else {
+        cleanup_tmpfile = true;
+    }
+
+    fp = _fdopen(_open_osfhandle((intptr_t)fh, 0), "w");
+    SetLastError(0);
+    midend_save_prefs(me, savefile_write, fp);
+    fclose(fp);
+    if (GetLastError()) {
+        char *os_err = geterrstr();
+        sprintf(err = snewn(80 + strlen(tmp_path) + strlen(os_err), char),
+                "Unable to write file '%s':\n%s", tmp_path, os_err);
+        sfree(os_err);
+        goto out;
+    }
+
+    if (MoveFileEx(tmp_path, file_path, MOVEFILE_REPLACE_EXISTING) < 0) {
+        char *os_err = geterrstr();
+        sprintf(err = snewn(256 + strlen(tmp_path) + strlen(file_path) +
+                            strlen(os_err), char),
+                "Unable to save preferences:\n"
+                "Unable to rename '%s' to '%s':\n%s", tmp_path, file_path,
+                os_err);
+        sfree(os_err);
+        goto out;
+    } else {
+        cleanup_dir = false;
+        cleanup_tmpfile = false;
+    }
+
+  out:
+    if (cleanup_tmpfile) {
+        if (!DeleteFile(tmp_path)) { /* can't do anything about this */ }
+    }
+    if (cleanup_dir) {
+        if (!RemoveDirectory(dir_path)) { /* can't do anything about this */ }
+    }
+    sfree(dir_path);
+    sfree(file_path);
+    sfree(tmp_path);
+    return err;
+}
+
 static void update_copy_menu_greying(frontend *fe)
 {
     UINT enable = (midend_can_format_as_text_now(fe->me) ?
@@ -2530,18 +2678,18 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message,
 	cmd = wParam & ~0xF;	       /* low 4 bits reserved to Windows */
 	switch (cmd) {
 	  case IDM_NEW:
-	    if (!midend_process_key(fe->me, 0, 0, UI_NEWGAME))
+	    if (midend_process_key(fe->me, 0, 0, UI_NEWGAME) == PKR_QUIT)
 		PostQuitMessage(0);
 	    break;
 	  case IDM_RESTART:
 	    midend_restart_game(fe->me);
 	    break;
 	  case IDM_UNDO:
-	    if (!midend_process_key(fe->me, 0, 0, UI_UNDO))
+	    if (midend_process_key(fe->me, 0, 0, UI_UNDO) == PKR_QUIT)
 		PostQuitMessage(0);
 	    break;
 	  case IDM_REDO:
-	    if (!midend_process_key(fe->me, 0, 0, UI_REDO))
+	    if (midend_process_key(fe->me, 0, 0, UI_REDO) == PKR_QUIT)
 		PostQuitMessage(0);
 	    break;
 	  case IDM_COPY:
@@ -2563,7 +2711,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message,
 	    }
 	    break;
 	  case IDM_QUIT:
-	    if (!midend_process_key(fe->me, 0, 0, UI_QUIT))
+	    if (midend_process_key(fe->me, 0, 0, UI_QUIT) == PKR_QUIT)
 		PostQuitMessage(0);
 	    break;
 	  case IDM_CONFIG:
@@ -2581,6 +2729,16 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message,
 	  case IDM_PRINT:
 	    if (get_config(fe, CFG_PRINT))
 		print(fe);
+	    break;
+	  case IDM_PREFS:
+	    if (get_config(fe, CFG_PREFS)) {
+                char *prefs_err = save_prefs(fe->me);
+                if (prefs_err) {
+                    MessageBox(fe->hwnd, prefs_err, "Error saving preferences",
+                               MB_ICONERROR | MB_OK);
+                    sfree(prefs_err);
+                }
+            }
 	    break;
           case IDM_ABOUT:
 	    about(fe);
@@ -2711,27 +2869,34 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message,
 	    start_help(fe, help_type == CHM ?
                        fe->game->htmlhelp_topic : fe->game->winhelp_topic);
             break;
-	  default:
+	  default: {
+            unsigned n;
+
 #ifdef COMBINED
-            if (wParam >= IDM_GAMES && wParam < (IDM_GAMES + (WPARAM)gamecount)) {
-                int p = wParam - IDM_GAMES;
+            n = (wParam - IDM_GAME_BASE) / MENUITEM_STEP;
+            if (n < gamecount && wParam == IDM_GAME_BASE + MENUITEM_STEP * n) {
                 char *error = NULL;
-                fe_set_midend(fe, midend_for_new_game(fe, gamelist[p], NULL,
+                fe_set_midend(fe, midend_for_new_game(fe, gamelist[n], NULL,
                                                       false, false, &error));
                 sfree(error);
-            } else
+                break;
+            }
 #endif
-	    {
+
+            n = (wParam - IDM_PRESET_BASE) / MENUITEM_STEP;
+	    if (wParam == IDM_PRESET_BASE + MENUITEM_STEP * n) {
                 game_params *preset = preset_menu_lookup_by_id(
-                    fe->preset_menu,
-                    ((wParam &~ 0xF) - IDM_PRESETS) / 0x10);
+                    fe->preset_menu, n);
 
 		if (preset) {
 		    midend_set_params(fe->me, preset);
 		    new_game_type(fe);
+                    break;
 		}
 	    }
-	    break;
+
+            break;
+          }
 	}
 	break;
       case WM_DESTROY:
@@ -2833,7 +2998,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message,
 	    }
 
 	    if (key != -1) {
-		if (!midend_process_key(fe->me, 0, 0, key))
+                if (midend_process_key(fe->me, 0, 0, key) == PKR_QUIT)
 		    PostQuitMessage(0);
 	    } else {
 		MSG m;
@@ -2863,10 +3028,10 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message,
 	    else
 		button = LEFT_BUTTON;
 
-	    if (!midend_process_key(fe->me,
-				    (signed short)LOWORD(lParam) - fe->bitmapPosition.left,
-				    (signed short)HIWORD(lParam) - fe->bitmapPosition.top,
-				    button))
+	    if (midend_process_key(fe->me,
+                                   (signed short)LOWORD(lParam) - fe->bitmapPosition.left,
+                                   (signed short)HIWORD(lParam) - fe->bitmapPosition.top,
+				    button) == PKR_QUIT)
 		PostQuitMessage(0);
 
 	    SetCapture(hwnd);
@@ -2890,10 +3055,10 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message,
 	    else
 		button = LEFT_RELEASE;
 
-	    if (!midend_process_key(fe->me,
-				    (signed short)LOWORD(lParam) - fe->bitmapPosition.left,
-				    (signed short)HIWORD(lParam) - fe->bitmapPosition.top,
-				    button))
+	    if (midend_process_key(fe->me,
+                                   (signed short)LOWORD(lParam) - fe->bitmapPosition.left,
+                                   (signed short)HIWORD(lParam) - fe->bitmapPosition.top,
+				    button) == PKR_QUIT)
 		PostQuitMessage(0);
 
 	    ReleaseCapture();
@@ -2910,10 +3075,10 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message,
 	    else
 		button = LEFT_DRAG;
 	    
-	    if (!midend_process_key(fe->me,
-				    (signed short)LOWORD(lParam) - fe->bitmapPosition.left,
-				    (signed short)HIWORD(lParam) - fe->bitmapPosition.top,
-				    button))
+	    if (midend_process_key(fe->me,
+                                   (signed short)LOWORD(lParam) - fe->bitmapPosition.left,
+                                   (signed short)HIWORD(lParam) - fe->bitmapPosition.top,
+                                   button) == PKR_QUIT)
 		PostQuitMessage(0);
 	}
 	break;
@@ -2927,7 +3092,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message,
                     (keystate[VK_CONTROL] & 0x80))
                     key = UI_REDO;
             }
-            if (!midend_process_key(fe->me, 0, 0, key))
+            if (midend_process_key(fe->me, 0, 0, key) == PKR_QUIT)
                 PostQuitMessage(0);
         }
 	return 0;

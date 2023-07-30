@@ -17,6 +17,11 @@ set_property(CACHE PUZZLES_GTK_VERSION
 
 find_package(PkgConfig REQUIRED)
 
+find_program(HALIBUT halibut)
+if(NOT HALIBUT)
+  message(WARNING "HTML documentation cannot be built (did not find halibut)")
+endif()
+
 set(PUZZLES_GTK_FOUND FALSE)
 macro(try_gtk_package VER PACKAGENAME)
   if(NOT PUZZLES_GTK_FOUND AND
@@ -56,8 +61,14 @@ endif()
 
 if(STRICT AND (CMAKE_C_COMPILER_ID MATCHES "GNU" OR
                CMAKE_C_COMPILER_ID MATCHES "Clang"))
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wwrite-strings -std=c99 -pedantic -Werror")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wwrite-strings -Wmissing-prototypes -std=c99 -pedantic -Werror")
 endif()
+
+if(STRICT AND (CMAKE_C_COMPILER_ID MATCHES "Clang"))
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wmissing-variable-declarations")
+endif()
+
+add_compile_definitions(HELP_DIR="${CMAKE_INSTALL_PREFIX}/share/sgt-puzzles/help")
 
 function(get_platform_puzzle_extra_source_files OUTVAR NAME)
   if(build_icons AND EXISTS ${CMAKE_SOURCE_DIR}/icons/${NAME}.sav)
@@ -106,12 +117,33 @@ function(set_platform_puzzle_target_properties NAME TARGET)
       install(TARGETS ${TARGET})
     endif()
     configure_file(${CMAKE_SOURCE_DIR}/puzzle.desktop.in ${binary_name}.desktop)
-    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/icons/${NAME}-48d24.png
-      DESTINATION share/pixmaps OPTIONAL RENAME ${binary_name}-48d24.png)
+    foreach(icon_size ${all_icon_sizes})
+      install(
+        FILES ${CMAKE_CURRENT_BINARY_DIR}/icons/${NAME}-${icon_size}d24.png
+        DESTINATION share/icons/hicolor/${icon_size}x${icon_size}/apps
+        OPTIONAL
+        RENAME ${binary_name}.png)
+    endforeach()
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${binary_name}.desktop
       DESTINATION share/applications)
   endif()
 endfunction()
 
 function(build_platform_extras)
+  if(HALIBUT)
+    set(help_dir ${CMAKE_CURRENT_BINARY_DIR}/help)
+    add_custom_command(OUTPUT ${help_dir}/en
+      COMMAND ${CMAKE_COMMAND} -E make_directory ${help_dir}/en)
+    add_custom_command(OUTPUT ${help_dir}/en/index.html
+      COMMAND ${HALIBUT} --html ${CMAKE_CURRENT_SOURCE_DIR}/puzzles.but
+      DEPENDS
+      ${help_dir}/en
+      ${CMAKE_CURRENT_SOURCE_DIR}/puzzles.but
+      WORKING_DIRECTORY ${help_dir}/en)
+    add_custom_target(unix_help ALL
+      DEPENDS ${help_dir}/en/index.html)
+
+    install(DIRECTORY ${help_dir}
+      DESTINATION share/sgt-puzzles)
+  endif()
 endfunction()

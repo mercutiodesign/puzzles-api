@@ -17,6 +17,23 @@
 
 mergeInto(LibraryManager.library, {
     /*
+     * void js_init_puzzle(void);
+     *
+     * Called at the start of main() to set up event handlers.
+     */
+    js_init_puzzle: function() {
+        initPuzzle();
+    },
+    /*
+     * void js_post_init(void);
+     *
+     * Called at the end of main() once the initial puzzle has been
+     * started.
+     */
+    js_post_init: function() {
+        post_init();
+    },
+    /*
      * void js_debug(const char *message);
      *
      * A function to write a diagnostic to the Javascript console.
@@ -45,7 +62,11 @@ mergeInto(LibraryManager.library, {
      * provides neither presets nor configurability.
      */
     js_remove_type_dropdown: function() {
-        gametypelist.style.display = "none";
+        if (gametypelist === null) return;
+        var gametypeitem = gametypelist.closest("li");
+        if (gametypeitem === null) return;
+        gametypeitem.parentNode.removeChild(gametypeitem);
+        gametypelist = null;
     },
 
     /*
@@ -55,7 +76,11 @@ mergeInto(LibraryManager.library, {
      * time if the game doesn't support an in-game solve function.
      */
     js_remove_solve_button: function() {
-        document.getElementById("solve").style.display = "none";
+        if (solve_button === null) return;
+        var solve_item = solve_button.closest("li");
+        if (solve_item === null) return;
+        solve_item.parentNode.removeChild(solve_item);
+        solve_button = null;
     },
 
     /*
@@ -70,19 +95,19 @@ mergeInto(LibraryManager.library, {
     js_add_preset: function(menuid, ptr, value) {
         var name = UTF8ToString(ptr);
         var item = document.createElement("li");
-        item.setAttribute("data-index", value);
-        var tick = document.createElement("span");
-        tick.appendChild(document.createTextNode("\u2713"));
-        tick.style.color = "transparent";
-        tick.style.paddingRight = "0.5em";
-        item.appendChild(tick);
-        item.appendChild(document.createTextNode(name));
+        var label = document.createElement("label");
+        var tick = document.createElement("input");
+        tick.type = "radio";
+        tick.className = "tick";
+        tick.name = "preset";
+        tick.value = value;
+        label.appendChild(tick);
+        label.appendChild(document.createTextNode(" " + name));
+        item.appendChild(label);
         gametypesubmenus[menuid].appendChild(item);
-        gametypeitems.push(item);
 
-        item.onclick = function(event) {
+        tick.onclick = function(event) {
             if (dlg_dimmer === null) {
-                gametypeselectedindex = value;
                 command(2);
             }
         }
@@ -101,14 +126,15 @@ mergeInto(LibraryManager.library, {
         // We still create a transparent tick element, even though it
         // won't ever be selected, to make submenu titles line up
         // nicely with their neighbours.
+        var label = document.createElement("div");
         var tick = document.createElement("span");
-        tick.appendChild(document.createTextNode("\u2713"));
-        tick.style.color = "transparent";
-        tick.style.paddingRight = "0.5em";
-        item.appendChild(tick);
-        item.appendChild(document.createTextNode(name));
+        tick.className = "tick";
+        label.appendChild(tick);
+        label.tabIndex = 0;
+        label.appendChild(document.createTextNode(" " + name));
+        item.appendChild(label);
         var submenu = document.createElement("ul");
-        item.appendChild(submenu);
+        label.appendChild(submenu);
         gametypesubmenus[menuid].appendChild(item);
         var toret = gametypesubmenus.length;
         gametypesubmenus.push(submenu);
@@ -122,7 +148,7 @@ mergeInto(LibraryManager.library, {
      * dropdown.
      */
     js_get_selected_preset: function() {
-        return gametypeselectedindex;
+        return menuform.elements["preset"].value;
     },
 
     /*
@@ -133,16 +159,36 @@ mergeInto(LibraryManager.library, {
      * which turn out to exactly match a preset).
      */
     js_select_preset: function(n) {
-        gametypeselectedindex = n;
-        for (var i in gametypeitems) {
-            var item = gametypeitems[i];
-            var tick = item.firstChild;
-            if (item.getAttribute("data-index") == n) {
-                tick.style.color = "inherit";
-            } else {
-                tick.style.color = "transparent";
-            }
+        menuform.elements["preset"].value = n;
+    },
+
+    /*
+     * void js_default_colour(float *output);
+     *
+     * Try to extract a default colour from the CSS computed
+     * background colour of the canvas element.
+     */
+    js_default_colour: function(output) {
+        var col = window.getComputedStyle(onscreen_canvas).backgroundColor;
+        /* We only support opaque sRGB colours. */
+        var m = col.match(
+            /^rgb\((\d+(?:\.\d+)?), (\d+(?:\.\d+)?), (\d+(?:\.\d+)?)\)$/);
+        if (m) {
+            setValue(output,     +m[1] / 255, "float");
+            setValue(output + 4, +m[2] / 255, "float");
+            setValue(output + 8, +m[3] / 255, "float");
         }
+    },
+
+    /*
+     * void js_set_background_colour(const char *bg);
+     *
+     * Record the puzzle background colour in a CSS variable so
+     * the style sheet can use it if it wants.
+     */
+    js_set_background_colour: function(bgptr) {
+        document.documentElement.style.setProperty("--puzzle-background",
+                                                   UTF8ToString(bgptr));
     },
 
     /*
@@ -167,15 +213,18 @@ mergeInto(LibraryManager.library, {
      * the random seed permalink.
      */
     js_update_permalinks: function(desc, seed) {
-        desc = UTF8ToString(desc);
-        permalink_desc.href = "#" + desc;
+        desc = encodeURI(UTF8ToString(desc)).replace(/#/g, "%23");
+        if (permalink_desc !== null)
+            permalink_desc.href = "#" + desc;
 
-        if (seed == 0) {
-            permalink_seed.style.display = "none";
-        } else {
-            seed = UTF8ToString(seed);
-            permalink_seed.href = "#" + seed;
-            permalink_seed.style.display = "inline";
+        if (permalink_seed !== null) {
+            if (seed == 0) {
+                permalink_seed.style.display = "none";
+            } else {
+                seed = encodeURI(UTF8ToString(seed)).replace(/#/g, "%23");;
+                permalink_seed.href = "#" + seed;
+                permalink_seed.style.display = "";
+            }
         }
     },
 
@@ -191,32 +240,45 @@ mergeInto(LibraryManager.library, {
     },
 
     /*
+     * void js_enable_undo_redo(bool undo, bool redo);
+     *
+     * Update any labels for the SoftLeft and Enter keys.
+     */
+    js_update_key_labels: function(lsk_ptr, csk_ptr) {
+        var elem;
+        var lsk_text = UTF8ToString(lsk_ptr);
+        var csk_text = UTF8ToString(csk_ptr);
+        for (elem of document.querySelectorAll("#puzzle .lsk"))
+            elem.textContent = lsk_text == csk_text ? "" : lsk_text;
+        for (elem of document.querySelectorAll("#puzzle .csk"))
+            elem.textContent = csk_text;
+    },
+
+    /*
      * void js_activate_timer();
      *
-     * Start calling the C timer_callback() function every 20ms.
+     * Start calling the C timer_callback() function every frame.
+     * The C code ensures that the activate and deactivate functions
+     * are called in a sensible order.
      */
     js_activate_timer: function() {
-        if (timer === null) {
-            timer_reference_date = (new Date()).valueOf();
-            timer = setInterval(function() {
-                var now = (new Date()).valueOf();
-                timer_callback((now - timer_reference_date) / 1000.0);
-                timer_reference_date = now;
-                return true;
-            }, 20);
-        }
+        timer_reference = performance.now();
+        var frame = function(now) {
+            timer = window.requestAnimationFrame(frame);
+            // The callback might call js_deactivate_timer() below.
+            timer_callback((now - timer_reference) / 1000.0);
+            timer_reference = now;
+        };
+        timer = window.requestAnimationFrame(frame);
     },
 
     /*
      * void js_deactivate_timer();
      *
-     * Stop calling the C timer_callback() function every 20ms.
+     * Stop calling the C timer_callback() function every frame.
      */
     js_deactivate_timer: function() {
-        if (timer !== null) {
-            clearInterval(timer);
-            timer = null;
-        }
+        window.cancelAnimationFrame(timer);
     },
 
     /*
@@ -225,7 +287,6 @@ mergeInto(LibraryManager.library, {
      * Prepare to do some drawing on the canvas.
      */
     js_canvas_start_draw: function() {
-        ctx = offscreen_canvas.getContext('2d');
         update_xmin = update_xmax = update_ymin = update_ymax = undefined;
     },
 
@@ -258,7 +319,8 @@ mergeInto(LibraryManager.library, {
      */
     js_canvas_end_draw: function() {
         if (update_xmin !== undefined) {
-            var onscreen_ctx = onscreen_canvas.getContext('2d');
+            var onscreen_ctx =
+                onscreen_canvas.getContext('2d', { alpha: false });
             onscreen_ctx.drawImage(offscreen_canvas,
                                    update_xmin, update_ymin,
                                    update_xmax - update_xmin,
@@ -267,7 +329,6 @@ mergeInto(LibraryManager.library, {
                                    update_xmax - update_xmin,
                                    update_ymax - update_ymin);
         }
-        ctx = null;
     },
 
     /*
@@ -377,7 +438,7 @@ mergeInto(LibraryManager.library, {
     },
 
     /*
-     * int js_canvas_find_font_midpoint(int height, const char *fontptr);
+     * int js_canvas_find_font_midpoint(int height, bool monospaced);
      * 
      * Return the adjustment required for text displayed using
      * ALIGN_VCENTRE. We want to place the midpoint between the
@@ -396,29 +457,36 @@ mergeInto(LibraryManager.library, {
      * Since this is a very expensive operation, we cache the results
      * per (font,height) pair.
      */
-    js_canvas_find_font_midpoint: function(height, font) {
-        font = UTF8ToString(font);
+    js_canvas_find_font_midpoint: function(height, monospaced) {
+        if (height == 0) {
+            // Handle this degenerate case by hand. Otherwise we end
+            // up passing height=0 to the getImageData call below,
+            // causing browsers to report errors.
+            return 0;
+        }
+
+        // Resolve the font into a string.
+        var ctx1 = onscreen_canvas.getContext('2d', { alpha: false });
+        canvas_set_font(ctx1, height, monospaced);
 
         // Reuse cached value if possible
-        if (midpoint_cache[font] !== undefined)
-            return midpoint_cache[font];
+        if (midpoint_cache[ctx1.font] !== undefined)
+            return midpoint_cache[ctx1.font];
 
         // Find the width of the string
-        var ctx1 = onscreen_canvas.getContext('2d');
-        ctx1.font = font;
         var width = (ctx1.measureText(midpoint_test_str).width + 1) | 0;
 
         // Construct a test canvas of appropriate size, initialise it to
         // black, and draw the string on it in white
         var measure_canvas = document.createElement('canvas');
-        var ctx2 = measure_canvas.getContext('2d');
+        var ctx2 = measure_canvas.getContext('2d', { alpha: false });
         ctx2.canvas.width = width;
         ctx2.canvas.height = 2*height;
         ctx2.fillStyle = "#000000";
         ctx2.fillRect(0, 0, width, 2*height);
         var baseline = (1.5*height) | 0;
         ctx2.fillStyle = "#ffffff";
-        ctx2.font = font;
+        canvas_set_font(ctx2, height, monospaced);
         ctx2.fillText(midpoint_test_str, 0, baseline);
 
         // Scan the contents of the test canvas to find the top and bottom
@@ -436,22 +504,23 @@ mergeInto(LibraryManager.library, {
         }
 
         var ret = (baseline - (ymin + ymax) / 2) | 0;
-        midpoint_cache[font] = ret;
+        midpoint_cache[ctx1.font] = ret;
         return ret;
     },
 
     /*
      * void js_canvas_draw_text(int x, int y, int halign,
-     *                          const char *colptr, const char *fontptr,
-     *                          const char *text);
+     *                          const char *colptr, int height,
+     *                          bool monospaced, const char *text);
      * 
      * Draw text. Vertical alignment has been taken care of on the C
      * side, by optionally calling the above function. Horizontal
      * alignment is handled here, since we can get the canvas draw
      * function to do it for us with almost no extra effort.
      */
-    js_canvas_draw_text: function(x, y, halign, colptr, fontptr, text) {
-        ctx.font = UTF8ToString(fontptr);
+    js_canvas_draw_text: function(x, y, halign, colptr, fontsize, monospaced,
+                                  text) {
+        canvas_set_font(ctx, fontsize, monospaced);
         ctx.fillStyle = UTF8ToString(colptr);
         ctx.textAlign = (halign == 0 ? 'left' :
                          halign == 1 ? 'center' : 'right');
@@ -494,7 +563,7 @@ mergeInto(LibraryManager.library, {
      * the screen.
      */
     js_canvas_copy_to_blitter: function(id, x, y, w, h) {
-        var blitter_ctx = blitters[id].getContext('2d');
+        var blitter_ctx = blitters[id].getContext('2d', { alpha: false });
         blitter_ctx.drawImage(offscreen_canvas,
                               x, y, w, h,
                               0, 0, w, h);
@@ -514,26 +583,15 @@ mergeInto(LibraryManager.library, {
     },
 
     /*
-     * void js_canvas_make_statusbar(void);
-     * 
-     * Cause a status bar to exist. Called at setup time if the puzzle
-     * back end turns out to want one.
+     * void js_canvas_remove_statusbar(void);
+     *
+     * Cause a status bar not to exist. Called at setup time if the
+     * puzzle back end turns out not to want one.
      */
-    js_canvas_make_statusbar: function() {
-        var statusholder = document.getElementById("statusbarholder");
-        statusbar = document.createElement("div");
-        statusbar.style.overflow = "hidden";
-        statusbar.style.width = (onscreen_canvas.width - 4) + "px";
-        statusholder.style.width = onscreen_canvas.width + "px";
-        statusbar.style.height = "1.2em";
-        statusbar.style.textAlign = "left";
-        statusbar.style.background = "#d8d8d8";
-        statusbar.style.borderLeft = '2px solid #c8c8c8';
-        statusbar.style.borderTop = '2px solid #c8c8c8';
-        statusbar.style.borderRight = '2px solid #e8e8e8';
-        statusbar.style.borderBottom = '2px solid #e8e8e8';
-        statusbar.appendChild(document.createTextNode(" "));
-        statusholder.appendChild(statusbar);
+    js_canvas_remove_statusbar: function() {
+        if (statusbar !== null)
+            statusbar.parentNode.removeChild(statusbar);
+        statusbar = null;
     },
 
     /*
@@ -542,29 +600,61 @@ mergeInto(LibraryManager.library, {
      * Set the text in the status bar.
      */
     js_canvas_set_statusbar: function(ptr) {
-        var text = UTF8ToString(ptr);
-        statusbar.replaceChild(document.createTextNode(text),
-                               statusbar.lastChild);
+        statusbar.textContent = UTF8ToString(ptr);
+    },
+
+    /*
+     * bool js_canvas_get_preferred_size(int *wp, int *hp);
+     *
+     * This is called before calling midend_size() to set a puzzle to
+     * the default size.  If the JavaScript layer has an opinion about
+     * how big the puzzle should be, it can overwrite *wp and *hp with
+     * its preferred size, and return true if the "user" parameter to
+     * midend_size() should be true.  Otherwise it should leave them
+     * alone and return false.
+     */
+    js_canvas_get_preferred_size: function(wp, hp) {
+        if (document.readyState == "complete" && containing_div !== null) {
+            var dpr = window.devicePixelRatio || 1;
+            setValue(wp, containing_div.clientWidth * dpr, "i32");
+            setValue(hp, containing_div.clientHeight * dpr, "i32");
+            return true;
+        }
+        return false;
     },
 
     /*
      * void js_canvas_set_size(int w, int h);
      * 
-     * Set the size of the puzzle canvas. Called at setup, and every
-     * time the user picks new puzzle settings requiring a different
-     * size.
+     * Set the size of the puzzle canvas. Called whenever the size of
+     * the canvas needs to change.  That might be because of a change
+     * of configuration, because the user has resized the puzzle, or
+     * because the device pixel ratio has changed.
      */
     js_canvas_set_size: function(w, h) {
         onscreen_canvas.width = w;
         offscreen_canvas.width = w;
-        if (statusbar !== null) {
-            statusbar.style.width = (w - 4) + "px";
-            document.getElementById("statusbarholder").style.width = w + "px";
+        if (resizable_div !== null)
+            resizable_div.style.width =
+                w / (window.devicePixelRatio || 1) + "px";
+        else {
+            onscreen_canvas.style.width =
+                w / (window.devicePixelRatio || 1) + "px";
+            onscreen_canvas.style.height =
+                h / (window.devicePixelRatio || 1) + "px";
         }
-        resizable_div.style.width = w + "px";
 
         onscreen_canvas.height = h;
         offscreen_canvas.height = h;
+    },
+
+    /*
+     * double js_get_device_pixel_ratio();
+     *
+     * Return the current device pixel ratio.
+     */
+    js_get_device_pixel_ratio: function() {
+        return window.devicePixelRatio || 1;
     },
 
     /*
@@ -584,11 +674,13 @@ mergeInto(LibraryManager.library, {
      * construction.
      */
     js_dialog_string: function(index, title, initialtext) {
-        dlg_form.appendChild(document.createTextNode(UTF8ToString(title)));
+        var label = document.createElement("label");
+        label.textContent = UTF8ToString(title);
+        dlg_form.appendChild(label);
         var editbox = document.createElement("input");
         editbox.type = "text";
         editbox.value = UTF8ToString(initialtext);
-        dlg_form.appendChild(editbox);
+        label.appendChild(editbox);
         dlg_form.appendChild(document.createElement("br"));
 
         dlg_return_funcs.push(function() {
@@ -607,7 +699,9 @@ mergeInto(LibraryManager.library, {
      * gives the separator.
      */
     js_dialog_choices: function(index, title, choicelist, initvalue) {
-        dlg_form.appendChild(document.createTextNode(UTF8ToString(title)));
+        var label = document.createElement("label");
+        label.textContent = UTF8ToString(title);
+        dlg_form.appendChild(label);
         var dropdown = document.createElement("select");
         var choicestr = UTF8ToString(choicelist);
         var items = choicestr.slice(1).split(choicestr[0]);
@@ -620,7 +714,7 @@ mergeInto(LibraryManager.library, {
             dropdown.appendChild(option);
             options.push(option);
         }
-        dlg_form.appendChild(dropdown);
+        label.appendChild(dropdown);
         dlg_form.appendChild(document.createElement("br"));
 
         dlg_return_funcs.push(function() {
@@ -648,12 +742,10 @@ mergeInto(LibraryManager.library, {
     js_dialog_boolean: function(index, title, initvalue) {
         var checkbox = document.createElement("input");
         checkbox.type = "checkbox";
-        checkbox.id = "cb" + String(dlg_next_id++);
         checkbox.checked = (initvalue != 0);
-        dlg_form.appendChild(checkbox);
         var checkboxlabel = document.createElement("label");
-        checkboxlabel.setAttribute("for", checkbox.id);
-        checkboxlabel.textContent = UTF8ToString(title);
+        checkboxlabel.appendChild(checkbox);
+        checkboxlabel.appendChild(document.createTextNode(UTF8ToString(title)));
         dlg_form.appendChild(checkboxlabel);
         dlg_form.appendChild(document.createElement("br"));
 
@@ -697,5 +789,56 @@ mergeInto(LibraryManager.library, {
      */
     js_focus_canvas: function() {
         onscreen_canvas.focus();
+    },
+
+    /*
+     * bool js_savefile_read(void *buf, int len);
+     *
+     * Read len bytes from the save file that we're currently loading.
+     */
+    js_savefile_read: function(buf, len) {
+        return savefile_read_callback(buf, len);
+    },
+
+    /*
+     * void js_save_prefs(const char *);
+     *
+     * Write a buffer of serialised preferences data into localStorage.
+     */
+    js_save_prefs: function(buf) {
+        var prefsdata = UTF8ToString(buf);
+        try {
+            localStorage.setItem(location.pathname + " preferences", prefsdata);
+        } catch (error) {
+            // Tell the user their preferences have not been saved.
+            console.error(error);
+            alert("Saving of preferences failed: " + error.message);
+        }
+    },
+
+    /*
+     * void js_load_prefs(midend *);
+     *
+     * Retrieve preferences data from localStorage. If there is any,
+     * pass it back in as a string, via prefs_load_callback.
+     */
+    js_load_prefs: function(me) {
+        try {
+            var prefsdata =
+                localStorage.getItem(location.pathname + " preferences");
+            if (prefsdata !== undefined && prefsdata !== null) {
+                var lenbytes = lengthBytesUTF8(prefsdata) + 1;
+                var dest = _malloc(lenbytes);
+                if (dest != 0) {
+                    stringToUTF8(prefsdata, dest, lenbytes);
+                    prefs_load_callback(me, dest);
+                    _free(dest);
+                }
+            }
+        } catch (error) {
+            // Log the error but otherwise pretend the settings were
+            // absent.
+            console.warn(error);
+        }
     }
 });

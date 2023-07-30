@@ -35,7 +35,11 @@
 #include <string.h>
 #include <assert.h>
 #include <ctype.h>
-#include <math.h>
+#ifdef NO_TGMATH_H
+#  include <math.h>
+#else
+#  include <tgmath.h>
+#endif
 
 #include "puzzles.h"
 
@@ -193,9 +197,9 @@ static game_params *custom_params(const config_item *cfg)
 
 static const char *validate_params(const game_params *params, bool full)
 {
-    if ((params->w * params->h ) > 54)  return "Grid is too big";
     if (params->w < 3)                  return "Width must be at least 3";
     if (params->h < 3)                  return "Height must be at least 3";
+    if (params->w > 54 / params->h)     return "Grid is too big";
     if (params->diff >= DIFFCOUNT)      return "Unknown difficulty rating";
     return NULL;
 }
@@ -972,7 +976,7 @@ static int path_cmp(const void *a, const void *b) {
 
 static char *new_game_desc(const game_params *params, random_state *rs,
                            char **aux, bool interactive) {
-    int i,count,c,w,h,r,p,g;
+    int count,c,w,h,r,p,g;
     game_state *new;
 
     /* Variables for puzzle generation algorithm */
@@ -993,7 +997,6 @@ static char *new_game_desc(const game_params *params, random_state *rs,
     char *e;
     char *desc; 
 
-    i = 0;
     while (true) {
         new = new_state(params);
         abort = false;
@@ -1031,7 +1034,7 @@ static char *new_game_desc(const game_params *params, random_state *rs,
         /* Monsters / Mirrors ratio should be balanced */
         ratio = (float)new->common->num_total /
             (float)(new->common->params.w * new->common->params.h);
-        if (ratio < 0.48 || ratio > 0.78) {
+        if (ratio < 0.48F || ratio > 0.78F) {
             free_game(new);
             continue;
         }        
@@ -1253,7 +1256,6 @@ static char *new_game_desc(const game_params *params, random_state *rs,
          * difficulty level, free memory and start from scratch */    
         sfree(old_guess);
         free_game(new);
-        i++;
     }
     
     /* We have a valid puzzle! */
@@ -1574,6 +1576,8 @@ static char *solve_game(const game_state *state_start, const game_state *currsta
     }
 
 /*  printf("Puzzle solved at level %s, iterations %d, ambiguous %d\n", (solved_bruteforce ? "TRICKY" : "NORMAL"), iterative_depth, count_ambiguous); */
+    (void)iterative_depth;
+    (void)count_ambiguous;
 
     move = snewn(solve_state->common->num_total * 4 +2, char);
     c = move;
@@ -1645,26 +1649,39 @@ struct game_ui {
 static game_ui *new_ui(const game_state *state)
 {
     game_ui *ui = snew(game_ui);
-    ui->hx = ui->hy = 0;
     ui->hpencil = false;
-    ui->hshow = false;
-    ui->hcursor = false;
+    ui->hx = ui->hy = ui->hshow = ui->hcursor =
+        getenv_bool("PUZZLES_SHOW_CURSOR", false);
     ui->ascii = false;
     return ui;
 }
 
+static config_item *get_prefs(game_ui *ui)
+{
+    config_item *ret;
+
+    ret = snewn(2, config_item);
+
+    ret[0].name = "Monster representation";
+    ret[0].kw = "monsters";
+    ret[0].type = C_CHOICES;
+    ret[0].u.choices.choicenames = ":Pictures:Letters";
+    ret[0].u.choices.choicekws = ":pictures:letters";
+    ret[0].u.choices.selected = ui->ascii;
+
+    ret[1].name = NULL;
+    ret[1].type = C_END;
+
+    return ret;
+}
+
+static void set_prefs(game_ui *ui, const config_item *cfg)
+{
+    ui->ascii = cfg[0].u.choices.selected;
+}
+
 static void free_ui(game_ui *ui) {
     sfree(ui);
-    return;
-}
-
-static char *encode_ui(const game_ui *ui)
-{
-    return NULL;
-}
-
-static void decode_ui(game_ui *ui, const char *encoding)
-{
     return;
 }
 
@@ -1679,6 +1696,20 @@ static void game_changed_state(game_ui *ui, const game_state *oldstate,
         if (g == 1 || g == 2 || g == 4)
             ui->hshow = false;
     }
+}
+
+static const char *current_key_label(const game_ui *ui,
+                                     const game_state *state, int button)
+{
+    int xi;
+
+    if (ui->hshow && button == CURSOR_SELECT)
+        return ui->hpencil ? "Ink" : "Pencil";
+    if (button == CURSOR_SELECT2) {
+        xi = state->common->xinfo[ui->hx + ui->hy*(state->common->params.w+2)];
+        if (xi >= 0 && !state->common->fixed[xi]) return "Clear";
+    }
+    return "";
 }
 
 struct game_drawstate {
@@ -1743,7 +1774,7 @@ static char *interpret_move(const game_state *state, game_ui *ui,
 
     if (button == 'a' || button == 'A') {
         ui->ascii = !ui->ascii;
-        return UI_UPDATE;
+        return MOVE_UI_UPDATE;
     }
 
     if (button == 'm' || button == 'M') {
@@ -1755,22 +1786,30 @@ static char *interpret_move(const game_state *state, game_ui *ui,
         if (xi >= 0 && !state->common->fixed[xi]) {
             if (button == 'g' || button == 'G' || button == '1') {
                 if (!ui->hcursor) ui->hshow = false;
+                if (state->guess[xi] == 1)
+                    return ui->hcursor ? NULL : MOVE_UI_UPDATE;
                 sprintf(buf,"G%d",xi);
                 return dupstr(buf);
             }
             if (button == 'v' || button == 'V' || button == '2') {
                 if (!ui->hcursor) ui->hshow = false;
+                if (state->guess[xi] == 2)
+                    return ui->hcursor ? NULL : MOVE_UI_UPDATE;
                 sprintf(buf,"V%d",xi);
                 return dupstr(buf);
             }
             if (button == 'z' || button == 'Z' || button == '3') {
                 if (!ui->hcursor) ui->hshow = false;
+                if (state->guess[xi] == 4)
+                    return ui->hcursor ? NULL : MOVE_UI_UPDATE;
                 sprintf(buf,"Z%d",xi);
                 return dupstr(buf);
             }
             if (button == 'e' || button == 'E' || button == CURSOR_SELECT2 ||
                 button == '0' || button == '\b' ) {
                 if (!ui->hcursor) ui->hshow = false;
+                if (state->guess[xi] == 7 && state->pencils[xi] == 0)
+                    return ui->hcursor ? NULL : MOVE_UI_UPDATE;
                 sprintf(buf,"E%d",xi);
                 return dupstr(buf);
             }
@@ -1790,12 +1829,12 @@ static char *interpret_move(const game_state *state, game_ui *ui,
             }
         ui->hshow = true;
         ui->hcursor = true;
-        return UI_UPDATE;
+        return MOVE_UI_UPDATE;
     }
     if (ui->hshow && button == CURSOR_SELECT) {
         ui->hpencil = !ui->hpencil;
         ui->hcursor = true;
-        return UI_UPDATE;
+        return MOVE_UI_UPDATE;
     }
 
     if (ui->hshow && ui->hpencil) {
@@ -1827,11 +1866,13 @@ static char *interpret_move(const game_state *state, game_ui *ui,
             }
             if (button == 'e' || button == 'E' || button == CURSOR_SELECT2 ||
                 button == '0' || button == '\b') {
-                sprintf(buf,"E%d",xi);
                 if (!ui->hcursor) {
                     ui->hpencil = false;
                     ui->hshow = false;
                 }
+                if (state->pencils[xi] == 0)
+                    return ui->hcursor ? NULL : MOVE_UI_UPDATE;
+                sprintf(buf,"E%d",xi);
                 return dupstr(buf);
             }
         }       
@@ -1847,14 +1888,14 @@ static char *interpret_move(const game_state *state, game_ui *ui,
                     ui->hpencil = false;
                     ui->hcursor = false;
                     ui->hx = gx; ui->hy = gy;
-                    return UI_UPDATE;
+                    return MOVE_UI_UPDATE;
                 }
                 else if (button == RIGHT_BUTTON && g == 7) {
                     ui->hshow = true;
                     ui->hpencil = true;
                     ui->hcursor = false;
                     ui->hx = gx; ui->hy = gy;
-                    return UI_UPDATE;
+                    return MOVE_UI_UPDATE;
                 }
             }
             else if (ui->hshow) {
@@ -1865,14 +1906,14 @@ static char *interpret_move(const game_state *state, game_ui *ui,
                             ui->hpencil = false;
                             ui->hcursor = false;
                             ui->hx = 0; ui->hy = 0;
-                            return UI_UPDATE;
+                            return MOVE_UI_UPDATE;
                         }
                         else {
                             ui->hshow = true;
                             ui->hpencil = false;
                             ui->hcursor = false;
                             ui->hx = gx; ui->hy = gy;
-                            return UI_UPDATE;
+                            return MOVE_UI_UPDATE;
                         }
                     }
                     else {
@@ -1880,7 +1921,7 @@ static char *interpret_move(const game_state *state, game_ui *ui,
                         ui->hpencil = false;
                         ui->hcursor = false;
                         ui->hx = gx; ui->hy = gy;
-                        return UI_UPDATE;
+                        return MOVE_UI_UPDATE;
                     }
                 }
                 else if (button == RIGHT_BUTTON) {
@@ -1889,7 +1930,7 @@ static char *interpret_move(const game_state *state, game_ui *ui,
                         ui->hpencil = true;
                         ui->hcursor = false;
                         ui->hx = gx; ui->hy = gy;
-                        return UI_UPDATE;
+                        return MOVE_UI_UPDATE;
                     }
                     else {
                         if (gx == ui->hx && gy == ui->hy) {
@@ -1897,14 +1938,14 @@ static char *interpret_move(const game_state *state, game_ui *ui,
                             ui->hpencil = false;
                             ui->hcursor = false;
                             ui->hx = 0; ui->hy = 0;
-                            return UI_UPDATE;
+                            return MOVE_UI_UPDATE;
                         }
                         else if (g == 7) {
                             ui->hshow = true;
                             ui->hpencil = true;
                             ui->hcursor = false;
                             ui->hx = gx; ui->hy = gy;
-                            return UI_UPDATE;
+                            return MOVE_UI_UPDATE;
                         }
                     }
                 }
@@ -2056,11 +2097,11 @@ static game_state *execute_move(const game_state *state, const char *move)
         if (c == 'S') {
             move++;
             solver = true;
-        }
-        if (c == 'G' || c == 'V' || c == 'Z' || c == 'E' ||
-            c == 'g' || c == 'v' || c == 'z') {
+        } else if (c == 'G' || c == 'V' || c == 'Z' || c == 'E' ||
+                   c == 'g' || c == 'v' || c == 'z') {
             move++;
-            sscanf(move, "%d%n", &x, &n);
+            if (sscanf(move, "%d%n", &x, &n) != 1) goto badmove;
+            if (x < 0 || x >= ret->common->num_total) goto badmove;
             if (c == 'G') ret->guess[x] = 1;
             if (c == 'V') ret->guess[x] = 2;
             if (c == 'Z') ret->guess[x] = 4;
@@ -2069,23 +2110,26 @@ static game_state *execute_move(const game_state *state, const char *move)
             if (c == 'v') ret->pencils[x] ^= 2;
             if (c == 'z') ret->pencils[x] ^= 4;
             move += n;
-        }
-        if (c == 'D' && sscanf(move + 1, "%d,%d%n", &x, &y, &n) == 2 &&
-            is_clue(ret, x, y)) {
+        } else if (c == 'D' && sscanf(move + 1, "%d,%d%n", &x, &y, &n) == 2 &&
+                   is_clue(ret, x, y)) {
             ret->hints_done[clue_index(ret, x, y)] ^= 1;
             move += n + 1;
-        }
-        if (c == 'M') {
+        } else if (c == 'M') {
             /*
              * Fill in absolutely all pencil marks in unfilled
              * squares, for those who like to play by the rigorous
              * approach of starting off in that state and eliminating
              * things.
              */
-            for (i = 0; i < ret->common->wh; i++)
+            for (i = 0; i < ret->common->num_total; i++)
                 if (ret->guess[i] == 7)
                     ret->pencils[i] = 7;
             move++;
+        } else {
+            /* Unknown move type. */
+        badmove:
+            free_game(ret);
+            return NULL;
         }
         if (*move == ';') move++;
     }
@@ -2118,7 +2162,7 @@ static game_state *execute_move(const game_state *state, const char *move)
 #define PREFERRED_TILE_SIZE 64
 
 static void game_compute_size(const game_params *params, int tilesize,
-                              int *x, int *y)
+                              const game_ui *ui, int *x, int *y)
 {
     /* Ick: fake up `ds->tilesize' for macro expansion purposes */
     struct { int tilesize; } ads, *ds = &ads;
@@ -2402,7 +2446,7 @@ static void draw_monster(drawing *dr, game_drawstate *ds, int x, int y,
 static void draw_monster_count(drawing *dr, game_drawstate *ds,
                                const game_state *state, int c, bool hflash) {
     int dx,dy;
-    char buf[8];
+    char buf[MAX_DIGITS(int) + 1];
     char bufm[8];
     
     dy = TILESIZE/4;
@@ -2447,7 +2491,7 @@ static void draw_path_hint(drawing *dr, game_drawstate *ds,
                            const struct game_params *params,
                            int hint_index, bool hflash, int hint) {
     int x, y, color, dx, dy, text_dx, text_dy, text_size;
-    char buf[4];
+    char buf[MAX_DIGITS(int) + 1];
 
     if (ds->hint_errors[hint_index])
         color = COL_ERROR;
@@ -2743,19 +2787,6 @@ static int game_status(const game_state *state)
     return state->solved;
 }
 
-static bool game_timing_state(const game_state *state, game_ui *ui)
-{
-    return true;
-}
-
-static void game_print_size(const game_params *params, float *x, float *y)
-{
-}
-
-static void game_print(drawing *dr, const game_state *state, int tilesize)
-{
-}
-
 #ifdef COMBINED
 #define thegame undead
 #endif
@@ -2777,12 +2808,14 @@ const struct game thegame = {
     free_game,
     true, solve_game,
     true, game_can_format_as_text_now, game_text_format,
+    get_prefs, set_prefs,
     new_ui,
     free_ui,
-    encode_ui,
-    decode_ui,
+    NULL, /* encode_ui */
+    NULL, /* decode_ui */
     game_request_keys,
     game_changed_state,
+    current_key_label,
     interpret_move,
     execute_move,
     PREFERRED_TILE_SIZE, game_compute_size, game_set_size,
@@ -2794,8 +2827,8 @@ const struct game thegame = {
     game_flash_length,
     game_get_cursor_location,
     game_status,
-    false, false, game_print_size, game_print,
+    false, false, NULL, NULL,          /* print_size, print */
     false,                 /* wants_statusbar */
-    false, game_timing_state,
+    false, NULL,                       /* timing_state */
     0,                     /* flags */
 };
