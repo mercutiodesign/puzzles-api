@@ -1,4 +1,4 @@
-FROM python:3.10.6-slim-bullseye as build-stage
+FROM python:3.11.4-slim-bookworm as build-stage
 
 RUN set -x \
   && apt-get update \
@@ -18,7 +18,7 @@ RUN set -x \
   && mv loopygenerator .. \
   && rm -rf ./*
 
-FROM python:3.10.6-slim-bullseye
+FROM python:3.11.4-slim-bookworm
 
 RUN mkdir /code
 WORKDIR /code

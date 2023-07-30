@@ -64,9 +64,8 @@ async def loopy(request, params: str):
             await proc.kill()
         return text("Timeout", status=400)
 
-    if proc.returncode:
-        return text((stdout).decode(), status=500)
-    return text(stdout.decode())
+    status = 500 if proc.returncode else 200
+    return text(stdout.decode(), status=status)
 
 
 if __name__ == "__main__":
