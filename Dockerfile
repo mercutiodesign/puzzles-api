@@ -1,4 +1,4 @@
-FROM python:3.11.4-slim-bookworm as build-stage
+FROM python:3.12.0-slim-bookworm as build-stage
 
 RUN set -x \
   && apt-get update \
@@ -18,13 +18,13 @@ RUN set -x \
   && mv loopygenerator .. \
   && rm -rf ./*
 
-FROM python:3.11.4-slim-bookworm
+FROM python:3.12.0-slim-bookworm
 
 RUN mkdir /code
 WORKDIR /code
 
 COPY requirements.txt .
-RUN pip install --disable-pip-version-check --no-cache-dir -r requirements.txt
+RUN --mount=type=cache,target=/root/.cache pip install --disable-pip-version-check -r requirements.txt
 COPY src .
 
 COPY --from=build-stage /loopygenerator /usr/bin
