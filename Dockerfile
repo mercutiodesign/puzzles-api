@@ -6,8 +6,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   ; echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache \
   && set -x \
   && apt-get update \
-  && apt-get install -y --no-install-recommends cmake gcc build-essential \
-  && rm -rf /var/lib/apt/lists/*
+  && apt-get install -y --no-install-recommends cmake gcc build-essential
 
 RUN mkdir /puzzles
 WORKDIR /puzzles
