@@ -1,6 +1,10 @@
-FROM python:3.12.0-slim-bookworm as build-stage
+FROM python:3.11.6-slim-bookworm as build-stage
 
-RUN set -x \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,target=/var/lib/apt,sharing=locked \
+  rm -f /etc/apt/apt.conf.d/docker-clean \
+  ; echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache \
+  && set -x \
   && apt-get update \
   && apt-get install -y --no-install-recommends cmake gcc build-essential \
   && rm -rf /var/lib/apt/lists/*
@@ -18,7 +22,7 @@ RUN set -x \
   && mv loopygenerator .. \
   && rm -rf ./*
 
-FROM python:3.12.0-slim-bookworm
+FROM python:3.11.6-slim-bookworm
 
 RUN mkdir /code
 WORKDIR /code
