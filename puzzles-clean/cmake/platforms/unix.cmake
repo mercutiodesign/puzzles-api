@@ -68,7 +68,6 @@ if(STRICT AND (CMAKE_C_COMPILER_ID MATCHES "Clang"))
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wmissing-variable-declarations")
 endif()
 
-add_compile_definitions(HELP_DIR="${CMAKE_INSTALL_PREFIX}/share/sgt-puzzles/help")
 
 function(get_platform_puzzle_extra_source_files OUTVAR NAME)
   if(build_icons AND EXISTS ${CMAKE_SOURCE_DIR}/icons/${NAME}.sav)
