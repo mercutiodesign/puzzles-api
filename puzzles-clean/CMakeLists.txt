@@ -15,12 +15,6 @@ add_library(common $<TARGET_OBJECTS:core_obj> hat.c spectre.c)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-puzzle(loopy
-  DISPLAYNAME "Loopy"
-  DESCRIPTION "Loop-drawing puzzle"
-  OBJECTIVE "Draw a single closed loop, given clues about number of \
-adjacent edges.")
-solver(loopy)
 cliprogram(loopygenerator loopy.c
   COMPILE_DEFINITIONS STANDALONE_GENERATOR)
 
