@@ -116,7 +116,6 @@ function(set_platform_puzzle_target_properties NAME TARGET)
       # CMAKE_INSTALL_BINDIR.
       install(TARGETS ${TARGET})
     endif()
-    configure_file(${CMAKE_SOURCE_DIR}/puzzle.desktop.in ${binary_name}.desktop)
     foreach(icon_size ${all_icon_sizes})
       install(
         FILES ${CMAKE_CURRENT_BINARY_DIR}/icons/${NAME}-${icon_size}d24.png

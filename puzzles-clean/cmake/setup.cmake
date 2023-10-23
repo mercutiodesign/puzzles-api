@@ -81,8 +81,6 @@ endfunction()
 map_pathname(${CMAKE_SOURCE_DIR} /puzzles)
 map_pathname(${CMAKE_BINARY_DIR} /build)
 
-include(icons/icons.cmake)
-
 # The main function called from the top-level CMakeLists.txt to define
 # each puzzle.
 function(puzzle NAME)
