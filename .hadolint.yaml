@@ -3,5 +3,7 @@ ignored:
   - DL3008
   # disable explicit version for apk install (alpine)
   - DL3018
+  # disable no-cache warning
+  - DL3042
 trustedRegistries:
   - docker.io
