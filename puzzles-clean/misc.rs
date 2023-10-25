@@ -27,6 +27,7 @@ extern "C" {
     fn strlen(_: *const libc::c_char) -> libc::c_ulong;
     fn sprintf(_: *mut libc::c_char, _: *const libc::c_char, _: ...) -> libc::c_int;
     fn fgets(__s: *mut libc::c_char, __n: libc::c_int, __stream: *mut FILE) -> *mut libc::c_char;
+    fn fatal(fmt: *const libc::c_char, _: ...);
     fn frontend_default_colour(fe: *mut frontend, output: *mut libc::c_float);
     fn draw_text(
         dr: *mut drawing,
@@ -1360,7 +1361,7 @@ pub unsafe extern "C" fn button2label(mut button: libc::c_int) -> *mut libc::c_c
         525 => return dupstr(b"Select\0" as *const u8 as *const libc::c_char),
         8 => return dupstr(b"Clear\0" as *const u8 as *const libc::c_char),
         _ => {
-            panic!("unknown generic key");
+            fatal(b"unknown generic key\0" as *const u8 as *const libc::c_char);
         }
     }
     return 0 as *mut libc::c_char;

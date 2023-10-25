@@ -24,7 +24,7 @@ pub mod malloc;
 pub mod matching;
 pub mod midend;
 pub mod misc;
-//pub mod nullfe;
+pub mod nullfe;
 pub mod penrose;
 pub mod penrose_legacy;
 pub mod ps;

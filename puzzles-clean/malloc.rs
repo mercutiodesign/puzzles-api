@@ -5,17 +5,18 @@ extern "C" {
     fn free(_: *mut libc::c_void);
     fn strcpy(_: *mut libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
     fn strlen(_: *const libc::c_char) -> libc::c_ulong;
+    fn fatal(fmt: *const libc::c_char, _: ...);
 }
 pub type size_t = libc::c_ulong;
 #[no_mangle]
 pub unsafe extern "C" fn smalloc(mut size: size_t) -> *mut libc::c_void {
     let mut p: *mut libc::c_void = 0 as *mut libc::c_void;
     if size > 9223372036854775807 as libc::c_long as size_t {
-        panic!("allocation too large");
+        fatal(b"allocation too large\0" as *const u8 as *const libc::c_char);
     }
     p = malloc(size);
     if p.is_null() {
-        panic!("out of memory");
+        fatal(b"out of memory\0" as *const u8 as *const libc::c_char);
     }
     return p;
 }
@@ -29,7 +30,7 @@ pub unsafe extern "C" fn sfree(mut p: *mut libc::c_void) {
 pub unsafe extern "C" fn srealloc(mut p: *mut libc::c_void, mut size: size_t) -> *mut libc::c_void {
     let mut q: *mut libc::c_void = 0 as *mut libc::c_void;
     if size > 9223372036854775807 as libc::c_long as size_t {
-        panic!("allocation too large");
+        fatal(b"allocation too large\0" as *const u8 as *const libc::c_char);
     }
     if !p.is_null() {
         q = realloc(p, size);
@@ -37,7 +38,7 @@ pub unsafe extern "C" fn srealloc(mut p: *mut libc::c_void, mut size: size_t) ->
         q = malloc(size);
     }
     if q.is_null() {
-        panic!("out of memory");
+        fatal(b"out of memory\0" as *const u8 as *const libc::c_char);
     }
     return q;
 }
