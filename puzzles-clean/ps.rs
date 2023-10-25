@@ -1,5 +1,4 @@
-#![allow(dead_code, mutable_transmutes, non_camel_case_types, non_snake_case, non_upper_case_globals, unused_assignments, unused_mut)]
-#![feature(c_variadic, extern_types, label_break_value)]
+use ::libc;
 extern "C" {
     pub type _IO_wide_data;
     pub type _IO_codecvt;
