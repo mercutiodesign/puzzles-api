@@ -28,12 +28,10 @@ pub unsafe extern "C" fn domino_layout(
     let mut list: *mut libc::c_int = 0 as *mut libc::c_int;
     let mut wh: libc::c_int = w * h;
     grid = smalloc(
-        (wh as libc::c_ulong)
-            .wrapping_mul(::core::mem::size_of::<libc::c_int>() as libc::c_ulong),
+        (wh as libc::c_ulong).wrapping_mul(::core::mem::size_of::<libc::c_int>() as libc::c_ulong),
     ) as *mut libc::c_int;
     grid2 = smalloc(
-        (wh as libc::c_ulong)
-            .wrapping_mul(::core::mem::size_of::<libc::c_int>() as libc::c_ulong),
+        (wh as libc::c_ulong).wrapping_mul(::core::mem::size_of::<libc::c_int>() as libc::c_ulong),
     ) as *mut libc::c_int;
     list = smalloc(
         ((2 as libc::c_int * wh) as libc::c_ulong)
@@ -86,43 +84,36 @@ pub unsafe extern "C" fn domino_layout_prealloc(
         while i < w - 1 as libc::c_int {
             let fresh1 = k;
             k = k + 1;
-            *list
-                .offset(
-                    fresh1 as isize,
-                ) = 2 as libc::c_int * (j * w + i) + 1 as libc::c_int;
+            *list.offset(fresh1 as isize) = 2 as libc::c_int * (j * w + i) + 1 as libc::c_int;
             i += 1;
             i;
         }
         j += 1;
         j;
     }
-    if k == 2 as libc::c_int * wh - h - w {} else {
+    if k == 2 as libc::c_int * wh - h - w {
+    } else {
         __assert_fail(
             b"k == 2*wh - h - w\0" as *const u8 as *const libc::c_char,
             b"/puzzles/laydomino.c\0" as *const u8 as *const libc::c_char,
             72 as libc::c_int as libc::c_uint,
-            (*::core::mem::transmute::<
-                &[u8; 75],
-                &[libc::c_char; 75],
-            >(
+            (*::core::mem::transmute::<&[u8; 75], &[libc::c_char; 75]>(
                 b"void domino_layout_prealloc(int, int, random_state *, int *, int *, int *)\0",
             ))
-                .as_ptr(),
+            .as_ptr(),
         );
     }
     'c_3329: {
-        if k == 2 as libc::c_int * wh - h - w {} else {
+        if k == 2 as libc::c_int * wh - h - w {
+        } else {
             __assert_fail(
                 b"k == 2*wh - h - w\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/laydomino.c\0" as *const u8 as *const libc::c_char,
                 72 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 75],
-                    &[libc::c_char; 75],
-                >(
+                (*::core::mem::transmute::<&[u8; 75], &[libc::c_char; 75]>(
                     b"void domino_layout_prealloc(int, int, random_state *, int *, int *, int *)\0",
                 ))
-                    .as_ptr(),
+                .as_ptr(),
             );
         }
     };
@@ -218,15 +209,12 @@ pub unsafe extern "C" fn domino_layout_prealloc(
                 } else {
                     m = *grid.offset(k as isize);
                     if *grid2.offset(m as isize) < 0 as libc::c_int
-                        || *grid2.offset(m as isize)
-                            > *grid2.offset(i as isize) + 1 as libc::c_int
+                        || *grid2.offset(m as isize) > *grid2.offset(i as isize) + 1 as libc::c_int
                     {
-                        *grid2
-                            .offset(
-                                m as isize,
-                            ) = *grid2.offset(i as isize) + 1 as libc::c_int;
+                        *grid2.offset(m as isize) = *grid2.offset(i as isize) + 1 as libc::c_int;
                         *grid2.offset(k as isize) = i;
-                        if todo < wh {} else {
+                        if todo < wh {
+                        } else {
                             __assert_fail(
                                 b"todo < wh\0" as *const u8 as *const libc::c_char,
                                 b"/puzzles/laydomino.c\0" as *const u8
@@ -242,7 +230,8 @@ pub unsafe extern "C" fn domino_layout_prealloc(
                             );
                         }
                         'c_2893: {
-                            if todo < wh {} else {
+                            if todo < wh {
+                            } else {
                                 __assert_fail(
                                     b"todo < wh\0" as *const u8 as *const libc::c_char,
                                     b"/puzzles/laydomino.c\0" as *const u8
@@ -273,22 +262,21 @@ pub unsafe extern "C" fn domino_layout_prealloc(
                 i = -(1 as libc::c_int);
             }
         }
-        if i >= 0 as libc::c_int {} else {
+        if i >= 0 as libc::c_int {
+        } else {
             __assert_fail(
                 b"i >= 0\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/laydomino.c\0" as *const u8 as *const libc::c_char,
                 264 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 75],
-                    &[libc::c_char; 75],
-                >(
+                (*::core::mem::transmute::<&[u8; 75], &[libc::c_char; 75]>(
                     b"void domino_layout_prealloc(int, int, random_state *, int *, int *, int *)\0",
                 ))
-                    .as_ptr(),
+                .as_ptr(),
             );
         }
         'c_2800: {
-            if i >= 0 as libc::c_int {} else {
+            if i >= 0 as libc::c_int {
+            } else {
                 __assert_fail(
                     b"i >= 0\0" as *const u8 as *const libc::c_char,
                     b"/puzzles/laydomino.c\0" as *const u8 as *const libc::c_char,
@@ -305,7 +293,8 @@ pub unsafe extern "C" fn domino_layout_prealloc(
         };
         loop {
             j = *grid2.offset(i as isize);
-            if j >= 0 as libc::c_int && j < wh {} else {
+            if j >= 0 as libc::c_int && j < wh {
+            } else {
                 __assert_fail(
                     b"j >= 0 && j < wh\0" as *const u8 as *const libc::c_char,
                     b"/puzzles/laydomino.c\0" as *const u8 as *const libc::c_char,
@@ -320,7 +309,8 @@ pub unsafe extern "C" fn domino_layout_prealloc(
                 );
             }
             'c_2733: {
-                if j >= 0 as libc::c_int && j < wh {} else {
+                if j >= 0 as libc::c_int && j < wh {
+                } else {
                     __assert_fail(
                         b"j >= 0 && j < wh\0" as *const u8 as *const libc::c_char,
                         b"/puzzles/laydomino.c\0" as *const u8 as *const libc::c_char,
@@ -343,5 +333,5 @@ pub unsafe extern "C" fn domino_layout_prealloc(
             }
             i = k;
         }
-    };
+    }
 }

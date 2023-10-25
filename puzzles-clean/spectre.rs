@@ -10,11 +10,7 @@ extern "C" {
     ) -> !;
     fn strchr(_: *const libc::c_char, _: libc::c_int) -> *mut libc::c_char;
     fn strcspn(_: *const libc::c_char, _: *const libc::c_char) -> libc::c_ulong;
-    fn memcpy(
-        _: *mut libc::c_void,
-        _: *const libc::c_void,
-        _: libc::c_ulong,
-    ) -> *mut libc::c_void;
+    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> *mut libc::c_void;
     fn smalloc(size: size_t) -> *mut libc::c_void;
     fn srealloc(p: *mut libc::c_void, size: size_t) -> *mut libc::c_void;
     fn sfree(p: *mut libc::c_void);
@@ -24,18 +20,13 @@ extern "C" {
     fn newtree234(cmp: cmpfn234) -> *mut tree234;
     fn freetree234(t: *mut tree234);
     fn add234(t: *mut tree234, e: *mut libc::c_void) -> *mut libc::c_void;
-    fn find234(
-        t: *mut tree234,
-        e: *mut libc::c_void,
-        cmp: cmpfn234,
-    ) -> *mut libc::c_void;
+    fn find234(t: *mut tree234, e: *mut libc::c_void, cmp: cmpfn234) -> *mut libc::c_void;
     fn delpos234(t: *mut tree234, index: libc::c_int) -> *mut libc::c_void;
 }
 pub type size_t = libc::c_ulong;
 pub type tree234 = tree234_Tag;
-pub type cmpfn234 = Option::<
-    unsafe extern "C" fn(*mut libc::c_void, *mut libc::c_void) -> libc::c_int,
->;
+pub type cmpfn234 =
+    Option<unsafe extern "C" fn(*mut libc::c_void, *mut libc::c_void) -> libc::c_int>;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct SpectrePatchParams {
@@ -97,9 +88,8 @@ pub struct SpectreCallbackContext {
     pub external_cb: spectre_tile_callback_fn,
     pub external_cbctx: *mut libc::c_void,
 }
-pub type spectre_tile_callback_fn = Option::<
-    unsafe extern "C" fn(*mut libc::c_void, *const libc::c_int) -> (),
->;
+pub type spectre_tile_callback_fn =
+    Option<unsafe extern "C" fn(*mut libc::c_void, *const libc::c_int) -> ()>;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct Coord {
@@ -191,10 +181,8 @@ unsafe extern "C" fn point_mul_by_d(mut x: Point) -> Point {
     let mut r: Point = Point { coeffs: [0; 4] };
     r.coeffs[0 as libc::c_int as usize] = -x.coeffs[3 as libc::c_int as usize];
     r.coeffs[1 as libc::c_int as usize] = x.coeffs[0 as libc::c_int as usize];
-    r
-        .coeffs[2 as libc::c_int
-        as usize] = x.coeffs[1 as libc::c_int as usize]
-        + x.coeffs[3 as libc::c_int as usize];
+    r.coeffs[2 as libc::c_int as usize] =
+        x.coeffs[1 as libc::c_int as usize] + x.coeffs[3 as libc::c_int as usize];
     r.coeffs[3 as libc::c_int as usize] = x.coeffs[2 as libc::c_int as usize];
     return r;
 }
@@ -205,9 +193,7 @@ unsafe extern "C" fn point_mul(mut a: Point, mut b: Point) -> Point {
     let mut r: Point = Point { coeffs: [0; 4] };
     j = 0 as libc::c_int as size_t;
     while j < 4 as libc::c_int as size_t {
-        r
-            .coeffs[j
-            as usize] = a.coeffs[j as usize] * b.coeffs[3 as libc::c_int as usize];
+        r.coeffs[j as usize] = a.coeffs[j as usize] * b.coeffs[3 as libc::c_int as usize];
         j = j.wrapping_add(1);
         j;
     }
@@ -319,96 +305,24 @@ unsafe extern "C" fn coord_sign(mut x: Coord) -> libc::c_int {
             -(1 as libc::c_int)
         } else {
             1 as libc::c_int
-        }
+        };
     } else {
         return if x.cr3 < 0 as libc::c_int {
             -(1 as libc::c_int)
         } else {
             1 as libc::c_int
-        }
+        };
     };
 }
 static mut subhexes_G: [Hex; 7] = [HEX_F, HEX_X, HEX_G, HEX_S, HEX_P, HEX_D, HEX_J];
-static mut subhexes_D: [Hex; 8] = [
-    HEX_F,
-    HEX_P,
-    HEX_G,
-    HEX_S,
-    HEX_X,
-    HEX_D,
-    HEX_F,
-    HEX_X,
-];
-static mut subhexes_J: [Hex; 8] = [
-    HEX_F,
-    HEX_P,
-    HEX_G,
-    HEX_S,
-    HEX_Y,
-    HEX_D,
-    HEX_F,
-    HEX_P,
-];
-static mut subhexes_L: [Hex; 8] = [
-    HEX_F,
-    HEX_P,
-    HEX_G,
-    HEX_S,
-    HEX_Y,
-    HEX_D,
-    HEX_F,
-    HEX_X,
-];
-static mut subhexes_X: [Hex; 8] = [
-    HEX_F,
-    HEX_Y,
-    HEX_G,
-    HEX_S,
-    HEX_Y,
-    HEX_D,
-    HEX_F,
-    HEX_P,
-];
-static mut subhexes_P: [Hex; 8] = [
-    HEX_F,
-    HEX_Y,
-    HEX_G,
-    HEX_S,
-    HEX_Y,
-    HEX_D,
-    HEX_F,
-    HEX_X,
-];
-static mut subhexes_S: [Hex; 8] = [
-    HEX_L,
-    HEX_P,
-    HEX_G,
-    HEX_S,
-    HEX_X,
-    HEX_D,
-    HEX_F,
-    HEX_X,
-];
-static mut subhexes_F: [Hex; 8] = [
-    HEX_F,
-    HEX_P,
-    HEX_G,
-    HEX_S,
-    HEX_Y,
-    HEX_D,
-    HEX_F,
-    HEX_Y,
-];
-static mut subhexes_Y: [Hex; 8] = [
-    HEX_F,
-    HEX_Y,
-    HEX_G,
-    HEX_S,
-    HEX_Y,
-    HEX_D,
-    HEX_F,
-    HEX_Y,
-];
+static mut subhexes_D: [Hex; 8] = [HEX_F, HEX_P, HEX_G, HEX_S, HEX_X, HEX_D, HEX_F, HEX_X];
+static mut subhexes_J: [Hex; 8] = [HEX_F, HEX_P, HEX_G, HEX_S, HEX_Y, HEX_D, HEX_F, HEX_P];
+static mut subhexes_L: [Hex; 8] = [HEX_F, HEX_P, HEX_G, HEX_S, HEX_Y, HEX_D, HEX_F, HEX_X];
+static mut subhexes_X: [Hex; 8] = [HEX_F, HEX_Y, HEX_G, HEX_S, HEX_Y, HEX_D, HEX_F, HEX_P];
+static mut subhexes_P: [Hex; 8] = [HEX_F, HEX_Y, HEX_G, HEX_S, HEX_Y, HEX_D, HEX_F, HEX_X];
+static mut subhexes_S: [Hex; 8] = [HEX_L, HEX_P, HEX_G, HEX_S, HEX_X, HEX_D, HEX_F, HEX_X];
+static mut subhexes_F: [Hex; 8] = [HEX_F, HEX_P, HEX_G, HEX_S, HEX_Y, HEX_D, HEX_F, HEX_Y];
+static mut subhexes_Y: [Hex; 8] = [HEX_F, HEX_Y, HEX_G, HEX_S, HEX_Y, HEX_D, HEX_F, HEX_Y];
 static mut spectre_angles: [libc::c_int; 14] = [
     -(3 as libc::c_int),
     -(2 as libc::c_int),
@@ -8621,26 +8535,22 @@ static mut poss_D: [Possibility; 9] = [
         init
     },
 ];
-static mut poss_J: [Possibility; 1] = [
-    {
-        let mut init = Possibility {
-            hi: HEX_G as libc::c_int as libc::c_uchar,
-            lo: 6 as libc::c_int as libc::c_uchar,
-            prob: 10000000 as libc::c_int as libc::c_ulong,
-        };
-        init
-    },
-];
-static mut poss_L: [Possibility; 1] = [
-    {
-        let mut init = Possibility {
-            hi: HEX_S as libc::c_int as libc::c_uchar,
-            lo: 0 as libc::c_int as libc::c_uchar,
-            prob: 10000000 as libc::c_int as libc::c_ulong,
-        };
-        init
-    },
-];
+static mut poss_J: [Possibility; 1] = [{
+    let mut init = Possibility {
+        hi: HEX_G as libc::c_int as libc::c_uchar,
+        lo: 6 as libc::c_int as libc::c_uchar,
+        prob: 10000000 as libc::c_int as libc::c_ulong,
+    };
+    init
+}];
+static mut poss_L: [Possibility; 1] = [{
+    let mut init = Possibility {
+        hi: HEX_S as libc::c_int as libc::c_uchar,
+        lo: 0 as libc::c_int as libc::c_uchar,
+        prob: 10000000 as libc::c_int as libc::c_ulong,
+    };
+    init
+}];
 static mut poss_X: [Possibility; 7] = [
     {
         let mut init = Possibility {
@@ -9141,8 +9051,7 @@ static mut poss_spectre: [Possibility; 10] = [
         init
     },
 ];
-static mut letters: *const libc::c_char = b"GDJLXPSFY\0" as *const u8
-    as *const libc::c_char;
+static mut letters: *const libc::c_char = b"GDJLXPSFY\0" as *const u8 as *const libc::c_char;
 #[no_mangle]
 pub unsafe extern "C" fn spectre_valid_hex_letter(mut letter: libc::c_char) -> bool {
     return !(strchr(letters, letter as libc::c_int)).is_null();
@@ -9191,7 +9100,8 @@ unsafe extern "C" fn choose_poss(
         i = i.wrapping_add(1);
         i;
     }
-    if i == nposs.wrapping_sub(1 as libc::c_int as size_t) {} else {
+    if i == nposs.wrapping_sub(1 as libc::c_int as size_t) {
+    } else {
         __assert_fail(
             b"i == nposs - 1\0" as *const u8 as *const libc::c_char,
             b"/puzzles/spectre.c\0" as *const u8 as *const libc::c_char,
@@ -9206,7 +9116,8 @@ unsafe extern "C" fn choose_poss(
         );
     }
     'c_15261: {
-        if i == nposs.wrapping_sub(1 as libc::c_int as size_t) {} else {
+        if i == nposs.wrapping_sub(1 as libc::c_int as size_t) {
+        } else {
             __assert_fail(
                 b"i == nposs - 1\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/spectre.c\0" as *const u8 as *const libc::c_char,
@@ -9221,7 +9132,8 @@ unsafe extern "C" fn choose_poss(
             );
         }
     };
-    if value < (*poss.offset(i as isize)).prob {} else {
+    if value < (*poss.offset(i as isize)).prob {
+    } else {
         __assert_fail(
             b"value < poss[i].prob\0" as *const u8 as *const libc::c_char,
             b"/puzzles/spectre.c\0" as *const u8 as *const libc::c_char,
@@ -9236,7 +9148,8 @@ unsafe extern "C" fn choose_poss(
         );
     }
     'c_15210: {
-        if value < (*poss.offset(i as isize)).prob {} else {
+        if value < (*poss.offset(i as isize)).prob {
+        } else {
             __assert_fail(
                 b"value < poss[i].prob\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/spectre.c\0" as *const u8 as *const libc::c_char,
@@ -9255,9 +9168,8 @@ unsafe extern "C" fn choose_poss(
 }
 #[no_mangle]
 pub unsafe extern "C" fn spectre_coords_new() -> *mut SpectreCoords {
-    let mut sc: *mut SpectreCoords = smalloc(
-        ::core::mem::size_of::<SpectreCoords>() as libc::c_ulong,
-    ) as *mut SpectreCoords;
+    let mut sc: *mut SpectreCoords =
+        smalloc(::core::mem::size_of::<SpectreCoords>() as libc::c_ulong) as *mut SpectreCoords;
     (*sc).csize = 0 as libc::c_int as size_t;
     (*sc).nc = (*sc).csize;
     (*sc).c = 0 as *mut HexCoord;
@@ -9271,30 +9183,21 @@ pub unsafe extern "C" fn spectre_coords_free(mut sc: *mut SpectreCoords) {
     }
 }
 #[no_mangle]
-pub unsafe extern "C" fn spectre_coords_make_space(
-    mut sc: *mut SpectreCoords,
-    mut size: size_t,
-) {
+pub unsafe extern "C" fn spectre_coords_make_space(mut sc: *mut SpectreCoords, mut size: size_t) {
     if (*sc).csize < size {
-        (*sc)
-            .csize = ((*sc).csize * 5 as libc::c_int as size_t
-            / 4 as libc::c_int as size_t)
+        (*sc).csize = ((*sc).csize * 5 as libc::c_int as size_t / 4 as libc::c_int as size_t)
             .wrapping_add(16 as libc::c_int as size_t);
         if (*sc).csize < size {
             (*sc).csize = size;
         }
-        (*sc)
-            .c = srealloc(
+        (*sc).c = srealloc(
             (*sc).c as *mut libc::c_void,
-            ((*sc).csize)
-                .wrapping_mul(::core::mem::size_of::<HexCoord>() as libc::c_ulong),
+            ((*sc).csize).wrapping_mul(::core::mem::size_of::<HexCoord>() as libc::c_ulong),
         ) as *mut HexCoord;
     }
 }
 #[no_mangle]
-pub unsafe extern "C" fn spectre_coords_copy(
-    mut sc_in: *mut SpectreCoords,
-) -> *mut SpectreCoords {
+pub unsafe extern "C" fn spectre_coords_copy(mut sc_in: *mut SpectreCoords) -> *mut SpectreCoords {
     let mut sc_out: *mut SpectreCoords = spectre_coords_new();
     spectre_coords_make_space(sc_out, (*sc_in).nc);
     memcpy(
@@ -9321,17 +9224,16 @@ pub unsafe extern "C" fn spectre_place(
     disp = point_sub(v, u);
     i = 0 as libc::c_int as size_t;
     while i < 14 as libc::c_int as size_t {
-        (*spec)
-            .vertices[(i.wrapping_add(index_of_u as size_t)
-            % 14 as libc::c_int as size_t) as usize] = u;
+        (*spec).vertices
+            [(i.wrapping_add(index_of_u as size_t) % 14 as libc::c_int as size_t) as usize] = u;
         u = point_add(u, disp);
         disp = point_mul(
             disp,
             point_rot(
                 spectre_angles[(i
                     .wrapping_add(1 as libc::c_int as size_t)
-                    .wrapping_add(index_of_u as size_t) % 14 as libc::c_int as size_t)
-                    as usize],
+                    .wrapping_add(index_of_u as size_t)
+                    % 14 as libc::c_int as size_t) as usize],
             ),
         );
         i = i.wrapping_add(1);
@@ -9340,9 +9242,8 @@ pub unsafe extern "C" fn spectre_place(
 }
 #[no_mangle]
 pub unsafe extern "C" fn spectre_initial(mut ctx: *mut SpectreContext) -> *mut Spectre {
-    let mut spec: *mut Spectre = smalloc(
-        ::core::mem::size_of::<Spectre>() as libc::c_ulong,
-    ) as *mut Spectre;
+    let mut spec: *mut Spectre =
+        smalloc(::core::mem::size_of::<Spectre>() as libc::c_ulong) as *mut Spectre;
     spectre_place(
         spec,
         (*ctx).start_vertices[0 as libc::c_int as usize],
@@ -9360,15 +9261,13 @@ pub unsafe extern "C" fn spectre_adjacent(
     mut dst_edge_out: *mut libc::c_uint,
 ) -> *mut Spectre {
     let mut dst_edge: libc::c_uint = 0;
-    let mut dst_spec: *mut Spectre = smalloc(
-        ::core::mem::size_of::<Spectre>() as libc::c_ulong,
-    ) as *mut Spectre;
+    let mut dst_spec: *mut Spectre =
+        smalloc(::core::mem::size_of::<Spectre>() as libc::c_ulong) as *mut Spectre;
     (*dst_spec).sc = spectre_coords_copy((*src_spec).sc);
     spectrectx_step(ctx, (*dst_spec).sc, src_edge, &mut dst_edge);
     spectre_place(
         dst_spec,
-        (*src_spec)
-            .vertices[src_edge
+        (*src_spec).vertices[src_edge
             .wrapping_add(1 as libc::c_int as libc::c_uint)
             .wrapping_rem(14 as libc::c_int as libc::c_uint) as usize],
         (*src_spec).vertices[src_edge as usize],
@@ -9416,10 +9315,8 @@ unsafe extern "C" fn spectrectx_start_vertices(
     mut ctx: *mut SpectreContext,
     mut orientation: libc::c_int,
 ) {
-    let mut minus_sqrt3: Point = point_add(
-        point_rot(5 as libc::c_int),
-        point_rot(-(5 as libc::c_int)),
-    );
+    let mut minus_sqrt3: Point =
+        point_add(point_rot(5 as libc::c_int), point_rot(-(5 as libc::c_int)));
     let mut basicedge: Point = point_mul(
         point_add(point_rot(0 as libc::c_int), point_rot(-(3 as libc::c_int))),
         point_rot(orientation),
@@ -9429,12 +9326,8 @@ unsafe extern "C" fn spectrectx_start_vertices(
         point_mul(basicedge, point_rot(-(3 as libc::c_int))),
     );
     (*ctx).start_vertices[0 as libc::c_int as usize] = point_mul(diagonal, minus_sqrt3);
-    (*ctx)
-        .start_vertices[1 as libc::c_int
-        as usize] = point_add(
-        (*ctx).start_vertices[0 as libc::c_int as usize],
-        basicedge,
-    );
+    (*ctx).start_vertices[1 as libc::c_int as usize] =
+        point_add((*ctx).start_vertices[0 as libc::c_int as usize], basicedge);
     (*ctx).orientation = orientation;
 }
 #[no_mangle]
@@ -9454,10 +9347,8 @@ pub unsafe extern "C" fn spectrectx_init_random(
             .wrapping_div(::core::mem::size_of::<Possibility>() as libc::c_ulong),
     );
     (*(*ctx).prototype).index = (*poss).lo as libc::c_int;
-    (*((*(*ctx).prototype).c).offset(0 as libc::c_int as isize))
-        .type_0 = (*poss).hi as Hex;
-    (*((*(*ctx).prototype).c).offset(0 as libc::c_int as isize))
-        .index = -(1 as libc::c_int);
+    (*((*(*ctx).prototype).c).offset(0 as libc::c_int as isize)).type_0 = (*poss).hi as Hex;
+    (*((*(*ctx).prototype).c).offset(0 as libc::c_int as isize)).index = -(1 as libc::c_int);
     (*(*ctx).prototype).nc = 1 as libc::c_int as size_t;
     spectrectx_start_vertices(
         ctx,
@@ -9479,23 +9370,21 @@ pub unsafe extern "C" fn spectrectx_init_from_params(
     (*ctx).must_free_rs = 0 as libc::c_int != 0;
     (*ctx).prototype = spectre_coords_new();
     spectre_coords_make_space((*ctx).prototype, (*ps).ncoords);
-    (*(*ctx).prototype)
-        .index = *((*ps).coords).offset(0 as libc::c_int as isize) as libc::c_int;
+    (*(*ctx).prototype).index = *((*ps).coords).offset(0 as libc::c_int as isize) as libc::c_int;
     i = 1 as libc::c_int as size_t;
     while i < (*ps).ncoords {
-        (*((*(*ctx).prototype).c)
-            .offset(i.wrapping_sub(1 as libc::c_int as size_t) as isize))
+        (*((*(*ctx).prototype).c).offset(i.wrapping_sub(1 as libc::c_int as size_t) as isize))
             .index = *((*ps).coords).offset(i as isize) as libc::c_int;
         i = i.wrapping_add(1);
         i;
     }
     (*((*(*ctx).prototype).c)
         .offset(((*ps).ncoords).wrapping_sub(1 as libc::c_int as size_t) as isize))
-        .index = -(1 as libc::c_int);
+    .index = -(1 as libc::c_int);
     (*(*ctx).prototype).nc = (*ps).ncoords;
     (*((*(*ctx).prototype).c)
         .offset(((*ps).ncoords).wrapping_sub(1 as libc::c_int as size_t) as isize))
-        .type_0 = hex_from_letter((*ps).final_hex);
+    .type_0 = hex_from_letter((*ps).final_hex);
     i = ((*ps).ncoords).wrapping_sub(1 as libc::c_int as size_t);
     loop {
         let fresh1 = i;
@@ -9503,16 +9392,12 @@ pub unsafe extern "C" fn spectrectx_init_from_params(
         if !(fresh1 > 0 as libc::c_int as size_t) {
             break;
         }
-        let mut h: *const HexData = &*hexdata
-            .as_ptr()
-            .offset(
-                (*((*(*ctx).prototype).c)
-                    .offset(i.wrapping_add(1 as libc::c_int as size_t) as isize))
-                    .type_0 as isize,
-            ) as *const HexData;
-        (*((*(*ctx).prototype).c).offset(i as isize))
-            .type_0 = *((*h).subhexes)
-            .offset((*((*(*ctx).prototype).c).offset(i as isize)).index as isize);
+        let mut h: *const HexData = &*hexdata.as_ptr().offset(
+            (*((*(*ctx).prototype).c).offset(i.wrapping_add(1 as libc::c_int as size_t) as isize))
+                .type_0 as isize,
+        ) as *const HexData;
+        (*((*(*ctx).prototype).c).offset(i as isize)).type_0 =
+            *((*h).subhexes).offset((*((*(*ctx).prototype).c).offset(i as isize)).index as isize);
     }
     spectrectx_start_vertices(ctx, (*ps).orientation);
     (*(*ctx).prototype).hex_colour = 0 as libc::c_int as libc::c_uchar;
@@ -9541,64 +9426,55 @@ pub unsafe extern "C" fn spectrectx_extend_coords(
     if (*(*ctx).prototype).nc < n {
         spectre_coords_make_space((*ctx).prototype, n);
         while (*(*ctx).prototype).nc < n {
-            let mut h: *const HexData = &*hexdata
-                .as_ptr()
-                .offset(
-                    (*((*(*ctx).prototype).c)
-                        .offset(
-                            ((*(*ctx).prototype).nc)
-                                .wrapping_sub(1 as libc::c_int as size_t) as isize,
-                        ))
-                        .type_0 as isize,
-                ) as *const HexData;
+            let mut h: *const HexData = &*hexdata.as_ptr().offset(
+                (*((*(*ctx).prototype).c).offset(
+                    ((*(*ctx).prototype).nc).wrapping_sub(1 as libc::c_int as size_t) as isize,
+                ))
+                .type_0 as isize,
+            ) as *const HexData;
             let mut poss: *const Possibility = 0 as *const Possibility;
             if ((*ctx).rs).is_null() {
-                (*ctx)
-                    .rs = random_new(
+                (*ctx).rs = random_new(
                     b"dummy\0" as *const u8 as *const libc::c_char,
                     5 as libc::c_int,
                 );
                 (*ctx).must_free_rs = 1 as libc::c_int != 0;
             }
             poss = choose_poss((*ctx).rs, (*h).poss, (*h).nposs);
-            (*((*(*ctx).prototype).c)
-                .offset(
-                    ((*(*ctx).prototype).nc).wrapping_sub(1 as libc::c_int as size_t)
-                        as isize,
-                ))
-                .index = (*poss).lo as libc::c_int;
-            (*((*(*ctx).prototype).c).offset((*(*ctx).prototype).nc as isize))
-                .type_0 = (*poss).hi as Hex;
-            (*((*(*ctx).prototype).c).offset((*(*ctx).prototype).nc as isize))
-                .index = -(1 as libc::c_int);
+            (*((*(*ctx).prototype).c).offset(
+                ((*(*ctx).prototype).nc).wrapping_sub(1 as libc::c_int as size_t) as isize,
+            ))
+            .index = (*poss).lo as libc::c_int;
+            (*((*(*ctx).prototype).c).offset((*(*ctx).prototype).nc as isize)).type_0 =
+                (*poss).hi as Hex;
+            (*((*(*ctx).prototype).c).offset((*(*ctx).prototype).nc as isize)).index =
+                -(1 as libc::c_int);
             (*(*ctx).prototype).nc = ((*(*ctx).prototype).nc).wrapping_add(1);
             (*(*ctx).prototype).nc;
         }
     }
     spectre_coords_make_space(sc, n);
     while (*sc).nc < n {
-        if (*((*sc).c)
-            .offset(((*sc).nc).wrapping_sub(1 as libc::c_int as size_t) as isize))
-            .index == -(1 as libc::c_int)
-        {} else {
+        if (*((*sc).c).offset(((*sc).nc).wrapping_sub(1 as libc::c_int as size_t) as isize)).index
+            == -(1 as libc::c_int)
+        {
+        } else {
             __assert_fail(
                 b"sc->c[sc->nc - 1].index == -1\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/spectre.c\0" as *const u8 as *const libc::c_char,
                 342 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 73],
-                    &[libc::c_char; 73],
-                >(
+                (*::core::mem::transmute::<&[u8; 73], &[libc::c_char; 73]>(
                     b"void spectrectx_extend_coords(SpectreContext *, SpectreCoords *, size_t)\0",
                 ))
-                    .as_ptr(),
+                .as_ptr(),
             );
         }
         'c_14918: {
-            if (*((*sc).c)
-                .offset(((*sc).nc).wrapping_sub(1 as libc::c_int as size_t) as isize))
-                .index == -(1 as libc::c_int)
-            {} else {
+            if (*((*sc).c).offset(((*sc).nc).wrapping_sub(1 as libc::c_int as size_t) as isize))
+                .index
+                == -(1 as libc::c_int)
+            {
+            } else {
                 __assert_fail(
                     b"sc->c[sc->nc - 1].index == -1\0" as *const u8
                         as *const libc::c_char,
@@ -9614,37 +9490,32 @@ pub unsafe extern "C" fn spectrectx_extend_coords(
                 );
             }
         };
-        if (*((*sc).c)
-            .offset(((*sc).nc).wrapping_sub(1 as libc::c_int as size_t) as isize))
-            .type_0 as libc::c_uint
+        if (*((*sc).c).offset(((*sc).nc).wrapping_sub(1 as libc::c_int as size_t) as isize)).type_0
+            as libc::c_uint
             == (*((*(*ctx).prototype).c)
                 .offset(((*sc).nc).wrapping_sub(1 as libc::c_int as size_t) as isize))
-                .type_0 as libc::c_uint
-        {} else {
+            .type_0 as libc::c_uint
+        {
+        } else {
             __assert_fail(
-                b"sc->c[sc->nc - 1].type == ctx->prototype->c[sc->nc - 1].type\0"
-                    as *const u8 as *const libc::c_char,
+                b"sc->c[sc->nc - 1].type == ctx->prototype->c[sc->nc - 1].type\0" as *const u8
+                    as *const libc::c_char,
                 b"/puzzles/spectre.c\0" as *const u8 as *const libc::c_char,
                 343 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 73],
-                    &[libc::c_char; 73],
-                >(
+                (*::core::mem::transmute::<&[u8; 73], &[libc::c_char; 73]>(
                     b"void spectrectx_extend_coords(SpectreContext *, SpectreCoords *, size_t)\0",
                 ))
-                    .as_ptr(),
+                .as_ptr(),
             );
         }
         'c_14822: {
-            if (*((*sc).c)
-                .offset(((*sc).nc).wrapping_sub(1 as libc::c_int as size_t) as isize))
+            if (*((*sc).c).offset(((*sc).nc).wrapping_sub(1 as libc::c_int as size_t) as isize))
                 .type_0 as libc::c_uint
                 == (*((*(*ctx).prototype).c)
-                    .offset(
-                        ((*sc).nc).wrapping_sub(1 as libc::c_int as size_t) as isize,
-                    ))
-                    .type_0 as libc::c_uint
-            {} else {
+                    .offset(((*sc).nc).wrapping_sub(1 as libc::c_int as size_t) as isize))
+                .type_0 as libc::c_uint
+            {
+            } else {
                 __assert_fail(
                     b"sc->c[sc->nc - 1].type == ctx->prototype->c[sc->nc - 1].type\0"
                         as *const u8 as *const libc::c_char,
@@ -9660,13 +9531,13 @@ pub unsafe extern "C" fn spectrectx_extend_coords(
                 );
             }
         };
-        (*((*sc).c).offset(((*sc).nc).wrapping_sub(1 as libc::c_int as size_t) as isize))
-            .index = (*((*(*ctx).prototype).c)
-            .offset(((*sc).nc).wrapping_sub(1 as libc::c_int as size_t) as isize))
+        (*((*sc).c).offset(((*sc).nc).wrapping_sub(1 as libc::c_int as size_t) as isize)).index =
+            (*((*(*ctx).prototype).c)
+                .offset(((*sc).nc).wrapping_sub(1 as libc::c_int as size_t) as isize))
             .index;
         (*((*sc).c).offset((*sc).nc as isize)).index = -(1 as libc::c_int);
-        (*((*sc).c).offset((*sc).nc as isize))
-            .type_0 = (*((*(*ctx).prototype).c).offset((*sc).nc as isize)).type_0;
+        (*((*sc).c).offset((*sc).nc as isize)).type_0 =
+            (*((*(*ctx).prototype).c).offset((*sc).nc as isize)).type_0;
         (*sc).nc = ((*sc).nc).wrapping_add(1);
         (*sc).nc;
     }
@@ -9682,7 +9553,8 @@ pub unsafe extern "C" fn spectrectx_step_hex(
     let mut h: *const HexData = 0 as *const HexData;
     let mut m: *const MapEntry = 0 as *const MapEntry;
     spectrectx_extend_coords(ctx, sc, depth.wrapping_add(2 as libc::c_int as size_t));
-    if 0 as libc::c_int <= (*((*sc).c).offset(depth as isize)).index {} else {
+    if 0 as libc::c_int <= (*((*sc).c).offset(depth as isize)).index {
+    } else {
         __assert_fail(
             b"0 <= sc->c[depth].index\0" as *const u8 as *const libc::c_char,
             b"/puzzles/spectre.c\0" as *const u8 as *const libc::c_char,
@@ -9697,7 +9569,8 @@ pub unsafe extern "C" fn spectrectx_step_hex(
         );
     }
     'c_14670: {
-        if 0 as libc::c_int <= (*((*sc).c).offset(depth as isize)).index {} else {
+        if 0 as libc::c_int <= (*((*sc).c).offset(depth as isize)).index {
+        } else {
             __assert_fail(
                 b"0 <= sc->c[depth].index\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/spectre.c\0" as *const u8 as *const libc::c_char,
@@ -9714,7 +9587,8 @@ pub unsafe extern "C" fn spectrectx_step_hex(
     };
     if ((*((*sc).c).offset(depth as isize)).index as libc::c_uint)
         < num_subhexes((*((*sc).c).offset(depth as isize)).type_0)
-    {} else {
+    {
+    } else {
         __assert_fail(
             b"sc->c[depth].index < num_subhexes(sc->c[depth].type)\0" as *const u8
                 as *const libc::c_char,
@@ -9732,7 +9606,8 @@ pub unsafe extern "C" fn spectrectx_step_hex(
     'c_14579: {
         if ((*((*sc).c).offset(depth as isize)).index as libc::c_uint)
             < num_subhexes((*((*sc).c).offset(depth as isize)).type_0)
-        {} else {
+        {
+        } else {
             __assert_fail(
                 b"sc->c[depth].index < num_subhexes(sc->c[depth].type)\0" as *const u8
                     as *const libc::c_char,
@@ -9748,7 +9623,8 @@ pub unsafe extern "C" fn spectrectx_step_hex(
             );
         }
     };
-    if 0 as libc::c_int as libc::c_uint <= edge {} else {
+    if 0 as libc::c_int as libc::c_uint <= edge {
+    } else {
         __assert_fail(
             b"0 <= edge\0" as *const u8 as *const libc::c_char,
             b"/puzzles/spectre.c\0" as *const u8 as *const libc::c_char,
@@ -9763,7 +9639,8 @@ pub unsafe extern "C" fn spectrectx_step_hex(
         );
     }
     'c_14541: {
-        if 0 as libc::c_int as libc::c_uint <= edge {} else {
+        if 0 as libc::c_int as libc::c_uint <= edge {
+        } else {
             __assert_fail(
                 b"0 <= edge\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/spectre.c\0" as *const u8 as *const libc::c_char,
@@ -9778,7 +9655,8 @@ pub unsafe extern "C" fn spectrectx_step_hex(
             );
         }
     };
-    if edge < 6 as libc::c_int as libc::c_uint {} else {
+    if edge < 6 as libc::c_int as libc::c_uint {
+    } else {
         __assert_fail(
             b"edge < 6\0" as *const u8 as *const libc::c_char,
             b"/puzzles/spectre.c\0" as *const u8 as *const libc::c_char,
@@ -9793,7 +9671,8 @@ pub unsafe extern "C" fn spectrectx_step_hex(
         );
     }
     'c_14502: {
-        if edge < 6 as libc::c_int as libc::c_uint {} else {
+        if edge < 6 as libc::c_int as libc::c_uint {
+        } else {
             __assert_fail(
                 b"edge < 6\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/spectre.c\0" as *const u8 as *const libc::c_char,
@@ -9808,18 +9687,14 @@ pub unsafe extern "C" fn spectrectx_step_hex(
             );
         }
     };
-    h = &*hexdata
-        .as_ptr()
-        .offset(
-            (*((*sc).c).offset(depth.wrapping_add(1 as libc::c_int as size_t) as isize))
-                .type_0 as isize,
-        ) as *const HexData;
-    m = &*((*h).hexmap)
-        .offset(
-            ((6 as libc::c_int * (*((*sc).c).offset(depth as isize)).index)
-                as libc::c_uint)
-                .wrapping_add(edge) as isize,
-        ) as *const MapEntry;
+    h = &*hexdata.as_ptr().offset(
+        (*((*sc).c).offset(depth.wrapping_add(1 as libc::c_int as size_t) as isize)).type_0
+            as isize,
+    ) as *const HexData;
+    m = &*((*h).hexmap).offset(
+        ((6 as libc::c_int * (*((*sc).c).offset(depth as isize)).index) as libc::c_uint)
+            .wrapping_add(edge) as isize,
+    ) as *const MapEntry;
     if !(*m).internal {
         let mut recedge: libc::c_uint = 0;
         let mut me: *const MapEdge = 0 as *const MapEdge;
@@ -9830,7 +9705,8 @@ pub unsafe extern "C" fn spectrectx_step_hex(
             (*m).hi as libc::c_uint,
             &mut recedge,
         );
-        if recedge < 6 as libc::c_int as libc::c_uint {} else {
+        if recedge < 6 as libc::c_int as libc::c_uint {
+        } else {
             __assert_fail(
                 b"recedge < 6\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/spectre.c\0" as *const u8 as *const libc::c_char,
@@ -9845,7 +9721,8 @@ pub unsafe extern "C" fn spectrectx_step_hex(
             );
         }
         'c_14400: {
-            if recedge < 6 as libc::c_int as libc::c_uint {} else {
+            if recedge < 6 as libc::c_int as libc::c_uint {
+            } else {
                 __assert_fail(
                     b"recedge < 6\0" as *const u8 as *const libc::c_char,
                     b"/puzzles/spectre.c\0" as *const u8 as *const libc::c_char,
@@ -9860,15 +9737,13 @@ pub unsafe extern "C" fn spectrectx_step_hex(
                 );
             }
         };
-        h = &*hexdata
-            .as_ptr()
-            .offset(
-                (*((*sc).c)
-                    .offset(depth.wrapping_add(1 as libc::c_int as size_t) as isize))
-                    .type_0 as isize,
-            ) as *const HexData;
+        h = &*hexdata.as_ptr().offset(
+            (*((*sc).c).offset(depth.wrapping_add(1 as libc::c_int as size_t) as isize)).type_0
+                as isize,
+        ) as *const HexData;
         me = &*((*h).hexedges).offset(recedge as isize) as *const MapEdge;
-        if ((*m).lo as libc::c_int) < (*me).len as libc::c_int {} else {
+        if ((*m).lo as libc::c_int) < (*me).len as libc::c_int {
+        } else {
             __assert_fail(
                 b"m->lo < me->len\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/spectre.c\0" as *const u8 as *const libc::c_char,
@@ -9883,7 +9758,8 @@ pub unsafe extern "C" fn spectrectx_step_hex(
             );
         }
         'c_14321: {
-            if ((*m).lo as libc::c_int) < (*me).len as libc::c_int {} else {
+            if ((*m).lo as libc::c_int) < (*me).len as libc::c_int {
+            } else {
                 __assert_fail(
                     b"m->lo < me->len\0" as *const u8 as *const libc::c_char,
                     b"/puzzles/spectre.c\0" as *const u8 as *const libc::c_char,
@@ -9898,12 +9774,13 @@ pub unsafe extern "C" fn spectrectx_step_hex(
                 );
             }
         };
-        m = &*((*h).hexin)
-            .offset(
-                ((*me).startindex as libc::c_int + (*me).len as libc::c_int
-                    - 1 as libc::c_int - (*m).lo as libc::c_int) as isize,
-            ) as *const MapEntry;
-        if (*m).internal {} else {
+        m = &*((*h).hexin).offset(
+            ((*me).startindex as libc::c_int + (*me).len as libc::c_int
+                - 1 as libc::c_int
+                - (*m).lo as libc::c_int) as isize,
+        ) as *const MapEntry;
+        if (*m).internal {
+        } else {
             __assert_fail(
                 b"m->internal\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/spectre.c\0" as *const u8 as *const libc::c_char,
@@ -9918,7 +9795,8 @@ pub unsafe extern "C" fn spectrectx_step_hex(
             );
         }
         'c_14255: {
-            if (*m).internal {} else {
+            if (*m).internal {
+            } else {
                 __assert_fail(
                     b"m->internal\0" as *const u8 as *const libc::c_char,
                     b"/puzzles/spectre.c\0" as *const u8 as *const libc::c_char,
@@ -9935,19 +9813,18 @@ pub unsafe extern "C" fn spectrectx_step_hex(
         };
     }
     (*((*sc).c).offset(depth as isize)).index = (*m).hi as libc::c_int;
-    (*((*sc).c).offset(depth as isize))
-        .type_0 = *((*h).subhexes)
-        .offset((*((*sc).c).offset(depth as isize)).index as isize);
+    (*((*sc).c).offset(depth as isize)).type_0 =
+        *((*h).subhexes).offset((*((*sc).c).offset(depth as isize)).index as isize);
     *outedge = (*m).lo as libc::c_uint;
     if depth == 0 as libc::c_int as size_t {
         let mut new_hex_colour: libc::c_uchar = 0;
-        if (edge ^ (*sc).incoming_hex_edge as libc::c_uint)
-            & 1 as libc::c_int as libc::c_uint == 0
+        if (edge ^ (*sc).incoming_hex_edge as libc::c_uint) & 1 as libc::c_int as libc::c_uint == 0
         {
             new_hex_colour = (*sc).prev_hex_colour;
         } else {
             new_hex_colour = (0 as libc::c_int + 1 as libc::c_int + 2 as libc::c_int
-                - (*sc).hex_colour as libc::c_int - (*sc).prev_hex_colour as libc::c_int)
+                - (*sc).hex_colour as libc::c_int
+                - (*sc).prev_hex_colour as libc::c_int)
                 as libc::c_uchar;
         }
         (*sc).prev_hex_colour = (*sc).hex_colour;
@@ -9964,7 +9841,8 @@ pub unsafe extern "C" fn spectrectx_step(
 ) {
     let mut h: *const HexData = 0 as *const HexData;
     let mut m: *const MapEntry = 0 as *const MapEntry;
-    if 0 as libc::c_int <= (*sc).index {} else {
+    if 0 as libc::c_int <= (*sc).index {
+    } else {
         __assert_fail(
             b"0 <= sc->index\0" as *const u8 as *const libc::c_char,
             b"/puzzles/spectre.c\0" as *const u8 as *const libc::c_char,
@@ -9979,7 +9857,8 @@ pub unsafe extern "C" fn spectrectx_step(
         );
     }
     'c_15625: {
-        if 0 as libc::c_int <= (*sc).index {} else {
+        if 0 as libc::c_int <= (*sc).index {
+        } else {
             __assert_fail(
                 b"0 <= sc->index\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/spectre.c\0" as *const u8 as *const libc::c_char,
@@ -9996,7 +9875,8 @@ pub unsafe extern "C" fn spectrectx_step(
     };
     if ((*sc).index as libc::c_uint)
         < num_spectres((*((*sc).c).offset(0 as libc::c_int as isize)).type_0)
-    {} else {
+    {
+    } else {
         __assert_fail(
             b"sc->index < num_spectres(sc->c[0].type)\0" as *const u8
                 as *const libc::c_char,
@@ -10014,7 +9894,8 @@ pub unsafe extern "C" fn spectrectx_step(
     'c_15548: {
         if ((*sc).index as libc::c_uint)
             < num_spectres((*((*sc).c).offset(0 as libc::c_int as isize)).type_0)
-        {} else {
+        {
+        } else {
             __assert_fail(
                 b"sc->index < num_spectres(sc->c[0].type)\0" as *const u8
                     as *const libc::c_char,
@@ -10030,7 +9911,8 @@ pub unsafe extern "C" fn spectrectx_step(
             );
         }
     };
-    if 0 as libc::c_int as libc::c_uint <= edge {} else {
+    if 0 as libc::c_int as libc::c_uint <= edge {
+    } else {
         __assert_fail(
             b"0 <= edge\0" as *const u8 as *const libc::c_char,
             b"/puzzles/spectre.c\0" as *const u8 as *const libc::c_char,
@@ -10045,7 +9927,8 @@ pub unsafe extern "C" fn spectrectx_step(
         );
     }
     'c_15510: {
-        if 0 as libc::c_int as libc::c_uint <= edge {} else {
+        if 0 as libc::c_int as libc::c_uint <= edge {
+        } else {
             __assert_fail(
                 b"0 <= edge\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/spectre.c\0" as *const u8 as *const libc::c_char,
@@ -10060,7 +9943,8 @@ pub unsafe extern "C" fn spectrectx_step(
             );
         }
     };
-    if edge < 14 as libc::c_int as libc::c_uint {} else {
+    if edge < 14 as libc::c_int as libc::c_uint {
+    } else {
         __assert_fail(
             b"edge < 14\0" as *const u8 as *const libc::c_char,
             b"/puzzles/spectre.c\0" as *const u8 as *const libc::c_char,
@@ -10075,7 +9959,8 @@ pub unsafe extern "C" fn spectrectx_step(
         );
     }
     'c_15472: {
-        if edge < 14 as libc::c_int as libc::c_uint {} else {
+        if edge < 14 as libc::c_int as libc::c_uint {
+        } else {
             __assert_fail(
                 b"edge < 14\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/spectre.c\0" as *const u8 as *const libc::c_char,
@@ -10095,10 +9980,8 @@ pub unsafe extern "C" fn spectrectx_step(
         .offset((*((*sc).c).offset(0 as libc::c_int as isize)).type_0 as isize)
         as *const HexData;
     m = &*((*h).specmap)
-        .offset(
-            ((14 as libc::c_int * (*sc).index) as libc::c_uint).wrapping_add(edge)
-                as isize,
-        ) as *const MapEntry;
+        .offset(((14 as libc::c_int * (*sc).index) as libc::c_uint).wrapping_add(edge) as isize)
+        as *const MapEntry;
     while !(*m).internal {
         let mut recedge: libc::c_uint = 0;
         let mut me: *const MapEdge = 0 as *const MapEdge;
@@ -10109,7 +9992,8 @@ pub unsafe extern "C" fn spectrectx_step(
             (*m).hi as libc::c_uint,
             &mut recedge,
         );
-        if recedge < 6 as libc::c_int as libc::c_uint {} else {
+        if recedge < 6 as libc::c_int as libc::c_uint {
+        } else {
             __assert_fail(
                 b"recedge < 6\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/spectre.c\0" as *const u8 as *const libc::c_char,
@@ -10124,7 +10008,8 @@ pub unsafe extern "C" fn spectrectx_step(
             );
         }
         'c_14039: {
-            if recedge < 6 as libc::c_int as libc::c_uint {} else {
+            if recedge < 6 as libc::c_int as libc::c_uint {
+            } else {
                 __assert_fail(
                     b"recedge < 6\0" as *const u8 as *const libc::c_char,
                     b"/puzzles/spectre.c\0" as *const u8 as *const libc::c_char,
@@ -10144,7 +10029,8 @@ pub unsafe extern "C" fn spectrectx_step(
             .offset((*((*sc).c).offset(0 as libc::c_int as isize)).type_0 as isize)
             as *const HexData;
         me = &*((*h).specedges).offset(recedge as isize) as *const MapEdge;
-        if ((*m).lo as libc::c_int) < (*me).len as libc::c_int {} else {
+        if ((*m).lo as libc::c_int) < (*me).len as libc::c_int {
+        } else {
             __assert_fail(
                 b"m->lo < me->len\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/spectre.c\0" as *const u8 as *const libc::c_char,
@@ -10159,7 +10045,8 @@ pub unsafe extern "C" fn spectrectx_step(
             );
         }
         'c_4910: {
-            if ((*m).lo as libc::c_int) < (*me).len as libc::c_int {} else {
+            if ((*m).lo as libc::c_int) < (*me).len as libc::c_int {
+            } else {
                 __assert_fail(
                     b"m->lo < me->len\0" as *const u8 as *const libc::c_char,
                     b"/puzzles/spectre.c\0" as *const u8 as *const libc::c_char,
@@ -10174,11 +10061,11 @@ pub unsafe extern "C" fn spectrectx_step(
                 );
             }
         };
-        m = &*((*h).specin)
-            .offset(
-                ((*me).startindex as libc::c_int + (*me).len as libc::c_int
-                    - 1 as libc::c_int - (*m).lo as libc::c_int) as isize,
-            ) as *const MapEntry;
+        m = &*((*h).specin).offset(
+            ((*me).startindex as libc::c_int + (*me).len as libc::c_int
+                - 1 as libc::c_int
+                - (*m).lo as libc::c_int) as isize,
+        ) as *const MapEntry;
     }
     (*sc).index = (*m).hi as libc::c_int;
     *outedge = (*m).lo as libc::c_uint;
@@ -10186,20 +10073,12 @@ pub unsafe extern "C" fn spectrectx_step(
 #[no_mangle]
 pub unsafe extern "C" fn spectrectx_generate(
     mut ctx: *mut SpectreContext,
-    mut callback: Option::<
-        unsafe extern "C" fn(*mut libc::c_void, *const Spectre) -> bool,
-    >,
+    mut callback: Option<unsafe extern "C" fn(*mut libc::c_void, *const Spectre) -> bool>,
     mut cbctx: *mut libc::c_void,
 ) {
-    let mut placed: *mut tree234 = newtree234(
-        Some(
-            spectre_cmp
-                as unsafe extern "C" fn(
-                    *mut libc::c_void,
-                    *mut libc::c_void,
-                ) -> libc::c_int,
-        ),
-    );
+    let mut placed: *mut tree234 = newtree234(Some(
+        spectre_cmp as unsafe extern "C" fn(*mut libc::c_void, *mut libc::c_void) -> libc::c_int,
+    ));
     let mut qhead: *mut Spectre = 0 as *mut Spectre;
     let mut qtail: *mut Spectre = 0 as *mut Spectre;
     let mut spec: *mut Spectre = spectre_initial(ctx);
@@ -10248,8 +10127,7 @@ pub unsafe extern "C" fn spectre_tiling_params_invalid(
     let mut i: size_t = 0;
     let mut h: Hex = HEX_G;
     if (*params).ncoords == 0 as libc::c_int as size_t {
-        return b"expected at least one numeric coordinate\0" as *const u8
-            as *const libc::c_char;
+        return b"expected at least one numeric coordinate\0" as *const u8 as *const libc::c_char;
     }
     if !spectre_valid_hex_letter((*params).final_hex) {
         return b"invalid final hexagon type\0" as *const u8 as *const libc::c_char;
@@ -10296,22 +10174,26 @@ unsafe extern "C" fn spectre_internal_callback(
         {
             return 0 as libc::c_int != 0;
         }
-        output_coords[(4 as libc::c_int as size_t * i)
-            .wrapping_add(0 as libc::c_int as size_t) as usize] = (*ctx).xoff + x.c1;
-        output_coords[(4 as libc::c_int as size_t * i)
-            .wrapping_add(1 as libc::c_int as size_t) as usize] = x.cr3;
-        output_coords[(4 as libc::c_int as size_t * i)
-            .wrapping_add(2 as libc::c_int as size_t) as usize] = (*ctx).yoff - y.c1;
-        output_coords[(4 as libc::c_int as size_t * i)
-            .wrapping_add(3 as libc::c_int as size_t) as usize] = -y.cr3;
+        output_coords
+            [(4 as libc::c_int as size_t * i).wrapping_add(0 as libc::c_int as size_t) as usize] =
+            (*ctx).xoff + x.c1;
+        output_coords
+            [(4 as libc::c_int as size_t * i).wrapping_add(1 as libc::c_int as size_t) as usize] =
+            x.cr3;
+        output_coords
+            [(4 as libc::c_int as size_t * i).wrapping_add(2 as libc::c_int as size_t) as usize] =
+            (*ctx).yoff - y.c1;
+        output_coords
+            [(4 as libc::c_int as size_t * i).wrapping_add(3 as libc::c_int as size_t) as usize] =
+            -y.cr3;
         i = i.wrapping_add(1);
         i;
     }
     if ((*ctx).external_cb).is_some() {
-        ((*ctx).external_cb)
-            .expect(
-                "non-null function pointer",
-            )((*ctx).external_cbctx, output_coords.as_mut_ptr());
+        ((*ctx).external_cb).expect("non-null function pointer")(
+            (*ctx).external_cbctx,
+            output_coords.as_mut_ptr(),
+        );
     }
     return 1 as libc::c_int != 0;
 }
@@ -10372,31 +10254,23 @@ pub unsafe extern "C" fn spectre_tiling_randomise(
     );
     (*ps).orientation = (*ctx.as_mut_ptr()).orientation;
     (*ps).ncoords = (*(*ctx.as_mut_ptr()).prototype).nc;
-    (*ps)
-        .coords = smalloc(
-        ((*ps).ncoords)
-            .wrapping_mul(::core::mem::size_of::<libc::c_uchar>() as libc::c_ulong),
+    (*ps).coords = smalloc(
+        ((*ps).ncoords).wrapping_mul(::core::mem::size_of::<libc::c_uchar>() as libc::c_ulong),
     ) as *mut libc::c_uchar;
-    *((*ps).coords)
-        .offset(
-            0 as libc::c_int as isize,
-        ) = (*(*ctx.as_mut_ptr()).prototype).index as libc::c_uchar;
+    *((*ps).coords).offset(0 as libc::c_int as isize) =
+        (*(*ctx.as_mut_ptr()).prototype).index as libc::c_uchar;
     i = 1 as libc::c_int as size_t;
     while i < (*ps).ncoords {
-        *((*ps).coords)
-            .offset(
-                i as isize,
-            ) = (*((*(*ctx.as_mut_ptr()).prototype).c)
+        *((*ps).coords).offset(i as isize) = (*((*(*ctx.as_mut_ptr()).prototype).c)
             .offset(i.wrapping_sub(1 as libc::c_int as size_t) as isize))
-            .index as libc::c_uchar;
+        .index as libc::c_uchar;
         i = i.wrapping_add(1);
         i;
     }
-    (*ps)
-        .final_hex = hex_to_letter(
+    (*ps).final_hex = hex_to_letter(
         (*((*(*ctx.as_mut_ptr()).prototype).c)
             .offset(((*ps).ncoords).wrapping_sub(1 as libc::c_int as size_t) as isize))
-            .type_0 as libc::c_uchar,
+        .type_0 as libc::c_uchar,
     ) as libc::c_char;
     spectrectx_cleanup(ctx.as_mut_ptr());
 }

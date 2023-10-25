@@ -22,18 +22,13 @@ pub struct tdq {
 #[no_mangle]
 pub unsafe extern "C" fn tdq_new(mut n: libc::c_int) -> *mut tdq {
     let mut i: libc::c_int = 0;
-    let mut tdq: *mut tdq = smalloc(::core::mem::size_of::<tdq>() as libc::c_ulong)
-        as *mut tdq;
-    (*tdq)
-        .queue = smalloc(
-        (n as libc::c_ulong)
-            .wrapping_mul(::core::mem::size_of::<libc::c_int>() as libc::c_ulong),
+    let mut tdq: *mut tdq = smalloc(::core::mem::size_of::<tdq>() as libc::c_ulong) as *mut tdq;
+    (*tdq).queue = smalloc(
+        (n as libc::c_ulong).wrapping_mul(::core::mem::size_of::<libc::c_int>() as libc::c_ulong),
     ) as *mut libc::c_int;
-    (*tdq)
-        .flags = smalloc(
-        (n as libc::c_ulong)
-            .wrapping_mul(::core::mem::size_of::<bool>() as libc::c_ulong),
-    ) as *mut bool;
+    (*tdq).flags =
+        smalloc((n as libc::c_ulong).wrapping_mul(::core::mem::size_of::<bool>() as libc::c_ulong))
+            as *mut bool;
     i = 0 as libc::c_int;
     while i < n {
         *((*tdq).queue).offset(i as isize) = 0 as libc::c_int;
@@ -54,29 +49,29 @@ pub unsafe extern "C" fn tdq_free(mut tdq: *mut tdq) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn tdq_add(mut tdq: *mut tdq, mut k: libc::c_int) {
-    if (k as libc::c_uint) < (*tdq).n as libc::c_uint {} else {
+    if (k as libc::c_uint) < (*tdq).n as libc::c_uint {
+    } else {
         __assert_fail(
             b"(unsigned)k < (unsigned)tdq->n\0" as *const u8 as *const libc::c_char,
             b"/puzzles/tdq.c\0" as *const u8 as *const libc::c_char,
             60 as libc::c_int as libc::c_uint,
-            (*::core::mem::transmute::<
-                &[u8; 25],
-                &[libc::c_char; 25],
-            >(b"void tdq_add(tdq *, int)\0"))
-                .as_ptr(),
+            (*::core::mem::transmute::<&[u8; 25], &[libc::c_char; 25]>(
+                b"void tdq_add(tdq *, int)\0",
+            ))
+            .as_ptr(),
         );
     }
     'c_2791: {
-        if (k as libc::c_uint) < (*tdq).n as libc::c_uint {} else {
+        if (k as libc::c_uint) < (*tdq).n as libc::c_uint {
+        } else {
             __assert_fail(
                 b"(unsigned)k < (unsigned)tdq->n\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/tdq.c\0" as *const u8 as *const libc::c_char,
                 60 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 25],
-                    &[libc::c_char; 25],
-                >(b"void tdq_add(tdq *, int)\0"))
-                    .as_ptr(),
+                (*::core::mem::transmute::<&[u8; 25], &[libc::c_char; 25]>(
+                    b"void tdq_add(tdq *, int)\0",
+                ))
+                .as_ptr(),
             );
         }
     };

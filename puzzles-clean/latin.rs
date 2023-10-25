@@ -8,16 +8,8 @@ extern "C" {
         __line: libc::c_uint,
         __function: *const libc::c_char,
     ) -> !;
-    fn memcpy(
-        _: *mut libc::c_void,
-        _: *const libc::c_void,
-        _: libc::c_ulong,
-    ) -> *mut libc::c_void;
-    fn memset(
-        _: *mut libc::c_void,
-        _: libc::c_int,
-        _: libc::c_ulong,
-    ) -> *mut libc::c_void;
+    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> *mut libc::c_void;
+    fn memset(_: *mut libc::c_void, _: libc::c_int, _: libc::c_ulong) -> *mut libc::c_void;
     fn smalloc(size: size_t) -> *mut libc::c_void;
     fn sfree(p: *mut libc::c_void);
     fn shuffle(
@@ -30,11 +22,7 @@ extern "C" {
     fn freetree234(t: *mut tree234);
     fn add234(t: *mut tree234, e: *mut libc::c_void) -> *mut libc::c_void;
     fn index234(t: *mut tree234, index: libc::c_int) -> *mut libc::c_void;
-    fn find234(
-        t: *mut tree234,
-        e: *mut libc::c_void,
-        cmp: cmpfn234,
-    ) -> *mut libc::c_void;
+    fn find234(t: *mut tree234, e: *mut libc::c_void, cmp: cmpfn234) -> *mut libc::c_void;
     fn count234(t: *mut tree234) -> libc::c_int;
     fn matching_with_scratch(
         scratch: *mut libc::c_void,
@@ -50,9 +38,8 @@ extern "C" {
 }
 pub type size_t = libc::c_ulong;
 pub type tree234 = tree234_Tag;
-pub type cmpfn234 = Option::<
-    unsafe extern "C" fn(*mut libc::c_void, *mut libc::c_void) -> libc::c_int,
->;
+pub type cmpfn234 =
+    Option<unsafe extern "C" fn(*mut libc::c_void, *mut libc::c_void) -> libc::c_int>;
 pub type digit = libc::c_uchar;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -73,16 +60,11 @@ pub struct latin_solver_scratch {
     pub neighbours: *mut libc::c_int,
     pub bfsqueue: *mut libc::c_int,
 }
-pub type usersolver_t = Option::<
-    unsafe extern "C" fn(*mut latin_solver, *mut libc::c_void) -> libc::c_int,
->;
-pub type validator_t = Option::<
-    unsafe extern "C" fn(*mut latin_solver, *mut libc::c_void) -> bool,
->;
-pub type ctxnew_t = Option::<
-    unsafe extern "C" fn(*mut libc::c_void) -> *mut libc::c_void,
->;
-pub type ctxfree_t = Option::<unsafe extern "C" fn(*mut libc::c_void) -> ()>;
+pub type usersolver_t =
+    Option<unsafe extern "C" fn(*mut latin_solver, *mut libc::c_void) -> libc::c_int>;
+pub type validator_t = Option<unsafe extern "C" fn(*mut latin_solver, *mut libc::c_void) -> bool>;
+pub type ctxnew_t = Option<unsafe extern "C" fn(*mut libc::c_void) -> *mut libc::c_void>;
+pub type ctxfree_t = Option<unsafe extern "C" fn(*mut libc::c_void) -> ()>;
 pub type C2RustUnnamed = libc::c_uint;
 pub const diff_unfinished: C2RustUnnamed = 12;
 pub const diff_ambiguous: C2RustUnnamed = 11;
@@ -102,62 +84,61 @@ pub unsafe extern "C" fn latin_solver_place(
 ) {
     let mut i: libc::c_int = 0;
     let mut o: libc::c_int = (*solver).o;
-    if n <= o {} else {
+    if n <= o {
+    } else {
         __assert_fail(
             b"n <= o\0" as *const u8 as *const libc::c_char,
             b"/puzzles/latin.c\0" as *const u8 as *const libc::c_char,
             38 as libc::c_int as libc::c_uint,
-            (*::core::mem::transmute::<
-                &[u8; 62],
-                &[libc::c_char; 62],
-            >(b"void latin_solver_place(struct latin_solver *, int, int, int)\0"))
-                .as_ptr(),
+            (*::core::mem::transmute::<&[u8; 62], &[libc::c_char; 62]>(
+                b"void latin_solver_place(struct latin_solver *, int, int, int)\0",
+            ))
+            .as_ptr(),
         );
     }
     'c_3577: {
-        if n <= o {} else {
+        if n <= o {
+        } else {
             __assert_fail(
                 b"n <= o\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/latin.c\0" as *const u8 as *const libc::c_char,
                 38 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 62],
-                    &[libc::c_char; 62],
-                >(b"void latin_solver_place(struct latin_solver *, int, int, int)\0"))
-                    .as_ptr(),
+                (*::core::mem::transmute::<&[u8; 62], &[libc::c_char; 62]>(
+                    b"void latin_solver_place(struct latin_solver *, int, int, int)\0",
+                ))
+                .as_ptr(),
             );
         }
     };
     if *((*solver).cube)
         .offset(((x * (*solver).o + y) * (*solver).o + n - 1 as libc::c_int) as isize)
         != 0
-    {} else {
+    {
+    } else {
         __assert_fail(
             b"cube(x,y,n)\0" as *const u8 as *const libc::c_char,
             b"/puzzles/latin.c\0" as *const u8 as *const libc::c_char,
             39 as libc::c_int as libc::c_uint,
-            (*::core::mem::transmute::<
-                &[u8; 62],
-                &[libc::c_char; 62],
-            >(b"void latin_solver_place(struct latin_solver *, int, int, int)\0"))
-                .as_ptr(),
+            (*::core::mem::transmute::<&[u8; 62], &[libc::c_char; 62]>(
+                b"void latin_solver_place(struct latin_solver *, int, int, int)\0",
+            ))
+            .as_ptr(),
         );
     }
     'c_3479: {
         if *((*solver).cube)
-            .offset(
-                ((x * (*solver).o + y) * (*solver).o + n - 1 as libc::c_int) as isize,
-            ) != 0
-        {} else {
+            .offset(((x * (*solver).o + y) * (*solver).o + n - 1 as libc::c_int) as isize)
+            != 0
+        {
+        } else {
             __assert_fail(
                 b"cube(x,y,n)\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/latin.c\0" as *const u8 as *const libc::c_char,
                 39 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 62],
-                    &[libc::c_char; 62],
-                >(b"void latin_solver_place(struct latin_solver *, int, int, int)\0"))
-                    .as_ptr(),
+                (*::core::mem::transmute::<&[u8; 62], &[libc::c_char; 62]>(
+                    b"void latin_solver_place(struct latin_solver *, int, int, int)\0",
+                ))
+                .as_ptr(),
             );
         }
     };
@@ -165,9 +146,8 @@ pub unsafe extern "C" fn latin_solver_place(
     while i <= o {
         if i != n {
             *((*solver).cube)
-                .offset(
-                    ((x * (*solver).o + y) * (*solver).o + i - 1 as libc::c_int) as isize,
-                ) = 0 as libc::c_int as libc::c_uchar;
+                .offset(((x * (*solver).o + y) * (*solver).o + i - 1 as libc::c_int) as isize) =
+                0 as libc::c_int as libc::c_uchar;
         }
         i += 1;
         i;
@@ -176,9 +156,8 @@ pub unsafe extern "C" fn latin_solver_place(
     while i < o {
         if i != y {
             *((*solver).cube)
-                .offset(
-                    ((x * (*solver).o + i) * (*solver).o + n - 1 as libc::c_int) as isize,
-                ) = 0 as libc::c_int as libc::c_uchar;
+                .offset(((x * (*solver).o + i) * (*solver).o + n - 1 as libc::c_int) as isize) =
+                0 as libc::c_int as libc::c_uchar;
         }
         i += 1;
         i;
@@ -187,16 +166,14 @@ pub unsafe extern "C" fn latin_solver_place(
     while i < o {
         if i != x {
             *((*solver).cube)
-                .offset(
-                    ((i * (*solver).o + y) * (*solver).o + n - 1 as libc::c_int) as isize,
-                ) = 0 as libc::c_int as libc::c_uchar;
+                .offset(((i * (*solver).o + y) * (*solver).o + n - 1 as libc::c_int) as isize) =
+                0 as libc::c_int as libc::c_uchar;
         }
         i += 1;
         i;
     }
     *((*solver).grid).offset((y * o + x) as isize) = n as digit;
-    let ref mut fresh0 = *((*solver).col)
-        .offset((x * o + n - 1 as libc::c_int) as isize);
+    let ref mut fresh0 = *((*solver).col).offset((x * o + n - 1 as libc::c_int) as isize);
     *fresh0 = 1 as libc::c_int as libc::c_uchar;
     *((*solver).row).offset((y * o + n - 1 as libc::c_int) as isize) = *fresh0;
 }
@@ -226,29 +203,29 @@ pub unsafe extern "C" fn latin_solver_elim(
         let mut x: libc::c_int = 0;
         let mut y: libc::c_int = 0;
         let mut n: libc::c_int = 0;
-        if fpos >= 0 as libc::c_int {} else {
+        if fpos >= 0 as libc::c_int {
+        } else {
             __assert_fail(
                 b"fpos >= 0\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/latin.c\0" as *const u8 as *const libc::c_char,
                 100 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 55],
-                    &[libc::c_char; 55],
-                >(b"int latin_solver_elim(struct latin_solver *, int, int)\0"))
-                    .as_ptr(),
+                (*::core::mem::transmute::<&[u8; 55], &[libc::c_char; 55]>(
+                    b"int latin_solver_elim(struct latin_solver *, int, int)\0",
+                ))
+                .as_ptr(),
             );
         }
         'c_3717: {
-            if fpos >= 0 as libc::c_int {} else {
+            if fpos >= 0 as libc::c_int {
+            } else {
                 __assert_fail(
                     b"fpos >= 0\0" as *const u8 as *const libc::c_char,
                     b"/puzzles/latin.c\0" as *const u8 as *const libc::c_char,
                     100 as libc::c_int as libc::c_uint,
-                    (*::core::mem::transmute::<
-                        &[u8; 55],
-                        &[libc::c_char; 55],
-                    >(b"int latin_solver_elim(struct latin_solver *, int, int)\0"))
-                        .as_ptr(),
+                    (*::core::mem::transmute::<&[u8; 55], &[libc::c_char; 55]>(
+                        b"int latin_solver_elim(struct latin_solver *, int, int)\0",
+                    ))
+                    .as_ptr(),
                 );
             }
         };
@@ -261,7 +238,7 @@ pub unsafe extern "C" fn latin_solver_elim(
             return 1 as libc::c_int;
         }
     } else if m == 0 as libc::c_int {
-        return -(1 as libc::c_int)
+        return -(1 as libc::c_int);
     }
     return 0 as libc::c_int;
 }
@@ -282,8 +259,16 @@ pub unsafe extern "C" fn latin_solver_set(
     let mut rowidx: *mut libc::c_uchar = (*scratch).rowidx;
     let mut colidx: *mut libc::c_uchar = (*scratch).colidx;
     let mut set: *mut libc::c_uchar = (*scratch).set;
-    memset(rowidx as *mut libc::c_void, 1 as libc::c_int, o as libc::c_ulong);
-    memset(colidx as *mut libc::c_void, 1 as libc::c_int, o as libc::c_ulong);
+    memset(
+        rowidx as *mut libc::c_void,
+        1 as libc::c_int,
+        o as libc::c_ulong,
+    );
+    memset(
+        colidx as *mut libc::c_void,
+        1 as libc::c_int,
+        o as libc::c_ulong,
+    );
     i = 0 as libc::c_int;
     while i < o {
         let mut count_0: libc::c_int = 0 as libc::c_int;
@@ -332,7 +317,8 @@ pub unsafe extern "C" fn latin_solver_set(
         i += 1;
         i;
     }
-    if n == j {} else {
+    if n == j {
+    } else {
         __assert_fail(
             b"n == j\0" as *const u8 as *const libc::c_char,
             b"/puzzles/latin.c\0" as *const u8 as *const libc::c_char,
@@ -347,7 +333,8 @@ pub unsafe extern "C" fn latin_solver_set(
         );
     }
     'c_4261: {
-        if n == j {} else {
+        if n == j {
+        } else {
             __assert_fail(
                 b"n == j\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/latin.c\0" as *const u8 as *const libc::c_char,
@@ -366,21 +353,22 @@ pub unsafe extern "C" fn latin_solver_set(
     while i < n {
         j = 0 as libc::c_int;
         while j < n {
-            *grid
-                .offset(
-                    (i * o + j) as isize,
-                ) = *((*solver).cube)
-                .offset(
-                    (start + *rowidx.offset(i as isize) as libc::c_int * step1
-                        + *colidx.offset(j as isize) as libc::c_int * step2) as isize,
-                );
+            *grid.offset((i * o + j) as isize) = *((*solver).cube).offset(
+                (start
+                    + *rowidx.offset(i as isize) as libc::c_int * step1
+                    + *colidx.offset(j as isize) as libc::c_int * step2) as isize,
+            );
             j += 1;
             j;
         }
         i += 1;
         i;
     }
-    memset(set as *mut libc::c_void, 0 as libc::c_int, n as libc::c_ulong);
+    memset(
+        set as *mut libc::c_void,
+        0 as libc::c_int,
+        n as libc::c_ulong,
+    );
     count = 0 as libc::c_int;
     loop {
         if count > 1 as libc::c_int && count < n - 1 as libc::c_int {
@@ -437,8 +425,8 @@ pub unsafe extern "C" fn latin_solver_set(
                                     + *rowidx.offset(i as isize) as libc::c_int * step1
                                     + *colidx.offset(j as isize) as libc::c_int * step2;
                                 progress = 1 as libc::c_int != 0;
-                                *((*solver).cube)
-                                    .offset(fpos as isize) = 0 as libc::c_int as libc::c_uchar;
+                                *((*solver).cube).offset(fpos as isize) =
+                                    0 as libc::c_int as libc::c_uchar;
                             }
                             j += 1;
                             j;
@@ -494,10 +482,8 @@ pub unsafe extern "C" fn latin_solver_forcing(
             n = 1 as libc::c_int;
             while n <= o {
                 if *((*solver).cube)
-                    .offset(
-                        ((x * (*solver).o + y) * (*solver).o + n - 1 as libc::c_int)
-                            as isize,
-                    ) != 0
+                    .offset(((x * (*solver).o + y) * (*solver).o + n - 1 as libc::c_int) as isize)
+                    != 0
                 {
                     count += 1;
                     count;
@@ -509,11 +495,9 @@ pub unsafe extern "C" fn latin_solver_forcing(
             if !(count != 2 as libc::c_int) {
                 n = 1 as libc::c_int;
                 while n <= o {
-                    if *((*solver).cube)
-                        .offset(
-                            ((x * (*solver).o + y) * (*solver).o + n - 1 as libc::c_int)
-                                as isize,
-                        ) != 0
+                    if *((*solver).cube).offset(
+                        ((x * (*solver).o + y) * (*solver).o + n - 1 as libc::c_int) as isize,
+                    ) != 0
                     {
                         let mut orign: libc::c_int = 0;
                         let mut currn: libc::c_int = 0;
@@ -543,8 +527,7 @@ pub unsafe extern "C" fn latin_solver_forcing(
                             xx = *bfsqueue.offset(fresh5 as isize);
                             yy = xx / o;
                             xx %= o;
-                            currn = *number.offset((yy * o + xx) as isize)
-                                as libc::c_int;
+                            currn = *number.offset((yy * o + xx) as isize) as libc::c_int;
                             nneighbours = 0 as libc::c_int;
                             yt = 0 as libc::c_int;
                             while yt < o {
@@ -569,25 +552,23 @@ pub unsafe extern "C" fn latin_solver_forcing(
                                 let mut nn: libc::c_int = 0;
                                 xt = *neighbours.offset(i as isize) % o;
                                 yt = *neighbours.offset(i as isize) / o;
-                                if !(*number.offset((yt * o + xt) as isize) as libc::c_int
-                                    <= o)
-                                {
-                                    if !(*((*solver).cube)
-                                        .offset(
-                                            ((xt * (*solver).o + yt) * (*solver).o + currn
-                                                - 1 as libc::c_int) as isize,
-                                        ) == 0)
+                                if !(*number.offset((yt * o + xt) as isize) as libc::c_int <= o) {
+                                    if !(*((*solver).cube).offset(
+                                        ((xt * (*solver).o + yt) * (*solver).o + currn
+                                            - 1 as libc::c_int)
+                                            as isize,
+                                    ) == 0)
                                     {
                                         if !(xt == xx && yt == yy) {
                                             tt = 0 as libc::c_int;
                                             cc = tt;
                                             nn = 1 as libc::c_int;
                                             while nn <= o {
-                                                if *((*solver).cube)
-                                                    .offset(
-                                                        ((xt * (*solver).o + yt) * (*solver).o + nn
-                                                            - 1 as libc::c_int) as isize,
-                                                    ) != 0
+                                                if *((*solver).cube).offset(
+                                                    ((xt * (*solver).o + yt) * (*solver).o + nn
+                                                        - 1 as libc::c_int)
+                                                        as isize,
+                                                ) != 0
                                                 {
                                                     cc += 1;
                                                     cc;
@@ -600,17 +581,15 @@ pub unsafe extern "C" fn latin_solver_forcing(
                                                 let fresh8 = tail;
                                                 tail = tail + 1;
                                                 *bfsqueue.offset(fresh8 as isize) = yt * o + xt;
-                                                *number
-                                                    .offset(
-                                                        (yt * o + xt) as isize,
-                                                    ) = (tt - currn) as libc::c_uchar;
+                                                *number.offset((yt * o + xt) as isize) =
+                                                    (tt - currn) as libc::c_uchar;
                                             }
                                             if currn == orign && (xt == x || yt == y) {
-                                                *((*solver).cube)
-                                                    .offset(
-                                                        ((xt * (*solver).o + yt) * (*solver).o + orign
-                                                            - 1 as libc::c_int) as isize,
-                                                    ) = 0 as libc::c_int as libc::c_uchar;
+                                                *((*solver).cube).offset(
+                                                    ((xt * (*solver).o + yt) * (*solver).o + orign
+                                                        - 1 as libc::c_int)
+                                                        as isize,
+                                                ) = 0 as libc::c_int as libc::c_uchar;
                                                 return 1 as libc::c_int;
                                             }
                                         }
@@ -637,46 +616,35 @@ pub unsafe extern "C" fn latin_solver_forcing(
 pub unsafe extern "C" fn latin_solver_new_scratch(
     mut solver: *mut latin_solver,
 ) -> *mut latin_solver_scratch {
-    let mut scratch: *mut latin_solver_scratch = smalloc(
-        ::core::mem::size_of::<latin_solver_scratch>() as libc::c_ulong,
-    ) as *mut latin_solver_scratch;
+    let mut scratch: *mut latin_solver_scratch =
+        smalloc(::core::mem::size_of::<latin_solver_scratch>() as libc::c_ulong)
+            as *mut latin_solver_scratch;
     let mut o: libc::c_int = (*solver).o;
-    (*scratch)
-        .grid = smalloc(
+    (*scratch).grid = smalloc(
         ((o * o) as libc::c_ulong)
             .wrapping_mul(::core::mem::size_of::<libc::c_uchar>() as libc::c_ulong),
     ) as *mut libc::c_uchar;
-    (*scratch)
-        .rowidx = smalloc(
-        (o as libc::c_ulong)
-            .wrapping_mul(::core::mem::size_of::<libc::c_uchar>() as libc::c_ulong),
+    (*scratch).rowidx = smalloc(
+        (o as libc::c_ulong).wrapping_mul(::core::mem::size_of::<libc::c_uchar>() as libc::c_ulong),
     ) as *mut libc::c_uchar;
-    (*scratch)
-        .colidx = smalloc(
-        (o as libc::c_ulong)
-            .wrapping_mul(::core::mem::size_of::<libc::c_uchar>() as libc::c_ulong),
+    (*scratch).colidx = smalloc(
+        (o as libc::c_ulong).wrapping_mul(::core::mem::size_of::<libc::c_uchar>() as libc::c_ulong),
     ) as *mut libc::c_uchar;
-    (*scratch)
-        .set = smalloc(
-        (o as libc::c_ulong)
-            .wrapping_mul(::core::mem::size_of::<libc::c_uchar>() as libc::c_ulong),
+    (*scratch).set = smalloc(
+        (o as libc::c_ulong).wrapping_mul(::core::mem::size_of::<libc::c_uchar>() as libc::c_ulong),
     ) as *mut libc::c_uchar;
-    (*scratch)
-        .neighbours = smalloc(
+    (*scratch).neighbours = smalloc(
         ((3 as libc::c_int * o) as libc::c_ulong)
             .wrapping_mul(::core::mem::size_of::<libc::c_int>() as libc::c_ulong),
     ) as *mut libc::c_int;
-    (*scratch)
-        .bfsqueue = smalloc(
+    (*scratch).bfsqueue = smalloc(
         ((o * o) as libc::c_ulong)
             .wrapping_mul(::core::mem::size_of::<libc::c_int>() as libc::c_ulong),
     ) as *mut libc::c_int;
     return scratch;
 }
 #[no_mangle]
-pub unsafe extern "C" fn latin_solver_free_scratch(
-    mut scratch: *mut latin_solver_scratch,
-) {
+pub unsafe extern "C" fn latin_solver_free_scratch(mut scratch: *mut latin_solver_scratch) {
     sfree((*scratch).bfsqueue as *mut libc::c_void);
     sfree((*scratch).neighbours as *mut libc::c_void);
     sfree((*scratch).set as *mut libc::c_void);
@@ -694,8 +662,7 @@ pub unsafe extern "C" fn latin_solver_alloc(
     let mut x: libc::c_int = 0;
     let mut y: libc::c_int = 0;
     (*solver).o = o;
-    (*solver)
-        .cube = smalloc(
+    (*solver).cube = smalloc(
         ((o * o * o) as libc::c_ulong)
             .wrapping_mul(::core::mem::size_of::<libc::c_uchar>() as libc::c_ulong),
     ) as *mut libc::c_uchar;
@@ -705,13 +672,11 @@ pub unsafe extern "C" fn latin_solver_alloc(
         1 as libc::c_int,
         (o * o * o) as libc::c_ulong,
     );
-    (*solver)
-        .row = smalloc(
+    (*solver).row = smalloc(
         ((o * o) as libc::c_ulong)
             .wrapping_mul(::core::mem::size_of::<libc::c_uchar>() as libc::c_ulong),
     ) as *mut libc::c_uchar;
-    (*solver)
-        .col = smalloc(
+    (*solver).col = smalloc(
         ((o * o) as libc::c_ulong)
             .wrapping_mul(::core::mem::size_of::<libc::c_uchar>() as libc::c_ulong),
     ) as *mut libc::c_uchar;
@@ -732,14 +697,12 @@ pub unsafe extern "C" fn latin_solver_alloc(
             let mut n: libc::c_int = *grid.offset((y * o + x) as isize) as libc::c_int;
             if n != 0 {
                 if *((*solver).cube)
-                    .offset(
-                        ((x * (*solver).o + y) * (*solver).o + n - 1 as libc::c_int)
-                            as isize,
-                    ) != 0
+                    .offset(((x * (*solver).o + y) * (*solver).o + n - 1 as libc::c_int) as isize)
+                    != 0
                 {
                     latin_solver_place(solver, x, y, n);
                 } else {
-                    return 0 as libc::c_int != 0
+                    return 0 as libc::c_int != 0;
                 }
             }
             y += 1;
@@ -757,9 +720,7 @@ pub unsafe extern "C" fn latin_solver_free(mut solver: *mut latin_solver) {
     sfree((*solver).col as *mut libc::c_void);
 }
 #[no_mangle]
-pub unsafe extern "C" fn latin_solver_diff_simple(
-    mut solver: *mut latin_solver,
-) -> libc::c_int {
+pub unsafe extern "C" fn latin_solver_diff_simple(mut solver: *mut latin_solver) -> libc::c_int {
     let mut x: libc::c_int = 0;
     let mut y: libc::c_int = 0;
     let mut n: libc::c_int = 0;
@@ -772,8 +733,7 @@ pub unsafe extern "C" fn latin_solver_diff_simple(
             if *((*solver).row).offset((y * o + n - 1 as libc::c_int) as isize) == 0 {
                 ret = latin_solver_elim(
                     solver,
-                    (0 as libc::c_int * (*solver).o + y) * (*solver).o + n
-                        - 1 as libc::c_int,
+                    (0 as libc::c_int * (*solver).o + y) * (*solver).o + n - 1 as libc::c_int,
                     o * o,
                 );
                 if ret != 0 as libc::c_int {
@@ -793,8 +753,7 @@ pub unsafe extern "C" fn latin_solver_diff_simple(
             if *((*solver).col).offset((x * o + n - 1 as libc::c_int) as isize) == 0 {
                 ret = latin_solver_elim(
                     solver,
-                    (x * (*solver).o + 0 as libc::c_int) * (*solver).o + n
-                        - 1 as libc::c_int,
+                    (x * (*solver).o + 0 as libc::c_int) * (*solver).o + n - 1 as libc::c_int,
                     o,
                 );
                 if ret != 0 as libc::c_int {
@@ -814,8 +773,7 @@ pub unsafe extern "C" fn latin_solver_diff_simple(
             if *((*solver).grid).offset((y * o + x) as isize) == 0 {
                 ret = latin_solver_elim(
                     solver,
-                    (x * (*solver).o + y) * (*solver).o + 1 as libc::c_int
-                        - 1 as libc::c_int,
+                    (x * (*solver).o + y) * (*solver).o + 1 as libc::c_int - 1 as libc::c_int,
                     1 as libc::c_int,
                 );
                 if ret != 0 as libc::c_int {
@@ -924,11 +882,9 @@ unsafe extern "C" fn latin_solver_recurse(
                 count = 0 as libc::c_int;
                 n = 1 as libc::c_int;
                 while n <= o {
-                    if *((*solver).cube)
-                        .offset(
-                            ((x * (*solver).o + y) * (*solver).o + n - 1 as libc::c_int)
-                                as isize,
-                        ) != 0
+                    if *((*solver).cube).offset(
+                        ((x * (*solver).o + y) * (*solver).o + n - 1 as libc::c_int) as isize,
+                    ) != 0
                     {
                         count += 1;
                         count;
@@ -936,7 +892,8 @@ unsafe extern "C" fn latin_solver_recurse(
                     n += 1;
                     n;
                 }
-                if count > 1 as libc::c_int {} else {
+                if count > 1 as libc::c_int {
+                } else {
                     __assert_fail(
                         b"count > 1\0" as *const u8 as *const libc::c_char,
                         b"/puzzles/latin.c\0" as *const u8 as *const libc::c_char,
@@ -951,7 +908,8 @@ unsafe extern "C" fn latin_solver_recurse(
                     );
                 }
                 'c_6869: {
-                    if count > 1 as libc::c_int {} else {
+                    if count > 1 as libc::c_int {
+                    } else {
                         __assert_fail(
                             b"count > 1\0" as *const u8 as *const libc::c_char,
                             b"/puzzles/latin.c\0" as *const u8 as *const libc::c_char,
@@ -978,7 +936,7 @@ unsafe extern "C" fn latin_solver_recurse(
         y;
     }
     if best == -(1 as libc::c_int) {
-        return 0 as libc::c_int
+        return 0 as libc::c_int;
     } else {
         let mut i: libc::c_int = 0;
         let mut j: libc::c_int = 0;
@@ -989,8 +947,7 @@ unsafe extern "C" fn latin_solver_recurse(
         y = best / o;
         x = best % o;
         list = smalloc(
-            (o as libc::c_ulong)
-                .wrapping_mul(::core::mem::size_of::<digit>() as libc::c_ulong),
+            (o as libc::c_ulong).wrapping_mul(::core::mem::size_of::<digit>() as libc::c_ulong),
         ) as *mut digit;
         ingrid = smalloc(
             ((o * o) as libc::c_ulong)
@@ -1009,9 +966,8 @@ unsafe extern "C" fn latin_solver_recurse(
         n = 1 as libc::c_int;
         while n <= o {
             if *((*solver).cube)
-                .offset(
-                    ((x * (*solver).o + y) * (*solver).o + n - 1 as libc::c_int) as isize,
-                ) != 0
+                .offset(((x * (*solver).o + y) * (*solver).o + n - 1 as libc::c_int) as isize)
+                != 0
             {
                 let fresh9 = j;
                 j = j + 1;
@@ -1064,7 +1020,8 @@ unsafe extern "C" fn latin_solver_recurse(
             if ctxnew.is_some() {
                 ctxfree.expect("non-null function pointer")(newctx);
             }
-            if ret != diff_unfinished as libc::c_int {} else {
+            if ret != diff_unfinished as libc::c_int {
+            } else {
                 __assert_fail(
                     b"ret != diff_unfinished\0" as *const u8 as *const libc::c_char,
                     b"/puzzles/latin.c\0" as *const u8 as *const libc::c_char,
@@ -1079,7 +1036,8 @@ unsafe extern "C" fn latin_solver_recurse(
                 );
             }
             'c_6532: {
-                if ret != diff_unfinished as libc::c_int {} else {
+                if ret != diff_unfinished as libc::c_int {
+                } else {
                     __assert_fail(
                         b"ret != diff_unfinished\0" as *const u8 as *const libc::c_char,
                         b"/puzzles/latin.c\0" as *const u8 as *const libc::c_char,
@@ -1094,9 +1052,7 @@ unsafe extern "C" fn latin_solver_recurse(
                     );
                 }
             };
-            if diff == diff_impossible as libc::c_int
-                && ret != diff_impossible as libc::c_int
-            {
+            if diff == diff_impossible as libc::c_int && ret != diff_impossible as libc::c_int {
                 memcpy(
                     (*solver).grid as *mut libc::c_void,
                     outgrid as *const libc::c_void,
@@ -1122,11 +1078,12 @@ unsafe extern "C" fn latin_solver_recurse(
         sfree(ingrid as *mut libc::c_void);
         sfree(list as *mut libc::c_void);
         if diff == diff_impossible as libc::c_int {
-            return -(1 as libc::c_int)
+            return -(1 as libc::c_int);
         } else if diff == diff_ambiguous as libc::c_int {
-            return 2 as libc::c_int
+            return 2 as libc::c_int;
         } else {
-            if diff == diff_recursive {} else {
+            if diff == diff_recursive {
+            } else {
                 __assert_fail(
                     b"diff == diff_recursive\0" as *const u8 as *const libc::c_char,
                     b"/puzzles/latin.c\0" as *const u8 as *const libc::c_char,
@@ -1141,7 +1098,8 @@ unsafe extern "C" fn latin_solver_recurse(
                 );
             }
             'c_6375: {
-                if diff == diff_recursive {} else {
+                if diff == diff_recursive {
+                } else {
                     __assert_fail(
                         b"diff == diff_recursive\0" as *const u8 as *const libc::c_char,
                         b"/puzzles/latin.c\0" as *const u8 as *const libc::c_char,
@@ -1177,7 +1135,8 @@ unsafe extern "C" fn latin_solver_top(
     let mut scratch: *mut latin_solver_scratch = latin_solver_new_scratch(solver);
     let mut ret: libc::c_int = 0;
     let mut diff: libc::c_int = diff_simple;
-    if maxdiff <= diff_recursive {} else {
+    if maxdiff <= diff_recursive {
+    } else {
         __assert_fail(
             b"maxdiff <= diff_recursive\0" as *const u8 as *const libc::c_char,
             b"/puzzles/latin.c\0" as *const u8 as *const libc::c_char,
@@ -1192,7 +1151,8 @@ unsafe extern "C" fn latin_solver_top(
         );
     }
     'c_7201: {
-        if maxdiff <= diff_recursive {} else {
+        if maxdiff <= diff_recursive {
+        } else {
             __assert_fail(
                 b"maxdiff <= diff_recursive\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/latin.c\0" as *const u8 as *const libc::c_char,
@@ -1213,8 +1173,9 @@ unsafe extern "C" fn latin_solver_top(
         i = 0 as libc::c_int;
         while i <= maxdiff {
             if (*usersolvers.offset(i as isize)).is_some() {
-                ret = (*usersolvers.offset(i as isize))
-                    .expect("non-null function pointer")(solver, ctx);
+                ret = (*usersolvers.offset(i as isize)).expect("non-null function pointer")(
+                    solver, ctx,
+                );
             } else {
                 ret = 0 as libc::c_int;
             }
@@ -1282,8 +1243,10 @@ unsafe extern "C" fn latin_solver_top(
         }
         break;
     }
-    if diff != diff_impossible as libc::c_int && diff != diff_unfinished as libc::c_int
-        && diff != diff_ambiguous as libc::c_int && valid.is_some()
+    if diff != diff_impossible as libc::c_int
+        && diff != diff_unfinished as libc::c_int
+        && diff != diff_ambiguous as libc::c_int
+        && valid.is_some()
         && !valid.expect("non-null function pointer")(solver, ctx)
     {
         diff = diff_impossible as libc::c_int;
@@ -1369,10 +1332,7 @@ pub unsafe extern "C" fn latin_solver(
     return diff;
 }
 #[no_mangle]
-pub unsafe extern "C" fn latin_solver_debug(
-    mut cube: *mut libc::c_uchar,
-    mut o: libc::c_int,
-) {}
+pub unsafe extern "C" fn latin_solver_debug(mut cube: *mut libc::c_uchar, mut o: libc::c_int) {}
 #[no_mangle]
 pub unsafe extern "C" fn latin_debug(mut sq: *mut digit, mut o: libc::c_int) {}
 #[no_mangle]
@@ -1391,12 +1351,10 @@ pub unsafe extern "C" fn latin_generate(
     let mut k: libc::c_int = 0;
     let mut row: *mut digit = 0 as *mut digit;
     sq = smalloc(
-        ((o * o) as libc::c_ulong)
-            .wrapping_mul(::core::mem::size_of::<digit>() as libc::c_ulong),
+        ((o * o) as libc::c_ulong).wrapping_mul(::core::mem::size_of::<digit>() as libc::c_ulong),
     ) as *mut digit;
     row = smalloc(
-        (o as libc::c_ulong)
-            .wrapping_mul(::core::mem::size_of::<digit>() as libc::c_ulong),
+        (o as libc::c_ulong).wrapping_mul(::core::mem::size_of::<digit>() as libc::c_ulong),
     ) as *mut digit;
     i = 0 as libc::c_int;
     while i < o {
@@ -1420,12 +1378,10 @@ pub unsafe extern "C" fn latin_generate(
             .wrapping_mul(::core::mem::size_of::<*mut libc::c_int>() as libc::c_ulong),
     ) as *mut *mut libc::c_int;
     adjsizes = smalloc(
-        (o as libc::c_ulong)
-            .wrapping_mul(::core::mem::size_of::<libc::c_int>() as libc::c_ulong),
+        (o as libc::c_ulong).wrapping_mul(::core::mem::size_of::<libc::c_int>() as libc::c_ulong),
     ) as *mut libc::c_int;
     matching = smalloc(
-        (o as libc::c_ulong)
-            .wrapping_mul(::core::mem::size_of::<libc::c_int>() as libc::c_ulong),
+        (o as libc::c_ulong).wrapping_mul(::core::mem::size_of::<libc::c_int>() as libc::c_ulong),
     ) as *mut libc::c_int;
     i = 0 as libc::c_int;
     while i < o {
@@ -1441,13 +1397,11 @@ pub unsafe extern "C" fn latin_generate(
             }
             k = 0 as libc::c_int;
             while k < i {
-                *adj
-                    .offset(
-                        (*sq
-                            .offset(
-                                (*row.offset(k as isize) as libc::c_int * o + j) as isize,
-                            ) as libc::c_int - 1 as libc::c_int) as isize,
-                    ) = 0 as libc::c_int;
+                *adj.offset(
+                    (*sq.offset((*row.offset(k as isize) as libc::c_int * o + j) as isize)
+                        as libc::c_int
+                        - 1 as libc::c_int) as isize,
+                ) = 0 as libc::c_int;
                 k += 1;
                 k;
             }
@@ -1464,11 +1418,8 @@ pub unsafe extern "C" fn latin_generate(
                 k += 1;
                 k;
             }
-            *adjsizes
-                .offset(
-                    j as isize,
-                ) = p.offset_from(*adjlists.offset(j as isize)) as libc::c_long
-                as libc::c_int;
+            *adjsizes.offset(j as isize) =
+                p.offset_from(*adjlists.offset(j as isize)) as libc::c_long as libc::c_int;
             j += 1;
             j;
         }
@@ -1482,38 +1433,36 @@ pub unsafe extern "C" fn latin_generate(
             matching,
             0 as *mut libc::c_int,
         );
-        if j == o {} else {
+        if j == o {
+        } else {
             __assert_fail(
                 b"j == o\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/latin.c\0" as *const u8 as *const libc::c_char,
                 1208 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 43],
-                    &[libc::c_char; 43],
-                >(b"digit *latin_generate(int, random_state *)\0"))
-                    .as_ptr(),
+                (*::core::mem::transmute::<&[u8; 43], &[libc::c_char; 43]>(
+                    b"digit *latin_generate(int, random_state *)\0",
+                ))
+                .as_ptr(),
             );
         }
         'c_7369: {
-            if j == o {} else {
+            if j == o {
+            } else {
                 __assert_fail(
                     b"j == o\0" as *const u8 as *const libc::c_char,
                     b"/puzzles/latin.c\0" as *const u8 as *const libc::c_char,
                     1208 as libc::c_int as libc::c_uint,
-                    (*::core::mem::transmute::<
-                        &[u8; 43],
-                        &[libc::c_char; 43],
-                    >(b"digit *latin_generate(int, random_state *)\0"))
-                        .as_ptr(),
+                    (*::core::mem::transmute::<&[u8; 43], &[libc::c_char; 43]>(
+                        b"digit *latin_generate(int, random_state *)\0",
+                    ))
+                    .as_ptr(),
                 );
             }
         };
         j = 0 as libc::c_int;
         while j < o {
-            *sq
-                .offset(
-                    (*row.offset(i as isize) as libc::c_int * o + j) as isize,
-                ) = (*matching.offset(j as isize) + 1 as libc::c_int) as digit;
+            *sq.offset((*row.offset(i as isize) as libc::c_int * o + j) as isize) =
+                (*matching.offset(j as isize) + 1 as libc::c_int) as digit;
             j += 1;
             j;
         }
@@ -1541,15 +1490,13 @@ pub unsafe extern "C" fn latin_generate_rect(
     let mut latin_rect: *mut digit = 0 as *mut digit;
     latin = latin_generate(o, rs);
     latin_rect = smalloc(
-        ((w * h) as libc::c_ulong)
-            .wrapping_mul(::core::mem::size_of::<digit>() as libc::c_ulong),
+        ((w * h) as libc::c_ulong).wrapping_mul(::core::mem::size_of::<digit>() as libc::c_ulong),
     ) as *mut digit;
     x = 0 as libc::c_int;
     while x < w {
         y = 0 as libc::c_int;
         while y < h {
-            *latin_rect
-                .offset((y * w + x) as isize) = *latin.offset((y * o + x) as isize);
+            *latin_rect.offset((y * w + x) as isize) = *latin.offset((y * o + x) as isize);
             y += 1;
             y;
         }
@@ -1574,19 +1521,11 @@ unsafe extern "C" fn latin_check_cmp(
     return 0 as libc::c_int;
 }
 #[no_mangle]
-pub unsafe extern "C" fn latin_check(
-    mut sq: *mut digit,
-    mut order: libc::c_int,
-) -> bool {
-    let mut dict: *mut tree234 = newtree234(
-        Some(
-            latin_check_cmp
-                as unsafe extern "C" fn(
-                    *mut libc::c_void,
-                    *mut libc::c_void,
-                ) -> libc::c_int,
-        ),
-    );
+pub unsafe extern "C" fn latin_check(mut sq: *mut digit, mut order: libc::c_int) -> bool {
+    let mut dict: *mut tree234 = newtree234(Some(
+        latin_check_cmp
+            as unsafe extern "C" fn(*mut libc::c_void, *mut libc::c_void) -> libc::c_int,
+    ));
     let mut c: libc::c_int = 0;
     let mut r: libc::c_int = 0;
     let mut ret: bool = 0 as libc::c_int != 0;
@@ -1599,37 +1538,36 @@ pub unsafe extern "C" fn latin_check(
         while r < order {
             lc.elt = *sq.offset((r * order + c) as isize);
             lc.count = 0 as libc::c_int;
-            lcp = find234(dict, &mut lc as *mut lcparams as *mut libc::c_void, None)
-                as *mut lcparams;
+            lcp =
+                find234(dict, &mut lc as *mut lcparams as *mut libc::c_void, None) as *mut lcparams;
             if lcp.is_null() {
-                lcp = smalloc(::core::mem::size_of::<lcparams>() as libc::c_ulong)
-                    as *mut lcparams;
+                lcp = smalloc(::core::mem::size_of::<lcparams>() as libc::c_ulong) as *mut lcparams;
                 (*lcp).elt = *sq.offset((r * order + c) as isize);
                 (*lcp).count = 1 as libc::c_int;
                 aret = add234(dict, lcp as *mut libc::c_void) as *mut lcparams;
-                if aret == lcp {} else {
+                if aret == lcp {
+                } else {
                     __assert_fail(
                         b"aret == lcp\0" as *const u8 as *const libc::c_char,
                         b"/puzzles/latin.c\0" as *const u8 as *const libc::c_char,
                         1292 as libc::c_int as libc::c_uint,
-                        (*::core::mem::transmute::<
-                            &[u8; 32],
-                            &[libc::c_char; 32],
-                        >(b"_Bool latin_check(digit *, int)\0"))
-                            .as_ptr(),
+                        (*::core::mem::transmute::<&[u8; 32], &[libc::c_char; 32]>(
+                            b"_Bool latin_check(digit *, int)\0",
+                        ))
+                        .as_ptr(),
                     );
                 }
                 'c_8026: {
-                    if aret == lcp {} else {
+                    if aret == lcp {
+                    } else {
                         __assert_fail(
                             b"aret == lcp\0" as *const u8 as *const libc::c_char,
                             b"/puzzles/latin.c\0" as *const u8 as *const libc::c_char,
                             1292 as libc::c_int as libc::c_uint,
-                            (*::core::mem::transmute::<
-                                &[u8; 32],
-                                &[libc::c_char; 32],
-                            >(b"_Bool latin_check(digit *, int)\0"))
-                                .as_ptr(),
+                            (*::core::mem::transmute::<&[u8; 32], &[libc::c_char; 32]>(
+                                b"_Bool latin_check(digit *, int)\0",
+                            ))
+                            .as_ptr(),
                         );
                     }
                 };

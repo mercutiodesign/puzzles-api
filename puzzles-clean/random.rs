@@ -6,16 +6,8 @@ extern "C" {
         __line: libc::c_uint,
         __function: *const libc::c_char,
     ) -> !;
-    fn memset(
-        _: *mut libc::c_void,
-        _: libc::c_int,
-        _: libc::c_ulong,
-    ) -> *mut libc::c_void;
-    fn memcpy(
-        _: *mut libc::c_void,
-        _: *const libc::c_void,
-        _: libc::c_ulong,
-    ) -> *mut libc::c_void;
+    fn memset(_: *mut libc::c_void, _: libc::c_int, _: libc::c_ulong) -> *mut libc::c_void;
+    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> *mut libc::c_void;
     fn sprintf(_: *mut libc::c_char, _: *const libc::c_char, _: ...) -> libc::c_int;
     fn sfree(p: *mut libc::c_void);
     fn smalloc(size: size_t) -> *mut libc::c_void;
@@ -63,11 +55,10 @@ unsafe extern "C" fn SHATransform(mut digest: *mut uint32, mut block: *mut uint3
     t = 16 as libc::c_int;
     while t < 80 as libc::c_int {
         let mut tmp: uint32 = w[(t - 3 as libc::c_int) as usize]
-            ^ w[(t - 8 as libc::c_int) as usize] ^ w[(t - 14 as libc::c_int) as usize]
+            ^ w[(t - 8 as libc::c_int) as usize]
+            ^ w[(t - 14 as libc::c_int) as usize]
             ^ w[(t - 16 as libc::c_int) as usize];
-        w[t
-            as usize] = tmp << 1 as libc::c_int
-            | tmp >> 32 as libc::c_int - 1 as libc::c_int;
+        w[t as usize] = tmp << 1 as libc::c_int | tmp >> 32 as libc::c_int - 1 as libc::c_int;
         t += 1;
         t;
     }
@@ -78,8 +69,7 @@ unsafe extern "C" fn SHATransform(mut digest: *mut uint32, mut block: *mut uint3
     e = *digest.offset(4 as libc::c_int as isize);
     t = 0 as libc::c_int;
     while t < 20 as libc::c_int {
-        let mut tmp_0: uint32 = (a << 5 as libc::c_int
-            | a >> 32 as libc::c_int - 5 as libc::c_int)
+        let mut tmp_0: uint32 = (a << 5 as libc::c_int | a >> 32 as libc::c_int - 5 as libc::c_int)
             .wrapping_add(b & c | d & !b)
             .wrapping_add(e)
             .wrapping_add(w[t as usize])
@@ -94,8 +84,7 @@ unsafe extern "C" fn SHATransform(mut digest: *mut uint32, mut block: *mut uint3
     }
     t = 20 as libc::c_int;
     while t < 40 as libc::c_int {
-        let mut tmp_1: uint32 = (a << 5 as libc::c_int
-            | a >> 32 as libc::c_int - 5 as libc::c_int)
+        let mut tmp_1: uint32 = (a << 5 as libc::c_int | a >> 32 as libc::c_int - 5 as libc::c_int)
             .wrapping_add(b ^ c ^ d)
             .wrapping_add(e)
             .wrapping_add(w[t as usize])
@@ -110,8 +99,7 @@ unsafe extern "C" fn SHATransform(mut digest: *mut uint32, mut block: *mut uint3
     }
     t = 40 as libc::c_int;
     while t < 60 as libc::c_int {
-        let mut tmp_2: uint32 = (a << 5 as libc::c_int
-            | a >> 32 as libc::c_int - 5 as libc::c_int)
+        let mut tmp_2: uint32 = (a << 5 as libc::c_int | a >> 32 as libc::c_int - 5 as libc::c_int)
             .wrapping_add(b & c | b & d | c & d)
             .wrapping_add(e)
             .wrapping_add(w[t as usize])
@@ -126,8 +114,7 @@ unsafe extern "C" fn SHATransform(mut digest: *mut uint32, mut block: *mut uint3
     }
     t = 60 as libc::c_int;
     while t < 80 as libc::c_int {
-        let mut tmp_3: uint32 = (a << 5 as libc::c_int
-            | a >> 32 as libc::c_int - 5 as libc::c_int)
+        let mut tmp_3: uint32 = (a << 5 as libc::c_int | a >> 32 as libc::c_int - 5 as libc::c_int)
             .wrapping_add(b ^ c ^ d)
             .wrapping_add(e)
             .wrapping_add(w[t as usize])
@@ -180,8 +167,7 @@ pub unsafe extern "C" fn SHA_Bytes(
     } else {
         while (*s).blkused + len >= 64 as libc::c_int {
             memcpy(
-                ((*s).block).as_mut_ptr().offset((*s).blkused as isize)
-                    as *mut libc::c_void,
+                ((*s).block).as_mut_ptr().offset((*s).blkused as isize) as *mut libc::c_void,
                 q as *const libc::c_void,
                 (64 as libc::c_int - (*s).blkused) as libc::c_ulong,
             );
@@ -189,16 +175,16 @@ pub unsafe extern "C" fn SHA_Bytes(
             len -= 64 as libc::c_int - (*s).blkused;
             i = 0 as libc::c_int;
             while i < 16 as libc::c_int {
-                wordblock[i
-                    as usize] = ((*s)
-                    .block[(i * 4 as libc::c_int + 0 as libc::c_int) as usize] as uint32)
+                wordblock[i as usize] = ((*s).block
+                    [(i * 4 as libc::c_int + 0 as libc::c_int) as usize]
+                    as uint32)
                     << 24 as libc::c_int
-                    | ((*s).block[(i * 4 as libc::c_int + 1 as libc::c_int) as usize]
-                        as uint32) << 16 as libc::c_int
-                    | ((*s).block[(i * 4 as libc::c_int + 2 as libc::c_int) as usize]
-                        as uint32) << 8 as libc::c_int
-                    | ((*s).block[(i * 4 as libc::c_int + 3 as libc::c_int) as usize]
-                        as uint32) << 0 as libc::c_int;
+                    | ((*s).block[(i * 4 as libc::c_int + 1 as libc::c_int) as usize] as uint32)
+                        << 16 as libc::c_int
+                    | ((*s).block[(i * 4 as libc::c_int + 2 as libc::c_int) as usize] as uint32)
+                        << 8 as libc::c_int
+                    | ((*s).block[(i * 4 as libc::c_int + 3 as libc::c_int) as usize] as uint32)
+                        << 0 as libc::c_int;
                 i += 1;
                 i;
             }
@@ -214,10 +200,7 @@ pub unsafe extern "C" fn SHA_Bytes(
     };
 }
 #[no_mangle]
-pub unsafe extern "C" fn SHA_Final(
-    mut s: *mut SHA_State,
-    mut output: *mut libc::c_uchar,
-) {
+pub unsafe extern "C" fn SHA_Final(mut s: *mut SHA_State, mut output: *mut libc::c_uchar) {
     let mut i: libc::c_int = 0;
     let mut pad: libc::c_int = 0;
     let mut c: [libc::c_uchar; 64] = [0; 64];
@@ -228,36 +211,35 @@ pub unsafe extern "C" fn SHA_Final(
     } else {
         pad = 56 as libc::c_int - (*s).blkused;
     }
-    lenhi = (*s).lenhi << 3 as libc::c_int
-        | (*s).lenlo >> 32 as libc::c_int - 3 as libc::c_int;
+    lenhi = (*s).lenhi << 3 as libc::c_int | (*s).lenlo >> 32 as libc::c_int - 3 as libc::c_int;
     lenlo = (*s).lenlo << 3 as libc::c_int;
-    memset(c.as_mut_ptr() as *mut libc::c_void, 0 as libc::c_int, pad as libc::c_ulong);
+    memset(
+        c.as_mut_ptr() as *mut libc::c_void,
+        0 as libc::c_int,
+        pad as libc::c_ulong,
+    );
     c[0 as libc::c_int as usize] = 0x80 as libc::c_int as libc::c_uchar;
-    SHA_Bytes(s, &mut c as *mut [libc::c_uchar; 64] as *const libc::c_void, pad);
-    c[0 as libc::c_int
-        as usize] = (lenhi >> 24 as libc::c_int & 0xff as libc::c_int as uint32)
-        as libc::c_uchar;
-    c[1 as libc::c_int
-        as usize] = (lenhi >> 16 as libc::c_int & 0xff as libc::c_int as uint32)
-        as libc::c_uchar;
-    c[2 as libc::c_int
-        as usize] = (lenhi >> 8 as libc::c_int & 0xff as libc::c_int as uint32)
-        as libc::c_uchar;
-    c[3 as libc::c_int
-        as usize] = (lenhi >> 0 as libc::c_int & 0xff as libc::c_int as uint32)
-        as libc::c_uchar;
-    c[4 as libc::c_int
-        as usize] = (lenlo >> 24 as libc::c_int & 0xff as libc::c_int as uint32)
-        as libc::c_uchar;
-    c[5 as libc::c_int
-        as usize] = (lenlo >> 16 as libc::c_int & 0xff as libc::c_int as uint32)
-        as libc::c_uchar;
-    c[6 as libc::c_int
-        as usize] = (lenlo >> 8 as libc::c_int & 0xff as libc::c_int as uint32)
-        as libc::c_uchar;
-    c[7 as libc::c_int
-        as usize] = (lenlo >> 0 as libc::c_int & 0xff as libc::c_int as uint32)
-        as libc::c_uchar;
+    SHA_Bytes(
+        s,
+        &mut c as *mut [libc::c_uchar; 64] as *const libc::c_void,
+        pad,
+    );
+    c[0 as libc::c_int as usize] =
+        (lenhi >> 24 as libc::c_int & 0xff as libc::c_int as uint32) as libc::c_uchar;
+    c[1 as libc::c_int as usize] =
+        (lenhi >> 16 as libc::c_int & 0xff as libc::c_int as uint32) as libc::c_uchar;
+    c[2 as libc::c_int as usize] =
+        (lenhi >> 8 as libc::c_int & 0xff as libc::c_int as uint32) as libc::c_uchar;
+    c[3 as libc::c_int as usize] =
+        (lenhi >> 0 as libc::c_int & 0xff as libc::c_int as uint32) as libc::c_uchar;
+    c[4 as libc::c_int as usize] =
+        (lenlo >> 24 as libc::c_int & 0xff as libc::c_int as uint32) as libc::c_uchar;
+    c[5 as libc::c_int as usize] =
+        (lenlo >> 16 as libc::c_int & 0xff as libc::c_int as uint32) as libc::c_uchar;
+    c[6 as libc::c_int as usize] =
+        (lenlo >> 8 as libc::c_int & 0xff as libc::c_int as uint32) as libc::c_uchar;
+    c[7 as libc::c_int as usize] =
+        (lenlo >> 0 as libc::c_int & 0xff as libc::c_int as uint32) as libc::c_uchar;
     SHA_Bytes(
         s,
         &mut c as *mut [libc::c_uchar; 64] as *const libc::c_void,
@@ -265,25 +247,17 @@ pub unsafe extern "C" fn SHA_Final(
     );
     i = 0 as libc::c_int;
     while i < 5 as libc::c_int {
-        *output
-            .offset(
-                (i * 4 as libc::c_int) as isize,
-            ) = ((*s).h[i as usize] >> 24 as libc::c_int & 0xff as libc::c_int as uint32)
+        *output.offset((i * 4 as libc::c_int) as isize) = ((*s).h[i as usize] >> 24 as libc::c_int
+            & 0xff as libc::c_int as uint32)
             as libc::c_uchar;
-        *output
-            .offset(
-                (i * 4 as libc::c_int + 1 as libc::c_int) as isize,
-            ) = ((*s).h[i as usize] >> 16 as libc::c_int & 0xff as libc::c_int as uint32)
-            as libc::c_uchar;
-        *output
-            .offset(
-                (i * 4 as libc::c_int + 2 as libc::c_int) as isize,
-            ) = ((*s).h[i as usize] >> 8 as libc::c_int & 0xff as libc::c_int as uint32)
-            as libc::c_uchar;
-        *output
-            .offset(
-                (i * 4 as libc::c_int + 3 as libc::c_int) as isize,
-            ) = ((*s).h[i as usize] & 0xff as libc::c_int as uint32) as libc::c_uchar;
+        *output.offset((i * 4 as libc::c_int + 1 as libc::c_int) as isize) =
+            ((*s).h[i as usize] >> 16 as libc::c_int & 0xff as libc::c_int as uint32)
+                as libc::c_uchar;
+        *output.offset((i * 4 as libc::c_int + 2 as libc::c_int) as isize) =
+            ((*s).h[i as usize] >> 8 as libc::c_int & 0xff as libc::c_int as uint32)
+                as libc::c_uchar;
+        *output.offset((i * 4 as libc::c_int + 3 as libc::c_int) as isize) =
+            ((*s).h[i as usize] & 0xff as libc::c_int as uint32) as libc::c_uchar;
         i += 1;
         i;
     }
@@ -311,13 +285,18 @@ pub unsafe extern "C" fn random_new(
     mut len: libc::c_int,
 ) -> *mut random_state {
     let mut state: *mut random_state = 0 as *mut random_state;
-    state = smalloc(::core::mem::size_of::<random_state>() as libc::c_ulong)
-        as *mut random_state;
-    SHA_Simple(seed as *const libc::c_void, len, ((*state).seedbuf).as_mut_ptr());
+    state = smalloc(::core::mem::size_of::<random_state>() as libc::c_ulong) as *mut random_state;
+    SHA_Simple(
+        seed as *const libc::c_void,
+        len,
+        ((*state).seedbuf).as_mut_ptr(),
+    );
     SHA_Simple(
         ((*state).seedbuf).as_mut_ptr() as *const libc::c_void,
         20 as libc::c_int,
-        ((*state).seedbuf).as_mut_ptr().offset(20 as libc::c_int as isize),
+        ((*state).seedbuf)
+            .as_mut_ptr()
+            .offset(20 as libc::c_int as isize),
     );
     SHA_Simple(
         ((*state).seedbuf).as_mut_ptr() as *const libc::c_void,
@@ -328,12 +307,9 @@ pub unsafe extern "C" fn random_new(
     return state;
 }
 #[no_mangle]
-pub unsafe extern "C" fn random_copy(
-    mut tocopy: *mut random_state,
-) -> *mut random_state {
+pub unsafe extern "C" fn random_copy(mut tocopy: *mut random_state) -> *mut random_state {
     let mut result: *mut random_state = 0 as *mut random_state;
-    result = smalloc(::core::mem::size_of::<random_state>() as libc::c_ulong)
-        as *mut random_state;
+    result = smalloc(::core::mem::size_of::<random_state>() as libc::c_ulong) as *mut random_state;
     memcpy(
         ((*result).seedbuf).as_mut_ptr() as *mut libc::c_void,
         ((*tocopy).seedbuf).as_mut_ptr() as *const libc::c_void,
@@ -361,9 +337,7 @@ pub unsafe extern "C" fn random_bits(
             i = 0 as libc::c_int;
             while i < 20 as libc::c_int {
                 if (*state).seedbuf[i as usize] as libc::c_int != 0xff as libc::c_int {
-                    (*state)
-                        .seedbuf[i
-                        as usize] = ((*state).seedbuf[i as usize]).wrapping_add(1);
+                    (*state).seedbuf[i as usize] = ((*state).seedbuf[i as usize]).wrapping_add(1);
                     (*state).seedbuf[i as usize];
                     break;
                 } else {
@@ -381,14 +355,12 @@ pub unsafe extern "C" fn random_bits(
         }
         let fresh5 = (*state).pos;
         (*state).pos = (*state).pos + 1;
-        ret = ret << 8 as libc::c_int
-            | (*state).databuf[fresh5 as usize] as libc::c_ulong;
+        ret = ret << 8 as libc::c_int | (*state).databuf[fresh5 as usize] as libc::c_ulong;
         n += 8 as libc::c_int;
     }
-    ret
-        &= ((1 as libc::c_ulong) << bits - 1 as libc::c_int)
-            .wrapping_mul(2 as libc::c_int as libc::c_ulong)
-            .wrapping_sub(1 as libc::c_int as libc::c_ulong);
+    ret &= ((1 as libc::c_ulong) << bits - 1 as libc::c_int)
+        .wrapping_mul(2 as libc::c_int as libc::c_ulong)
+        .wrapping_sub(1 as libc::c_int as libc::c_ulong);
     return ret;
 }
 #[no_mangle]
@@ -405,29 +377,29 @@ pub unsafe extern "C" fn random_upto(
         bits;
     }
     bits += 3 as libc::c_int;
-    if bits < 32 as libc::c_int {} else {
+    if bits < 32 as libc::c_int {
+    } else {
         __assert_fail(
             b"bits < 32\0" as *const u8 as *const libc::c_char,
             b"/puzzles/random.c\0" as *const u8 as *const libc::c_char,
             275 as libc::c_int as libc::c_uint,
-            (*::core::mem::transmute::<
-                &[u8; 57],
-                &[libc::c_char; 57],
-            >(b"unsigned long random_upto(random_state *, unsigned long)\0"))
-                .as_ptr(),
+            (*::core::mem::transmute::<&[u8; 57], &[libc::c_char; 57]>(
+                b"unsigned long random_upto(random_state *, unsigned long)\0",
+            ))
+            .as_ptr(),
         );
     }
     'c_4612: {
-        if bits < 32 as libc::c_int {} else {
+        if bits < 32 as libc::c_int {
+        } else {
             __assert_fail(
                 b"bits < 32\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/random.c\0" as *const u8 as *const libc::c_char,
                 275 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 57],
-                    &[libc::c_char; 57],
-                >(b"unsigned long random_upto(random_state *, unsigned long)\0"))
-                    .as_ptr(),
+                (*::core::mem::transmute::<&[u8; 57], &[libc::c_char; 57]>(
+                    b"unsigned long random_upto(random_state *, unsigned long)\0",
+                ))
+                .as_ptr(),
             );
         }
     };
@@ -447,9 +419,7 @@ pub unsafe extern "C" fn random_free(mut state: *mut random_state) {
     sfree(state as *mut libc::c_void);
 }
 #[no_mangle]
-pub unsafe extern "C" fn random_state_encode(
-    mut state: *mut random_state,
-) -> *mut libc::c_char {
+pub unsafe extern "C" fn random_state_encode(mut state: *mut random_state) -> *mut libc::c_char {
     let mut retbuf: [libc::c_char; 256] = [0; 256];
     let mut len: libc::c_int = 0 as libc::c_int;
     let mut i: libc::c_int = 0;
@@ -458,12 +428,11 @@ pub unsafe extern "C" fn random_state_encode(
         < (::core::mem::size_of::<[libc::c_uchar; 40]>() as libc::c_ulong)
             .wrapping_div(::core::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
     {
-        len
-            += sprintf(
-                retbuf.as_mut_ptr().offset(len as isize),
-                b"%02x\0" as *const u8 as *const libc::c_char,
-                (*state).seedbuf[i as usize] as libc::c_int,
-            );
+        len += sprintf(
+            retbuf.as_mut_ptr().offset(len as isize),
+            b"%02x\0" as *const u8 as *const libc::c_char,
+            (*state).seedbuf[i as usize] as libc::c_int,
+        );
         i += 1;
         i;
     }
@@ -472,33 +441,28 @@ pub unsafe extern "C" fn random_state_encode(
         < (::core::mem::size_of::<[libc::c_uchar; 20]>() as libc::c_ulong)
             .wrapping_div(::core::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
     {
-        len
-            += sprintf(
-                retbuf.as_mut_ptr().offset(len as isize),
-                b"%02x\0" as *const u8 as *const libc::c_char,
-                (*state).databuf[i as usize] as libc::c_int,
-            );
+        len += sprintf(
+            retbuf.as_mut_ptr().offset(len as isize),
+            b"%02x\0" as *const u8 as *const libc::c_char,
+            (*state).databuf[i as usize] as libc::c_int,
+        );
         i += 1;
         i;
     }
-    len
-        += sprintf(
-            retbuf.as_mut_ptr().offset(len as isize),
-            b"%02x\0" as *const u8 as *const libc::c_char,
-            (*state).pos,
-        );
+    len += sprintf(
+        retbuf.as_mut_ptr().offset(len as isize),
+        b"%02x\0" as *const u8 as *const libc::c_char,
+        (*state).pos,
+    );
     return dupstr(retbuf.as_mut_ptr());
 }
 #[no_mangle]
-pub unsafe extern "C" fn random_state_decode(
-    mut input: *const libc::c_char,
-) -> *mut random_state {
+pub unsafe extern "C" fn random_state_decode(mut input: *const libc::c_char) -> *mut random_state {
     let mut state: *mut random_state = 0 as *mut random_state;
     let mut pos: libc::c_int = 0;
     let mut byte: libc::c_int = 0;
     let mut digits: libc::c_int = 0;
-    state = smalloc(::core::mem::size_of::<random_state>() as libc::c_ulong)
-        as *mut random_state;
+    state = smalloc(::core::mem::size_of::<random_state>() as libc::c_ulong) as *mut random_state;
     memset(
         ((*state).seedbuf).as_mut_ptr() as *mut libc::c_void,
         0 as libc::c_int,
@@ -532,51 +496,35 @@ pub unsafe extern "C" fn random_state_decode(
         if digits == 2 as libc::c_int {
             if (pos as libc::c_ulong)
                 < (::core::mem::size_of::<[libc::c_uchar; 40]>() as libc::c_ulong)
-                    .wrapping_div(
-                        ::core::mem::size_of::<libc::c_uchar>() as libc::c_ulong,
-                    )
+                    .wrapping_div(::core::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
             {
                 let fresh7 = pos;
                 pos = pos + 1;
                 (*state).seedbuf[fresh7 as usize] = byte as libc::c_uchar;
             } else if (pos as libc::c_ulong)
                 < (::core::mem::size_of::<[libc::c_uchar; 40]>() as libc::c_ulong)
-                    .wrapping_div(
-                        ::core::mem::size_of::<libc::c_uchar>() as libc::c_ulong,
-                    )
+                    .wrapping_div(::core::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
                     .wrapping_add(
                         (::core::mem::size_of::<[libc::c_uchar; 20]>() as libc::c_ulong)
-                            .wrapping_div(
-                                ::core::mem::size_of::<libc::c_uchar>() as libc::c_ulong,
-                            ),
+                            .wrapping_div(::core::mem::size_of::<libc::c_uchar>() as libc::c_ulong),
                     )
             {
                 let fresh8 = pos;
                 pos = pos + 1;
-                (*state)
-                    .databuf[(fresh8 as libc::c_ulong)
-                    .wrapping_sub(
-                        (::core::mem::size_of::<[libc::c_uchar; 40]>() as libc::c_ulong)
-                            .wrapping_div(
-                                ::core::mem::size_of::<libc::c_uchar>() as libc::c_ulong,
-                            ),
-                    ) as usize] = byte as libc::c_uchar;
+                (*state).databuf[(fresh8 as libc::c_ulong).wrapping_sub(
+                    (::core::mem::size_of::<[libc::c_uchar; 40]>() as libc::c_ulong)
+                        .wrapping_div(::core::mem::size_of::<libc::c_uchar>() as libc::c_ulong),
+                ) as usize] = byte as libc::c_uchar;
             } else if pos as libc::c_ulong
                 == (::core::mem::size_of::<[libc::c_uchar; 40]>() as libc::c_ulong)
-                    .wrapping_div(
-                        ::core::mem::size_of::<libc::c_uchar>() as libc::c_ulong,
-                    )
+                    .wrapping_div(::core::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
                     .wrapping_add(
                         (::core::mem::size_of::<[libc::c_uchar; 20]>() as libc::c_ulong)
-                            .wrapping_div(
-                                ::core::mem::size_of::<libc::c_uchar>() as libc::c_ulong,
-                            ),
+                            .wrapping_div(::core::mem::size_of::<libc::c_uchar>() as libc::c_ulong),
                     )
                 && byte as libc::c_ulong
                     <= (::core::mem::size_of::<[libc::c_uchar; 20]>() as libc::c_ulong)
-                        .wrapping_div(
-                            ::core::mem::size_of::<libc::c_uchar>() as libc::c_ulong,
-                        )
+                        .wrapping_div(::core::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
             {
                 (*state).pos = byte;
             }

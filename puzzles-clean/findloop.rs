@@ -19,13 +19,10 @@ pub struct findloopstate {
     pub maxreachable: libc::c_int,
     pub bridge: libc::c_int,
 }
-pub type neighbour_fn_t = Option::<
-    unsafe extern "C" fn(libc::c_int, *mut libc::c_void) -> libc::c_int,
->;
+pub type neighbour_fn_t =
+    Option<unsafe extern "C" fn(libc::c_int, *mut libc::c_void) -> libc::c_int>;
 #[no_mangle]
-pub unsafe extern "C" fn findloop_new_state(
-    mut nvertices: libc::c_int,
-) -> *mut findloopstate {
+pub unsafe extern "C" fn findloop_new_state(mut nvertices: libc::c_int) -> *mut findloopstate {
     return smalloc(
         ((nvertices + 1 as libc::c_int) as libc::c_ulong)
             .wrapping_mul(::core::mem::size_of::<findloopstate>() as libc::c_ulong),
@@ -41,8 +38,7 @@ pub unsafe extern "C" fn findloop_is_loop_edge(
     mut u: libc::c_int,
     mut v: libc::c_int,
 ) -> bool {
-    return !((*pv.offset(u as isize)).bridge == v
-        || (*pv.offset(v as isize)).bridge == u);
+    return !((*pv.offset(u as isize)).bridge == v || (*pv.offset(v as isize)).bridge == u);
 }
 unsafe extern "C" fn findloop_is_bridge_oneway(
     mut pv: *mut findloopstate,
@@ -58,10 +54,10 @@ unsafe extern "C" fn findloop_is_bridge_oneway(
         return 0 as libc::c_int != 0;
     }
     r = (*pv.offset(u as isize)).component_root;
-    total = (*pv.offset(r as isize)).maxindex - (*pv.offset(r as isize)).minindex
-        + 1 as libc::c_int;
-    below = (*pv.offset(u as isize)).maxindex - (*pv.offset(u as isize)).minindex
-        + 1 as libc::c_int;
+    total =
+        (*pv.offset(r as isize)).maxindex - (*pv.offset(r as isize)).minindex + 1 as libc::c_int;
+    below =
+        (*pv.offset(u as isize)).maxindex - (*pv.offset(u as isize)).minindex + 1 as libc::c_int;
     if !u_vertices.is_null() {
         *u_vertices = below;
     }
@@ -78,10 +74,8 @@ pub unsafe extern "C" fn findloop_is_bridge(
     mut u_vertices: *mut libc::c_int,
     mut v_vertices: *mut libc::c_int,
 ) -> bool {
-    return findloop_is_bridge_oneway(pv, u, v, u_vertices, v_vertices) as libc::c_int
-        != 0
-        || findloop_is_bridge_oneway(pv, v, u, v_vertices, u_vertices) as libc::c_int
-            != 0;
+    return findloop_is_bridge_oneway(pv, u, v, u_vertices, v_vertices) as libc::c_int != 0
+        || findloop_is_bridge_oneway(pv, v, u, v_vertices, u_vertices) as libc::c_int != 0;
 }
 #[no_mangle]
 pub unsafe extern "C" fn findloop_run(
@@ -123,21 +117,17 @@ pub unsafe extern "C" fn findloop_run(
                     while w >= 0 as libc::c_int {
                         if (*pv.offset(w as isize)).child == -(2 as libc::c_int) {
                             (*pv.offset(w as isize)).child = -(1 as libc::c_int);
-                            (*pv.offset(w as isize))
-                                .sibling = (*pv.offset(u as isize)).child;
+                            (*pv.offset(w as isize)).sibling = (*pv.offset(u as isize)).child;
                             (*pv.offset(w as isize)).parent = u;
-                            (*pv.offset(w as isize))
-                                .component_root = (*pv.offset(u as isize)).component_root;
+                            (*pv.offset(w as isize)).component_root =
+                                (*pv.offset(u as isize)).component_root;
                             (*pv.offset(u as isize)).child = w;
                         }
                         if w > u {
                             nedges += 1;
                             nedges;
                         }
-                        w = neighbour
-                            .expect(
-                                "non-null function pointer",
-                            )(-(1 as libc::c_int), ctx);
+                        w = neighbour.expect("non-null function pointer")(-(1 as libc::c_int), ctx);
                     }
                     if (*pv.offset(u as isize)).child >= 0 as libc::c_int {
                         u = (*pv.offset(u as isize)).child;
@@ -221,8 +211,7 @@ pub unsafe extern "C" fn findloop_run(
                         (*pv.offset(u as isize)).maxreachable = i;
                     }
                 }
-                w = neighbour
-                    .expect("non-null function pointer")(-(1 as libc::c_int), ctx);
+                w = neighbour.expect("non-null function pointer")(-(1 as libc::c_int), ctx);
             }
             if (*pv.offset(u as isize)).child >= 0 as libc::c_int {
                 u = (*pv.offset(u as isize)).child;
@@ -234,25 +223,18 @@ pub unsafe extern "C" fn findloop_run(
         }
         v = (*pv.offset(u as isize)).child;
         while v >= 0 as libc::c_int {
-            if (*pv.offset(u as isize)).minreachable
-                > (*pv.offset(v as isize)).minreachable
-            {
-                (*pv.offset(u as isize))
-                    .minreachable = (*pv.offset(v as isize)).minreachable;
+            if (*pv.offset(u as isize)).minreachable > (*pv.offset(v as isize)).minreachable {
+                (*pv.offset(u as isize)).minreachable = (*pv.offset(v as isize)).minreachable;
             }
-            if (*pv.offset(u as isize)).maxreachable
-                < (*pv.offset(v as isize)).maxreachable
-            {
-                (*pv.offset(u as isize))
-                    .maxreachable = (*pv.offset(v as isize)).maxreachable;
+            if (*pv.offset(u as isize)).maxreachable < (*pv.offset(v as isize)).maxreachable {
+                (*pv.offset(u as isize)).maxreachable = (*pv.offset(v as isize)).maxreachable;
             }
             v = (*pv.offset(v as isize)).sibling;
         }
         v = (*pv.offset(u as isize)).parent;
         if v != root {
             if (*pv.offset(u as isize)).minreachable >= (*pv.offset(u as isize)).minindex
-                && (*pv.offset(u as isize)).maxreachable
-                    <= (*pv.offset(u as isize)).maxindex
+                && (*pv.offset(u as isize)).maxreachable <= (*pv.offset(u as isize)).maxindex
             {
                 (*pv.offset(u as isize)).bridge = v;
                 nbridges += 1;

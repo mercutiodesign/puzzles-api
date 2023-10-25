@@ -7,11 +7,7 @@ extern "C" {
         __line: libc::c_uint,
         __function: *const libc::c_char,
     ) -> !;
-    fn memcpy(
-        _: *mut libc::c_void,
-        _: *const libc::c_void,
-        _: libc::c_ulong,
-    ) -> *mut libc::c_void;
+    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> *mut libc::c_void;
     fn smalloc(size: size_t) -> *mut libc::c_void;
     fn srealloc(p: *mut libc::c_void, size: size_t) -> *mut libc::c_void;
     fn sfree(p: *mut libc::c_void);
@@ -104,18 +100,16 @@ pub struct MetatilePossibleParent {
     pub index: libc::c_uint,
     pub probability: libc::c_ulong,
 }
-pub type hat_tile_callback_fn = Option::<
-    unsafe extern "C" fn(*mut libc::c_void, size_t, *mut libc::c_int) -> (),
->;
+pub type hat_tile_callback_fn =
+    Option<unsafe extern "C" fn(*mut libc::c_void, size_t, *mut libc::c_int) -> ()>;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct internal_ctx {
     pub external_cb: hat_tile_callback_fn,
     pub external_cbctx: *mut libc::c_void,
 }
-pub type internal_hat_callback_fn = Option::<
-    unsafe extern "C" fn(*mut libc::c_void, Kite, *mut HatCoords, *mut libc::c_int) -> (),
->;
+pub type internal_hat_callback_fn =
+    Option<unsafe extern "C" fn(*mut libc::c_void, Kite, *mut HatCoords, *mut libc::c_int) -> ()>;
 #[inline]
 unsafe extern "C" fn pointscale(mut scale: libc::c_int, mut a: Point) -> Point {
     let mut r: Point = {
@@ -148,13 +142,11 @@ unsafe extern "C" fn kite_left(mut k: Kite) -> Kite {
     };
     r.centre = k.centre;
     r.right = k.left;
-    r
-        .outer = pointadd(
+    r.outer = pointadd(
         pointscale(2 as libc::c_int, k.left),
         pointscale(-(1 as libc::c_int), k.outer),
     );
-    r
-        .left = pointadd(
+    r.left = pointadd(
         pointadd(k.centre, k.left),
         pointscale(-(1 as libc::c_int), k.right),
     );
@@ -170,13 +162,11 @@ unsafe extern "C" fn kite_right(mut k: Kite) -> Kite {
     };
     r.centre = k.centre;
     r.left = k.right;
-    r
-        .outer = pointadd(
+    r.outer = pointadd(
         pointscale(2 as libc::c_int, k.right),
         pointscale(-(1 as libc::c_int), k.outer),
     );
-    r
-        .right = pointadd(
+    r.right = pointadd(
         pointadd(k.centre, k.right),
         pointscale(-(1 as libc::c_int), k.left),
     );
@@ -192,13 +182,11 @@ unsafe extern "C" fn kite_forward_left(mut k: Kite) -> Kite {
     };
     r.outer = k.outer;
     r.right = k.left;
-    r
-        .centre = pointadd(
+    r.centre = pointadd(
         pointscale(2 as libc::c_int, k.left),
         pointscale(-(1 as libc::c_int), k.centre),
     );
-    r
-        .left = pointadd(
+    r.left = pointadd(
         pointadd(k.right, k.left),
         pointscale(-(1 as libc::c_int), k.centre),
     );
@@ -214,13 +202,11 @@ unsafe extern "C" fn kite_forward_right(mut k: Kite) -> Kite {
     };
     r.outer = k.outer;
     r.left = k.right;
-    r
-        .centre = pointadd(
+    r.centre = pointadd(
         pointscale(2 as libc::c_int, k.right),
         pointscale(-(1 as libc::c_int), k.centre),
     );
-    r
-        .right = pointadd(
+    r.right = pointadd(
         pointadd(k.left, k.right),
         pointscale(-(1 as libc::c_int), k.centre),
     );
@@ -235,9 +221,8 @@ unsafe extern "C" fn kite_step(mut k: Kite, mut step: KiteStep) -> Kite {
         _ => return kite_forward_right(k),
     };
 }
-static mut tilechars: [libc::c_char; 5] = unsafe {
-    *::core::mem::transmute::<&[u8; 5], &[libc::c_char; 5]>(b"HTPF\0")
-};
+static mut tilechars: [libc::c_char; 5] =
+    unsafe { *::core::mem::transmute::<&[u8; 5], &[libc::c_char; 5]>(b"HTPF\0") };
 #[inline]
 unsafe extern "C" fn kitemap_index(
     mut step: KiteStep,
@@ -245,30 +230,19 @@ unsafe extern "C" fn kitemap_index(
     mut hat: libc::c_uint,
     mut meta: libc::c_uint,
 ) -> size_t {
-    return (step as libc::c_uint)
-        .wrapping_add(
-            (4 as libc::c_int as libc::c_uint)
-                .wrapping_mul(
-                    kite
-                        .wrapping_add(
-                            (8 as libc::c_int as libc::c_uint)
-                                .wrapping_mul(
-                                    hat
-                                        .wrapping_add(
-                                            (4 as libc::c_int as libc::c_uint).wrapping_mul(meta),
-                                        ),
-                                ),
-                        ),
-                ),
-        ) as size_t;
+    return (step as libc::c_uint).wrapping_add((4 as libc::c_int as libc::c_uint).wrapping_mul(
+        kite.wrapping_add(
+            (8 as libc::c_int as libc::c_uint).wrapping_mul(
+                hat.wrapping_add((4 as libc::c_int as libc::c_uint).wrapping_mul(meta)),
+            ),
+        ),
+    )) as size_t;
 }
 #[inline]
-unsafe extern "C" fn metamap_index(
-    mut meta: libc::c_uint,
-    mut meta2: libc::c_uint,
-) -> size_t {
-    return meta2.wrapping_mul(13 as libc::c_int as libc::c_uint).wrapping_add(meta)
-        as size_t;
+unsafe extern "C" fn metamap_index(mut meta: libc::c_uint, mut meta2: libc::c_uint) -> size_t {
+    return meta2
+        .wrapping_mul(13 as libc::c_int as libc::c_uint)
+        .wrapping_add(meta) as size_t;
 }
 #[no_mangle]
 pub unsafe extern "C" fn hat_kiteenum_first(
@@ -317,9 +291,7 @@ pub unsafe extern "C" fn hat_kiteenum_first(
         i;
     }
     (*s).curr_index = 0 as libc::c_int as libc::c_uint;
-    (*s)
-        .curr = &mut *((*s).recent).as_mut_ptr().offset((*s).curr_index as isize)
-        as *mut Kite;
+    (*s).curr = &mut *((*s).recent).as_mut_ptr().offset((*s).curr_index as isize) as *mut Kite;
     (*s).state = 1 as libc::c_int;
     (*s).w = w;
     (*s).h = h;
@@ -330,13 +302,10 @@ pub unsafe extern "C" fn hat_kiteenum_first(
 pub unsafe extern "C" fn hat_kiteenum_next(mut s: *mut KiteEnum) -> bool {
     let mut lastbut1: libc::c_uint = (*s).last_index;
     (*s).last_index = (*s).curr_index;
-    (*s)
-        .curr_index = ((*s).curr_index)
+    (*s).curr_index = ((*s).curr_index)
         .wrapping_add(1 as libc::c_int as libc::c_uint)
         .wrapping_rem(3 as libc::c_int as libc::c_uint);
-    (*s)
-        .curr = &mut *((*s).recent).as_mut_ptr().offset((*s).curr_index as isize)
-        as *mut Kite;
+    (*s).curr = &mut *((*s).recent).as_mut_ptr().offset((*s).curr_index as isize) as *mut Kite;
     match (*s).state {
         1 => {
             (*s).last_step = KS_F_RIGHT;
@@ -448,49 +417,22 @@ static mut hats_in_metatile: [libc::c_uint; 4] = [
     2 as libc::c_int as libc::c_uint,
 ];
 static mut children_H: [TileType; 13] = [
-    TT_H,
-    TT_H,
-    TT_H,
-    TT_T,
-    TT_P,
-    TT_P,
-    TT_P,
-    TT_F,
-    TT_F,
-    TT_F,
-    TT_F,
-    TT_F,
-    TT_F,
+    TT_H, TT_H, TT_H, TT_T, TT_P, TT_P, TT_P, TT_F, TT_F, TT_F, TT_F, TT_F, TT_F,
 ];
 static mut children_T: [TileType; 7] = [TT_H, TT_P, TT_P, TT_P, TT_F, TT_F, TT_F];
 static mut children_P: [TileType; 11] = [
-    TT_H,
-    TT_H,
-    TT_P,
-    TT_P,
-    TT_P,
-    TT_F,
-    TT_F,
-    TT_F,
-    TT_F,
-    TT_F,
-    TT_F,
+    TT_H, TT_H, TT_P, TT_P, TT_P, TT_F, TT_F, TT_F, TT_F, TT_F, TT_F,
 ];
 static mut children_F: [TileType; 11] = [
-    TT_H,
-    TT_H,
-    TT_P,
-    TT_P,
-    TT_F,
-    TT_F,
-    TT_F,
-    TT_F,
-    TT_F,
-    TT_F,
-    TT_F,
+    TT_H, TT_H, TT_P, TT_P, TT_F, TT_F, TT_F, TT_F, TT_F, TT_F, TT_F,
 ];
 static mut children: [*const TileType; 4] = unsafe {
-    [children_H.as_ptr(), children_T.as_ptr(), children_P.as_ptr(), children_F.as_ptr()]
+    [
+        children_H.as_ptr(),
+        children_T.as_ptr(),
+        children_P.as_ptr(),
+        children_F.as_ptr(),
+    ]
 };
 static mut nchildren: [size_t; 4] = [
     13 as libc::c_int as size_t,
@@ -43515,7 +43457,12 @@ static mut kitemap_F: [KitemapEntry; 1408] = [
     },
 ];
 static mut kitemap: [*const KitemapEntry; 4] = unsafe {
-    [kitemap_H.as_ptr(), kitemap_T.as_ptr(), kitemap_P.as_ptr(), kitemap_F.as_ptr()]
+    [
+        kitemap_H.as_ptr(),
+        kitemap_T.as_ptr(),
+        kitemap_P.as_ptr(),
+        kitemap_F.as_ptr(),
+    ]
 };
 static mut metamap_H: [MetamapEntry; 169] = [
     {
@@ -47348,7 +47295,12 @@ static mut metamap_F: [MetamapEntry; 143] = [
     },
 ];
 static mut metamap: [*const MetamapEntry; 4] = unsafe {
-    [metamap_H.as_ptr(), metamap_T.as_ptr(), metamap_P.as_ptr(), metamap_F.as_ptr()]
+    [
+        metamap_H.as_ptr(),
+        metamap_T.as_ptr(),
+        metamap_P.as_ptr(),
+        metamap_F.as_ptr(),
+    ]
 };
 static mut parents_H: [MetatilePossibleParent; 8] = [
     {
@@ -47416,16 +47368,14 @@ static mut parents_H: [MetatilePossibleParent; 8] = [
         init
     },
 ];
-static mut parents_T: [MetatilePossibleParent; 1] = [
-    {
-        let mut init = MetatilePossibleParent {
-            type_0: TT_H,
-            index: 3 as libc::c_int as libc::c_uint,
-            probability: 10000000 as libc::c_int as libc::c_ulong,
-        };
-        init
-    },
-];
+static mut parents_T: [MetatilePossibleParent; 1] = [{
+    let mut init = MetatilePossibleParent {
+        type_0: TT_H,
+        index: 3 as libc::c_int as libc::c_uint,
+        probability: 10000000 as libc::c_int as libc::c_ulong,
+    };
+    init
+}];
 static mut parents_P: [MetatilePossibleParent; 5] = [
     {
         let mut init = MetatilePossibleParent {
@@ -47535,7 +47485,12 @@ static mut parents_F: [MetatilePossibleParent; 8] = [
     },
 ];
 static mut possible_parents: [*const MetatilePossibleParent; 4] = unsafe {
-    [parents_H.as_ptr(), parents_T.as_ptr(), parents_P.as_ptr(), parents_F.as_ptr()]
+    [
+        parents_H.as_ptr(),
+        parents_T.as_ptr(),
+        parents_P.as_ptr(),
+        parents_F.as_ptr(),
+    ]
 };
 static mut n_possible_parents: [size_t; 4] = [0; 4];
 static mut starting_hats: [MetatilePossibleParent; 9] = [
@@ -47614,9 +47569,8 @@ static mut starting_hats: [MetatilePossibleParent; 9] = [
 ];
 #[no_mangle]
 pub unsafe extern "C" fn hat_coords_new() -> *mut HatCoords {
-    let mut hc: *mut HatCoords = smalloc(
-        ::core::mem::size_of::<HatCoords>() as libc::c_ulong,
-    ) as *mut HatCoords;
+    let mut hc: *mut HatCoords =
+        smalloc(::core::mem::size_of::<HatCoords>() as libc::c_ulong) as *mut HatCoords;
     (*hc).csize = 0 as libc::c_int as size_t;
     (*hc).nc = (*hc).csize;
     (*hc).c = 0 as *mut HatCoord;
@@ -47630,23 +47584,16 @@ pub unsafe extern "C" fn hat_coords_free(mut hc: *mut HatCoords) {
     }
 }
 #[no_mangle]
-pub unsafe extern "C" fn hat_coords_make_space(
-    mut hc: *mut HatCoords,
-    mut size: size_t,
-) {
+pub unsafe extern "C" fn hat_coords_make_space(mut hc: *mut HatCoords, mut size: size_t) {
     if (*hc).csize < size {
-        (*hc)
-            .csize = ((*hc).csize * 5 as libc::c_int as size_t
-            / 4 as libc::c_int as size_t)
+        (*hc).csize = ((*hc).csize * 5 as libc::c_int as size_t / 4 as libc::c_int as size_t)
             .wrapping_add(16 as libc::c_int as size_t);
         if (*hc).csize < size {
             (*hc).csize = size;
         }
-        (*hc)
-            .c = srealloc(
+        (*hc).c = srealloc(
             (*hc).c as *mut libc::c_void,
-            ((*hc).csize)
-                .wrapping_mul(::core::mem::size_of::<HatCoord>() as libc::c_ulong),
+            ((*hc).csize).wrapping_mul(::core::mem::size_of::<HatCoord>() as libc::c_ulong),
         ) as *mut HatCoord;
     }
 }
@@ -47686,7 +47633,8 @@ unsafe extern "C" fn choose_mpp(
         i = i.wrapping_add(1);
         i;
     }
-    if i == nparents.wrapping_sub(1 as libc::c_int as size_t) {} else {
+    if i == nparents.wrapping_sub(1 as libc::c_int as size_t) {
+    } else {
         __assert_fail(
             b"i == nparents - 1\0" as *const u8 as *const libc::c_char,
             b"/puzzles/hat.c\0" as *const u8 as *const libc::c_char,
@@ -47701,7 +47649,8 @@ unsafe extern "C" fn choose_mpp(
         );
     }
     'c_46029: {
-        if i == nparents.wrapping_sub(1 as libc::c_int as size_t) {} else {
+        if i == nparents.wrapping_sub(1 as libc::c_int as size_t) {
+        } else {
             __assert_fail(
                 b"i == nparents - 1\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/hat.c\0" as *const u8 as *const libc::c_char,
@@ -47716,7 +47665,8 @@ unsafe extern "C" fn choose_mpp(
             );
         }
     };
-    if value < (*parents.offset(i as isize)).probability {} else {
+    if value < (*parents.offset(i as isize)).probability {
+    } else {
         __assert_fail(
             b"value < parents[i].probability\0" as *const u8 as *const libc::c_char,
             b"/puzzles/hat.c\0" as *const u8 as *const libc::c_char,
@@ -47731,7 +47681,8 @@ unsafe extern "C" fn choose_mpp(
         );
     }
     'c_45978: {
-        if value < (*parents.offset(i as isize)).probability {} else {
+        if value < (*parents.offset(i as isize)).probability {
+        } else {
             __assert_fail(
                 b"value < parents[i].probability\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/hat.c\0" as *const u8 as *const libc::c_char,
@@ -47749,31 +47700,24 @@ unsafe extern "C" fn choose_mpp(
     return &*parents.offset(i as isize) as *const MetatilePossibleParent;
 }
 #[no_mangle]
-pub unsafe extern "C" fn hatctx_init_random(
-    mut ctx: *mut HatContext,
-    mut rs: *mut random_state,
-) {
+pub unsafe extern "C" fn hatctx_init_random(mut ctx: *mut HatContext, mut rs: *mut random_state) {
     let mut starting_hat: *const MetatilePossibleParent = choose_mpp(
         rs,
         starting_hats.as_ptr(),
         (::core::mem::size_of::<[MetatilePossibleParent; 9]>() as libc::c_ulong)
-            .wrapping_div(
-                ::core::mem::size_of::<MetatilePossibleParent>() as libc::c_ulong,
-            ),
+            .wrapping_div(::core::mem::size_of::<MetatilePossibleParent>() as libc::c_ulong),
     );
     (*ctx).rs = rs;
     (*ctx).prototype = hat_coords_new();
     hat_coords_make_space((*ctx).prototype, 3 as libc::c_int as size_t);
-    (*((*(*ctx).prototype).c).offset(2 as libc::c_int as isize))
-        .type_0 = (*starting_hat).type_0;
-    (*((*(*ctx).prototype).c).offset(2 as libc::c_int as isize))
-        .index = -(1 as libc::c_int);
+    (*((*(*ctx).prototype).c).offset(2 as libc::c_int as isize)).type_0 = (*starting_hat).type_0;
+    (*((*(*ctx).prototype).c).offset(2 as libc::c_int as isize)).index = -(1 as libc::c_int);
     (*((*(*ctx).prototype).c).offset(1 as libc::c_int as isize)).type_0 = TT_HAT;
-    (*((*(*ctx).prototype).c).offset(1 as libc::c_int as isize))
-        .index = (*starting_hat).index as libc::c_int;
+    (*((*(*ctx).prototype).c).offset(1 as libc::c_int as isize)).index =
+        (*starting_hat).index as libc::c_int;
     (*((*(*ctx).prototype).c).offset(0 as libc::c_int as isize)).type_0 = TT_KITE;
-    (*((*(*ctx).prototype).c).offset(0 as libc::c_int as isize))
-        .index = random_upto(rs, 8 as libc::c_int as libc::c_ulong) as libc::c_int;
+    (*((*(*ctx).prototype).c).offset(0 as libc::c_int as isize)).index =
+        random_upto(rs, 8 as libc::c_int as libc::c_ulong) as libc::c_int;
     (*(*ctx).prototype).nc = 3 as libc::c_int as size_t;
 }
 #[inline]
@@ -47790,38 +47734,33 @@ unsafe extern "C" fn metatile_char_to_enum(mut metatile: libc::c_char) -> libc::
         -(1 as libc::c_int)
     };
 }
-unsafe extern "C" fn init_coords_params(
-    mut ctx: *mut HatContext,
-    mut hp: *const HatPatchParams,
-) {
+unsafe extern "C" fn init_coords_params(mut ctx: *mut HatContext, mut hp: *const HatPatchParams) {
     let mut i: size_t = 0;
     (*ctx).rs = 0 as *mut random_state;
     (*ctx).prototype = hat_coords_new();
-    if (*hp).ncoords >= 3 as libc::c_int as size_t {} else {
+    if (*hp).ncoords >= 3 as libc::c_int as size_t {
+    } else {
         __assert_fail(
             b"hp->ncoords >= 3\0" as *const u8 as *const libc::c_char,
             b"/puzzles/hat.c\0" as *const u8 as *const libc::c_char,
             482 as libc::c_int as libc::c_uint,
-            (*::core::mem::transmute::<
-                &[u8; 69],
-                &[libc::c_char; 69],
-            >(b"void init_coords_params(HatContext *, const struct HatPatchParams *)\0"))
-                .as_ptr(),
+            (*::core::mem::transmute::<&[u8; 69], &[libc::c_char; 69]>(
+                b"void init_coords_params(HatContext *, const struct HatPatchParams *)\0",
+            ))
+            .as_ptr(),
         );
     }
     'c_48856: {
-        if (*hp).ncoords >= 3 as libc::c_int as size_t {} else {
+        if (*hp).ncoords >= 3 as libc::c_int as size_t {
+        } else {
             __assert_fail(
                 b"hp->ncoords >= 3\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/hat.c\0" as *const u8 as *const libc::c_char,
                 482 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 69],
-                    &[libc::c_char; 69],
-                >(
+                (*::core::mem::transmute::<&[u8; 69], &[libc::c_char; 69]>(
                     b"void init_coords_params(HatContext *, const struct HatPatchParams *)\0",
                 ))
-                    .as_ptr(),
+                .as_ptr(),
             );
         }
     };
@@ -47832,100 +47771,81 @@ unsafe extern "C" fn init_coords_params(
     (*(*ctx).prototype).nc = ((*hp).ncoords).wrapping_add(1 as libc::c_int as size_t);
     i = 0 as libc::c_int as size_t;
     while i < (*hp).ncoords {
-        (*((*(*ctx).prototype).c).offset(i as isize))
-            .index = *((*hp).coords).offset(i as isize) as libc::c_int;
+        (*((*(*ctx).prototype).c).offset(i as isize)).index =
+            *((*hp).coords).offset(i as isize) as libc::c_int;
         i = i.wrapping_add(1);
         i;
     }
-    (*((*(*ctx).prototype).c).offset((*hp).ncoords as isize))
-        .type_0 = metatile_char_to_enum((*hp).final_metatile) as TileType;
-    (*((*(*ctx).prototype).c).offset((*hp).ncoords as isize))
-        .index = -(1 as libc::c_int);
+    (*((*(*ctx).prototype).c).offset((*hp).ncoords as isize)).type_0 =
+        metatile_char_to_enum((*hp).final_metatile) as TileType;
+    (*((*(*ctx).prototype).c).offset((*hp).ncoords as isize)).index = -(1 as libc::c_int);
     (*((*(*ctx).prototype).c).offset(0 as libc::c_int as isize)).type_0 = TT_KITE;
     (*((*(*ctx).prototype).c).offset(1 as libc::c_int as isize)).type_0 = TT_HAT;
     i = ((*hp).ncoords).wrapping_sub(1 as libc::c_int as size_t);
     while i > 1 as libc::c_int as size_t {
         let mut metatile: TileType = (*((*(*ctx).prototype).c)
             .offset(i.wrapping_add(1 as libc::c_int as size_t) as isize))
-            .type_0;
-        if (*((*hp).coords).offset(i as isize) as size_t) < nchildren[metatile as usize]
-        {} else {
+        .type_0;
+        if (*((*hp).coords).offset(i as isize) as size_t) < nchildren[metatile as usize] {
+        } else {
             __assert_fail(
-                b"hp->coords[i] < nchildren[metatile]\0" as *const u8
-                    as *const libc::c_char,
+                b"hp->coords[i] < nchildren[metatile]\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/hat.c\0" as *const u8 as *const libc::c_char,
                 499 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 69],
-                    &[libc::c_char; 69],
-                >(
+                (*::core::mem::transmute::<&[u8; 69], &[libc::c_char; 69]>(
                     b"void init_coords_params(HatContext *, const struct HatPatchParams *)\0",
                 ))
-                    .as_ptr(),
+                .as_ptr(),
             );
         }
         'c_48659: {
-            if (*((*hp).coords).offset(i as isize) as size_t)
-                < nchildren[metatile as usize]
-            {} else {
+            if (*((*hp).coords).offset(i as isize) as size_t) < nchildren[metatile as usize] {
+            } else {
                 __assert_fail(
-                    b"hp->coords[i] < nchildren[metatile]\0" as *const u8
-                        as *const libc::c_char,
+                    b"hp->coords[i] < nchildren[metatile]\0" as *const u8 as *const libc::c_char,
                     b"/puzzles/hat.c\0" as *const u8 as *const libc::c_char,
                     499 as libc::c_int as libc::c_uint,
-                    (*::core::mem::transmute::<
-                        &[u8; 69],
-                        &[libc::c_char; 69],
-                    >(
+                    (*::core::mem::transmute::<&[u8; 69], &[libc::c_char; 69]>(
                         b"void init_coords_params(HatContext *, const struct HatPatchParams *)\0",
                     ))
-                        .as_ptr(),
+                    .as_ptr(),
                 );
             }
         };
-        (*((*(*ctx).prototype).c).offset(i as isize))
-            .type_0 = *(children[metatile as usize])
-            .offset(*((*hp).coords).offset(i as isize) as isize);
+        (*((*(*ctx).prototype).c).offset(i as isize)).type_0 =
+            *(children[metatile as usize]).offset(*((*hp).coords).offset(i as isize) as isize);
         i = i.wrapping_sub(1);
         i;
     }
-    if (*((*hp).coords).offset(0 as libc::c_int as isize) as libc::c_int)
-        < 8 as libc::c_int
-    {} else {
+    if (*((*hp).coords).offset(0 as libc::c_int as isize) as libc::c_int) < 8 as libc::c_int {
+    } else {
         __assert_fail(
             b"hp->coords[0] < 8\0" as *const u8 as *const libc::c_char,
             b"/puzzles/hat.c\0" as *const u8 as *const libc::c_char,
             503 as libc::c_int as libc::c_uint,
-            (*::core::mem::transmute::<
-                &[u8; 69],
-                &[libc::c_char; 69],
-            >(b"void init_coords_params(HatContext *, const struct HatPatchParams *)\0"))
-                .as_ptr(),
+            (*::core::mem::transmute::<&[u8; 69], &[libc::c_char; 69]>(
+                b"void init_coords_params(HatContext *, const struct HatPatchParams *)\0",
+            ))
+            .as_ptr(),
         );
     }
     'c_48560: {
-        if (*((*hp).coords).offset(0 as libc::c_int as isize) as libc::c_int)
-            < 8 as libc::c_int
-        {} else {
+        if (*((*hp).coords).offset(0 as libc::c_int as isize) as libc::c_int) < 8 as libc::c_int {
+        } else {
             __assert_fail(
                 b"hp->coords[0] < 8\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/hat.c\0" as *const u8 as *const libc::c_char,
                 503 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 69],
-                    &[libc::c_char; 69],
-                >(
+                (*::core::mem::transmute::<&[u8; 69], &[libc::c_char; 69]>(
                     b"void init_coords_params(HatContext *, const struct HatPatchParams *)\0",
                 ))
-                    .as_ptr(),
+                .as_ptr(),
             );
         }
     };
 }
 #[no_mangle]
-pub unsafe extern "C" fn hatctx_initial_coords(
-    mut ctx: *mut HatContext,
-) -> *mut HatCoords {
+pub unsafe extern "C" fn hatctx_initial_coords(mut ctx: *mut HatContext) -> *mut HatCoords {
     return hat_coords_copy((*ctx).prototype);
 }
 #[no_mangle]
@@ -47937,56 +47857,48 @@ pub unsafe extern "C" fn hatctx_extend_coords(
     if (*(*ctx).prototype).nc < n {
         hat_coords_make_space((*ctx).prototype, n);
         while (*(*ctx).prototype).nc < n {
-            let mut type_0: TileType = (*((*(*ctx).prototype).c)
-                .offset(
-                    ((*(*ctx).prototype).nc).wrapping_sub(1 as libc::c_int as size_t)
-                        as isize,
-                ))
-                .type_0;
+            let mut type_0: TileType = (*((*(*ctx).prototype).c).offset(
+                ((*(*ctx).prototype).nc).wrapping_sub(1 as libc::c_int as size_t) as isize,
+            ))
+            .type_0;
             if (*((*(*ctx).prototype).c)
-                .offset(
-                    ((*(*ctx).prototype).nc).wrapping_sub(1 as libc::c_int as size_t)
-                        as isize,
-                ))
-                .index == -(1 as libc::c_int)
-            {} else {
+                .offset(((*(*ctx).prototype).nc).wrapping_sub(1 as libc::c_int as size_t) as isize))
+            .index
+                == -(1 as libc::c_int)
+            {
+            } else {
                 __assert_fail(
-                    b"ctx->prototype->c[ctx->prototype->nc - 1].index == -1\0"
-                        as *const u8 as *const libc::c_char,
+                    b"ctx->prototype->c[ctx->prototype->nc - 1].index == -1\0" as *const u8
+                        as *const libc::c_char,
                     b"/puzzles/hat.c\0" as *const u8 as *const libc::c_char,
                     522 as libc::c_int as libc::c_uint,
-                    (*::core::mem::transmute::<
-                        &[u8; 61],
-                        &[libc::c_char; 61],
-                    >(b"void hatctx_extend_coords(HatContext *, HatCoords *, size_t)\0"))
-                        .as_ptr(),
+                    (*::core::mem::transmute::<&[u8; 61], &[libc::c_char; 61]>(
+                        b"void hatctx_extend_coords(HatContext *, HatCoords *, size_t)\0",
+                    ))
+                    .as_ptr(),
                 );
             }
             'c_46156: {
-                if (*((*(*ctx).prototype).c)
-                    .offset(
-                        ((*(*ctx).prototype).nc).wrapping_sub(1 as libc::c_int as size_t)
-                            as isize,
-                    ))
-                    .index == -(1 as libc::c_int)
-                {} else {
+                if (*((*(*ctx).prototype).c).offset(
+                    ((*(*ctx).prototype).nc).wrapping_sub(1 as libc::c_int as size_t) as isize,
+                ))
+                .index
+                    == -(1 as libc::c_int)
+                {
+                } else {
                     __assert_fail(
-                        b"ctx->prototype->c[ctx->prototype->nc - 1].index == -1\0"
-                            as *const u8 as *const libc::c_char,
+                        b"ctx->prototype->c[ctx->prototype->nc - 1].index == -1\0" as *const u8
+                            as *const libc::c_char,
                         b"/puzzles/hat.c\0" as *const u8 as *const libc::c_char,
                         522 as libc::c_int as libc::c_uint,
-                        (*::core::mem::transmute::<
-                            &[u8; 61],
-                            &[libc::c_char; 61],
-                        >(
+                        (*::core::mem::transmute::<&[u8; 61], &[libc::c_char; 61]>(
                             b"void hatctx_extend_coords(HatContext *, HatCoords *, size_t)\0",
                         ))
-                            .as_ptr(),
+                        .as_ptr(),
                     );
                 }
             };
-            let mut parent: *const MetatilePossibleParent = 0
-                as *const MetatilePossibleParent;
+            let mut parent: *const MetatilePossibleParent = 0 as *const MetatilePossibleParent;
             if !((*ctx).rs).is_null() {
                 parent = choose_mpp(
                     (*ctx).rs,
@@ -47996,104 +47908,96 @@ pub unsafe extern "C" fn hatctx_extend_coords(
             } else {
                 parent = possible_parents[type_0 as usize];
             }
-            (*((*(*ctx).prototype).c)
-                .offset(
-                    ((*(*ctx).prototype).nc).wrapping_sub(1 as libc::c_int as size_t)
-                        as isize,
-                ))
-                .index = (*parent).index as libc::c_int;
-            (*((*(*ctx).prototype).c).offset((*(*ctx).prototype).nc as isize))
-                .index = -(1 as libc::c_int);
-            (*((*(*ctx).prototype).c).offset((*(*ctx).prototype).nc as isize))
-                .type_0 = (*parent).type_0;
+            (*((*(*ctx).prototype).c).offset(
+                ((*(*ctx).prototype).nc).wrapping_sub(1 as libc::c_int as size_t) as isize,
+            ))
+            .index = (*parent).index as libc::c_int;
+            (*((*(*ctx).prototype).c).offset((*(*ctx).prototype).nc as isize)).index =
+                -(1 as libc::c_int);
+            (*((*(*ctx).prototype).c).offset((*(*ctx).prototype).nc as isize)).type_0 =
+                (*parent).type_0;
             (*(*ctx).prototype).nc = ((*(*ctx).prototype).nc).wrapping_add(1);
             (*(*ctx).prototype).nc;
         }
     }
     hat_coords_make_space(hc, n);
     while (*hc).nc < n {
-        if (*((*hc).c)
-            .offset(((*hc).nc).wrapping_sub(1 as libc::c_int as size_t) as isize))
-            .index == -(1 as libc::c_int)
-        {} else {
+        if (*((*hc).c).offset(((*hc).nc).wrapping_sub(1 as libc::c_int as size_t) as isize)).index
+            == -(1 as libc::c_int)
+        {
+        } else {
             __assert_fail(
                 b"hc->c[hc->nc - 1].index == -1\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/hat.c\0" as *const u8 as *const libc::c_char,
                 540 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 61],
-                    &[libc::c_char; 61],
-                >(b"void hatctx_extend_coords(HatContext *, HatCoords *, size_t)\0"))
-                    .as_ptr(),
+                (*::core::mem::transmute::<&[u8; 61], &[libc::c_char; 61]>(
+                    b"void hatctx_extend_coords(HatContext *, HatCoords *, size_t)\0",
+                ))
+                .as_ptr(),
             );
         }
         'c_45482: {
-            if (*((*hc).c)
-                .offset(((*hc).nc).wrapping_sub(1 as libc::c_int as size_t) as isize))
-                .index == -(1 as libc::c_int)
-            {} else {
+            if (*((*hc).c).offset(((*hc).nc).wrapping_sub(1 as libc::c_int as size_t) as isize))
+                .index
+                == -(1 as libc::c_int)
+            {
+            } else {
                 __assert_fail(
-                    b"hc->c[hc->nc - 1].index == -1\0" as *const u8
-                        as *const libc::c_char,
+                    b"hc->c[hc->nc - 1].index == -1\0" as *const u8 as *const libc::c_char,
                     b"/puzzles/hat.c\0" as *const u8 as *const libc::c_char,
                     540 as libc::c_int as libc::c_uint,
-                    (*::core::mem::transmute::<
-                        &[u8; 61],
-                        &[libc::c_char; 61],
-                    >(b"void hatctx_extend_coords(HatContext *, HatCoords *, size_t)\0"))
-                        .as_ptr(),
+                    (*::core::mem::transmute::<&[u8; 61], &[libc::c_char; 61]>(
+                        b"void hatctx_extend_coords(HatContext *, HatCoords *, size_t)\0",
+                    ))
+                    .as_ptr(),
                 );
             }
         };
-        if (*((*hc).c)
-            .offset(((*hc).nc).wrapping_sub(1 as libc::c_int as size_t) as isize))
-            .type_0 as libc::c_uint
+        if (*((*hc).c).offset(((*hc).nc).wrapping_sub(1 as libc::c_int as size_t) as isize)).type_0
+            as libc::c_uint
             == (*((*(*ctx).prototype).c)
                 .offset(((*hc).nc).wrapping_sub(1 as libc::c_int as size_t) as isize))
-                .type_0 as libc::c_uint
-        {} else {
+            .type_0 as libc::c_uint
+        {
+        } else {
             __assert_fail(
-                b"hc->c[hc->nc - 1].type == ctx->prototype->c[hc->nc - 1].type\0"
-                    as *const u8 as *const libc::c_char,
+                b"hc->c[hc->nc - 1].type == ctx->prototype->c[hc->nc - 1].type\0" as *const u8
+                    as *const libc::c_char,
                 b"/puzzles/hat.c\0" as *const u8 as *const libc::c_char,
                 541 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 61],
-                    &[libc::c_char; 61],
-                >(b"void hatctx_extend_coords(HatContext *, HatCoords *, size_t)\0"))
-                    .as_ptr(),
+                (*::core::mem::transmute::<&[u8; 61], &[libc::c_char; 61]>(
+                    b"void hatctx_extend_coords(HatContext *, HatCoords *, size_t)\0",
+                ))
+                .as_ptr(),
             );
         }
         'c_45387: {
-            if (*((*hc).c)
-                .offset(((*hc).nc).wrapping_sub(1 as libc::c_int as size_t) as isize))
+            if (*((*hc).c).offset(((*hc).nc).wrapping_sub(1 as libc::c_int as size_t) as isize))
                 .type_0 as libc::c_uint
                 == (*((*(*ctx).prototype).c)
-                    .offset(
-                        ((*hc).nc).wrapping_sub(1 as libc::c_int as size_t) as isize,
-                    ))
-                    .type_0 as libc::c_uint
-            {} else {
+                    .offset(((*hc).nc).wrapping_sub(1 as libc::c_int as size_t) as isize))
+                .type_0 as libc::c_uint
+            {
+            } else {
                 __assert_fail(
-                    b"hc->c[hc->nc - 1].type == ctx->prototype->c[hc->nc - 1].type\0"
-                        as *const u8 as *const libc::c_char,
+                    b"hc->c[hc->nc - 1].type == ctx->prototype->c[hc->nc - 1].type\0" as *const u8
+                        as *const libc::c_char,
                     b"/puzzles/hat.c\0" as *const u8 as *const libc::c_char,
                     541 as libc::c_int as libc::c_uint,
-                    (*::core::mem::transmute::<
-                        &[u8; 61],
-                        &[libc::c_char; 61],
-                    >(b"void hatctx_extend_coords(HatContext *, HatCoords *, size_t)\0"))
-                        .as_ptr(),
+                    (*::core::mem::transmute::<&[u8; 61], &[libc::c_char; 61]>(
+                        b"void hatctx_extend_coords(HatContext *, HatCoords *, size_t)\0",
+                    ))
+                    .as_ptr(),
                 );
             }
         };
-        (*((*hc).c).offset(((*hc).nc).wrapping_sub(1 as libc::c_int as size_t) as isize))
-            .index = (*((*(*ctx).prototype).c)
-            .offset(((*hc).nc).wrapping_sub(1 as libc::c_int as size_t) as isize))
+        (*((*hc).c).offset(((*hc).nc).wrapping_sub(1 as libc::c_int as size_t) as isize)).index =
+            (*((*(*ctx).prototype).c)
+                .offset(((*hc).nc).wrapping_sub(1 as libc::c_int as size_t) as isize))
             .index;
         (*((*hc).c).offset((*hc).nc as isize)).index = -(1 as libc::c_int);
-        (*((*hc).c).offset((*hc).nc as isize))
-            .type_0 = (*((*(*ctx).prototype).c).offset((*hc).nc as isize)).type_0;
+        (*((*hc).c).offset((*hc).nc as isize)).type_0 =
+            (*((*(*ctx).prototype).c).offset((*hc).nc as isize)).type_0;
         (*hc).nc = ((*hc).nc).wrapping_add(1);
         (*hc).nc;
     }
@@ -48108,29 +48012,23 @@ unsafe extern "C" fn try_step_coords_kitemap(
     mut step: KiteStep,
 ) -> *mut HatCoords {
     hatctx_extend_coords(ctx, hc_in, 4 as libc::c_int as size_t);
-    let mut kite: libc::c_uint = (*((*hc_in).c).offset(0 as libc::c_int as isize)).index
-        as libc::c_uint;
-    let mut hat: libc::c_uint = (*((*hc_in).c).offset(1 as libc::c_int as isize)).index
-        as libc::c_uint;
-    let mut meta: libc::c_uint = (*((*hc_in).c).offset(2 as libc::c_int as isize)).index
-        as libc::c_uint;
-    let mut meta2type: TileType = (*((*hc_in).c).offset(3 as libc::c_int as isize))
-        .type_0;
-    let mut ke: *const KitemapEntry = &*(*kitemap.as_ptr().offset(meta2type as isize))
-        .offset(
-            (kitemap_index
-                as unsafe extern "C" fn(
-                    KiteStep,
-                    libc::c_uint,
-                    libc::c_uint,
-                    libc::c_uint,
-                ) -> size_t)(step, kite, hat, meta) as isize,
-        ) as *const KitemapEntry;
+    let mut kite: libc::c_uint =
+        (*((*hc_in).c).offset(0 as libc::c_int as isize)).index as libc::c_uint;
+    let mut hat: libc::c_uint =
+        (*((*hc_in).c).offset(1 as libc::c_int as isize)).index as libc::c_uint;
+    let mut meta: libc::c_uint =
+        (*((*hc_in).c).offset(2 as libc::c_int as isize)).index as libc::c_uint;
+    let mut meta2type: TileType = (*((*hc_in).c).offset(3 as libc::c_int as isize)).type_0;
+    let mut ke: *const KitemapEntry =
+        &*(*kitemap.as_ptr().offset(meta2type as isize)).offset((kitemap_index
+            as unsafe extern "C" fn(KiteStep, libc::c_uint, libc::c_uint, libc::c_uint) -> size_t)(
+            step, kite, hat, meta,
+        ) as isize) as *const KitemapEntry;
     if (*ke).kite >= 0 as libc::c_int {
         let mut hc_out: *mut HatCoords = hat_coords_copy(hc_in);
         (*((*hc_out).c).offset(2 as libc::c_int as isize)).index = (*ke).meta;
-        (*((*hc_out).c).offset(2 as libc::c_int as isize))
-            .type_0 = *(children[meta2type as usize]).offset((*ke).meta as isize);
+        (*((*hc_out).c).offset(2 as libc::c_int as isize)).type_0 =
+            *(children[meta2type as usize]).offset((*ke).meta as isize);
         (*((*hc_out).c).offset(1 as libc::c_int as isize)).index = (*ke).hat;
         (*((*hc_out).c).offset(1 as libc::c_int as isize)).type_0 = TT_HAT;
         (*((*hc_out).c).offset(0 as libc::c_int as isize)).index = (*ke).kite;
@@ -48148,14 +48046,12 @@ unsafe extern "C" fn try_step_coords_metamap(
     let mut hc_tmp: *mut HatCoords = 0 as *mut HatCoords;
     let mut hc_out: *mut HatCoords = 0 as *mut HatCoords;
     hatctx_extend_coords(ctx, hc_in, depth.wrapping_add(3 as libc::c_int as size_t));
-    let mut meta_orig: libc::c_uint = (*((*hc_in).c).offset(depth as isize)).index
-        as libc::c_uint;
+    let mut meta_orig: libc::c_uint = (*((*hc_in).c).offset(depth as isize)).index as libc::c_uint;
     let mut meta2_orig: libc::c_uint = (*((*hc_in).c)
         .offset(depth.wrapping_add(1 as libc::c_int as size_t) as isize))
-        .index as libc::c_uint;
-    let mut meta3type: TileType = (*((*hc_in).c)
-        .offset(depth.wrapping_add(2 as libc::c_int as size_t) as isize))
-        .type_0;
+    .index as libc::c_uint;
+    let mut meta3type: TileType =
+        (*((*hc_in).c).offset(depth.wrapping_add(2 as libc::c_int as size_t) as isize)).type_0;
     let mut meta: libc::c_uint = meta_orig;
     let mut meta2: libc::c_uint = meta2_orig;
     loop {
@@ -48175,15 +48071,12 @@ unsafe extern "C" fn try_step_coords_metamap(
             hat_coords_free(hc_tmp);
             return hc_out;
         }
-        me = &*(*metamap.as_ptr().offset(meta3type as isize))
-            .offset(
-                (metamap_index
-                    as unsafe extern "C" fn(
-                        libc::c_uint,
-                        libc::c_uint,
-                    ) -> size_t)(meta, meta2) as isize,
-            ) as *const MetamapEntry;
-        if (*me).meta != -(1 as libc::c_int) {} else {
+        me = &*(*metamap.as_ptr().offset(meta3type as isize)).offset((metamap_index
+            as unsafe extern "C" fn(libc::c_uint, libc::c_uint) -> size_t)(
+            meta, meta2
+        ) as isize) as *const MetamapEntry;
+        if (*me).meta != -(1 as libc::c_int) {
+        } else {
             __assert_fail(
                 b"me->meta != -1\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/hat.c\0" as *const u8 as *const libc::c_char,
@@ -48198,7 +48091,8 @@ unsafe extern "C" fn try_step_coords_metamap(
             );
         }
         'c_8034: {
-            if (*me).meta != -(1 as libc::c_int) {} else {
+            if (*me).meta != -(1 as libc::c_int) {
+            } else {
                 __assert_fail(
                     b"me->meta != -1\0" as *const u8 as *const libc::c_char,
                     b"/puzzles/hat.c\0" as *const u8 as *const libc::c_char,
@@ -48213,9 +48107,7 @@ unsafe extern "C" fn try_step_coords_metamap(
                 );
             }
         };
-        if (*me).meta as libc::c_uint == meta_orig
-            && (*me).meta2 as libc::c_uint == meta2_orig
-        {
+        if (*me).meta as libc::c_uint == meta_orig && (*me).meta2 as libc::c_uint == meta2_orig {
             hat_coords_free(hc_tmp);
             return 0 as *mut HatCoords;
         }
@@ -48224,17 +48116,16 @@ unsafe extern "C" fn try_step_coords_metamap(
         if hc_tmp.is_null() {
             hc_tmp = hat_coords_copy(hc_in);
         }
-        (*((*hc_tmp).c).offset(depth.wrapping_add(1 as libc::c_int as size_t) as isize))
-            .index = meta2 as libc::c_int;
-        (*((*hc_tmp).c).offset(depth.wrapping_add(1 as libc::c_int as size_t) as isize))
-            .type_0 = *(children[meta3type as usize]).offset(meta2 as isize);
+        (*((*hc_tmp).c).offset(depth.wrapping_add(1 as libc::c_int as size_t) as isize)).index =
+            meta2 as libc::c_int;
+        (*((*hc_tmp).c).offset(depth.wrapping_add(1 as libc::c_int as size_t) as isize)).type_0 =
+            *(children[meta3type as usize]).offset(meta2 as isize);
         (*((*hc_tmp).c).offset(depth as isize)).index = meta as libc::c_int;
-        (*((*hc_tmp).c).offset(depth as isize))
-            .type_0 = *(children[(*((*hc_tmp).c)
+        (*((*hc_tmp).c).offset(depth as isize)).type_0 = *(children[(*((*hc_tmp).c)
             .offset(depth.wrapping_add(1 as libc::c_int as size_t) as isize))
-            .type_0 as usize])
+        .type_0 as usize])
             .offset(meta as isize);
-    };
+    }
 }
 #[no_mangle]
 pub unsafe extern "C" fn hatctx_step(
@@ -48256,7 +48147,7 @@ pub unsafe extern "C" fn hatctx_step(
         }
         depth = depth.wrapping_add(1);
         depth;
-    };
+    }
 }
 #[no_mangle]
 pub unsafe extern "C" fn hat_tiling_randomise(
@@ -48299,39 +48190,28 @@ pub unsafe extern "C" fn hat_tiling_randomise(
         i;
     }
     hat_kiteenum_first(s.as_mut_ptr(), w, h);
-    coords[(*s.as_mut_ptr()).curr_index
-        as usize] = hatctx_initial_coords(ctx.as_mut_ptr());
+    coords[(*s.as_mut_ptr()).curr_index as usize] = hatctx_initial_coords(ctx.as_mut_ptr());
     while hat_kiteenum_next(s.as_mut_ptr()) {
         hat_coords_free(coords[(*s.as_mut_ptr()).curr_index as usize]);
-        coords[(*s.as_mut_ptr()).curr_index
-            as usize] = hatctx_step(
+        coords[(*s.as_mut_ptr()).curr_index as usize] = hatctx_step(
             ctx.as_mut_ptr(),
             coords[(*s.as_mut_ptr()).last_index as usize],
             (*s.as_mut_ptr()).last_step,
         );
     }
-    (*hp)
-        .ncoords = ((*(*ctx.as_mut_ptr()).prototype).nc)
-        .wrapping_sub(1 as libc::c_int as size_t);
-    (*hp)
-        .coords = smalloc(
-        ((*hp).ncoords)
-            .wrapping_mul(::core::mem::size_of::<libc::c_uchar>() as libc::c_ulong),
+    (*hp).ncoords = ((*(*ctx.as_mut_ptr()).prototype).nc).wrapping_sub(1 as libc::c_int as size_t);
+    (*hp).coords = smalloc(
+        ((*hp).ncoords).wrapping_mul(::core::mem::size_of::<libc::c_uchar>() as libc::c_ulong),
     ) as *mut libc::c_uchar;
     i = 0 as libc::c_int as size_t;
     while i < (*hp).ncoords {
-        *((*hp).coords)
-            .offset(
-                i as isize,
-            ) = (*((*(*ctx.as_mut_ptr()).prototype).c).offset(i as isize)).index
-            as libc::c_uchar;
+        *((*hp).coords).offset(i as isize) =
+            (*((*(*ctx.as_mut_ptr()).prototype).c).offset(i as isize)).index as libc::c_uchar;
         i = i.wrapping_add(1);
         i;
     }
-    (*hp)
-        .final_metatile = tilechars[(*((*(*ctx.as_mut_ptr()).prototype).c)
-        .offset((*hp).ncoords as isize))
-        .type_0 as usize];
+    (*hp).final_metatile = tilechars
+        [(*((*(*ctx.as_mut_ptr()).prototype).c).offset((*hp).ncoords as isize)).type_0 as usize];
     hatctx_cleanup(ctx.as_mut_ptr());
     i = 0 as libc::c_int as size_t;
     while i
@@ -48357,9 +48237,7 @@ pub unsafe extern "C" fn hat_tiling_params_invalid(
         return b"Grid parameters contain an invalid final metatile\0" as *const u8
             as *const libc::c_char;
     }
-    if *((*hp).coords).offset(0 as libc::c_int as isize) as libc::c_int
-        >= 8 as libc::c_int
-    {
+    if *((*hp).coords).offset(0 as libc::c_int as isize) as libc::c_int >= 8 as libc::c_int {
         return b"Grid parameters contain an invalid kite index\0" as *const u8
             as *const libc::c_char;
     }
@@ -48370,8 +48248,8 @@ pub unsafe extern "C" fn hat_tiling_params_invalid(
             return b"Grid parameters contain an invalid metatile index\0" as *const u8
                 as *const libc::c_char;
         }
-        metatile = *(children[metatile as usize])
-            .offset(*((*hp).coords).offset(i as isize) as isize);
+        metatile =
+            *(children[metatile as usize]).offset(*((*hp).coords).offset(i as isize) as isize);
         i = i.wrapping_sub(1);
         i;
     }
@@ -48456,14 +48334,17 @@ pub unsafe extern "C" fn maybe_report_hat(
         let mut v: Point = vertices[i as usize];
         let mut x: libc::c_int = (v.x * 2 as libc::c_int + v.y) / 3 as libc::c_int;
         let mut y: libc::c_int = v.y;
-        if x < 0 as libc::c_int || x > 4 as libc::c_int * w || y < 0 as libc::c_int
+        if x < 0 as libc::c_int
+            || x > 4 as libc::c_int * w
+            || y < 0 as libc::c_int
             || y > 6 as libc::c_int * h
         {
             return;
         }
         coords[(2 as libc::c_int as size_t * i) as usize] = x;
-        coords[(2 as libc::c_int as size_t * i).wrapping_add(1 as libc::c_int as size_t)
-            as usize] = y;
+        coords
+            [(2 as libc::c_int as size_t * i).wrapping_add(1 as libc::c_int as size_t) as usize] =
+            y;
         i = i.wrapping_add(1);
         i;
     }
@@ -48476,10 +48357,11 @@ unsafe extern "C" fn report_hat(
     mut coords: *mut libc::c_int,
 ) {
     let mut ctx: *mut internal_ctx = vctx as *mut internal_ctx;
-    ((*ctx).external_cb)
-        .expect(
-            "non-null function pointer",
-        )((*ctx).external_cbctx, 14 as libc::c_int as size_t, coords);
+    ((*ctx).external_cb).expect("non-null function pointer")(
+        (*ctx).external_cbctx,
+        14 as libc::c_int as size_t,
+        coords,
+    );
 }
 #[no_mangle]
 pub unsafe extern "C" fn hat_tiling_generate(
@@ -48531,8 +48413,7 @@ pub unsafe extern "C" fn hat_tiling_generate(
         i;
     }
     hat_kiteenum_first(s.as_mut_ptr(), w, h);
-    coords[(*s.as_mut_ptr()).curr_index
-        as usize] = hatctx_initial_coords(ctx.as_mut_ptr());
+    coords[(*s.as_mut_ptr()).curr_index as usize] = hatctx_initial_coords(ctx.as_mut_ptr());
     maybe_report_hat(
         w,
         h,
@@ -48551,8 +48432,7 @@ pub unsafe extern "C" fn hat_tiling_generate(
     );
     while hat_kiteenum_next(s.as_mut_ptr()) {
         hat_coords_free(coords[(*s.as_mut_ptr()).curr_index as usize]);
-        coords[(*s.as_mut_ptr()).curr_index
-            as usize] = hatctx_step(
+        coords[(*s.as_mut_ptr()).curr_index as usize] = hatctx_step(
             ctx.as_mut_ptr(),
             coords[(*s.as_mut_ptr()).last_index as usize],
             (*s.as_mut_ptr()).last_step,
@@ -48588,21 +48468,13 @@ pub unsafe extern "C" fn hat_tiling_generate(
 unsafe extern "C" fn run_static_initializers() {
     n_possible_parents = [
         (::core::mem::size_of::<[MetatilePossibleParent; 8]>() as libc::c_ulong)
-            .wrapping_div(
-                ::core::mem::size_of::<MetatilePossibleParent>() as libc::c_ulong,
-            ),
+            .wrapping_div(::core::mem::size_of::<MetatilePossibleParent>() as libc::c_ulong),
         (::core::mem::size_of::<[MetatilePossibleParent; 1]>() as libc::c_ulong)
-            .wrapping_div(
-                ::core::mem::size_of::<MetatilePossibleParent>() as libc::c_ulong,
-            ),
+            .wrapping_div(::core::mem::size_of::<MetatilePossibleParent>() as libc::c_ulong),
         (::core::mem::size_of::<[MetatilePossibleParent; 5]>() as libc::c_ulong)
-            .wrapping_div(
-                ::core::mem::size_of::<MetatilePossibleParent>() as libc::c_ulong,
-            ),
+            .wrapping_div(::core::mem::size_of::<MetatilePossibleParent>() as libc::c_ulong),
         (::core::mem::size_of::<[MetatilePossibleParent; 8]>() as libc::c_ulong)
-            .wrapping_div(
-                ::core::mem::size_of::<MetatilePossibleParent>() as libc::c_ulong,
-            ),
+            .wrapping_div(::core::mem::size_of::<MetatilePossibleParent>() as libc::c_ulong),
     ];
 }
 #[used]

@@ -10,10 +10,7 @@ extern "C" {
         __function: *const libc::c_char,
     ) -> !;
     fn sqrtf(_: libc::c_float) -> libc::c_float;
-    fn midend_rewrite_statusbar(
-        me: *mut midend,
-        text: *const libc::c_char,
-    ) -> *mut libc::c_char;
+    fn midend_rewrite_statusbar(me: *mut midend, text: *const libc::c_char) -> *mut libc::c_char;
     fn smalloc(size: size_t) -> *mut libc::c_void;
     fn srealloc(p: *mut libc::c_void, size: size_t) -> *mut libc::c_void;
     fn sfree(p: *mut libc::c_void);
@@ -45,7 +42,7 @@ pub struct print_colour {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct drawing_api {
-    pub draw_text: Option::<
+    pub draw_text: Option<
         unsafe extern "C" fn(
             *mut libc::c_void,
             libc::c_int,
@@ -57,7 +54,7 @@ pub struct drawing_api {
             *const libc::c_char,
         ) -> (),
     >,
-    pub draw_rect: Option::<
+    pub draw_rect: Option<
         unsafe extern "C" fn(
             *mut libc::c_void,
             libc::c_int,
@@ -67,7 +64,7 @@ pub struct drawing_api {
             libc::c_int,
         ) -> (),
     >,
-    pub draw_line: Option::<
+    pub draw_line: Option<
         unsafe extern "C" fn(
             *mut libc::c_void,
             libc::c_int,
@@ -77,7 +74,7 @@ pub struct drawing_api {
             libc::c_int,
         ) -> (),
     >,
-    pub draw_polygon: Option::<
+    pub draw_polygon: Option<
         unsafe extern "C" fn(
             *mut libc::c_void,
             *const libc::c_int,
@@ -86,7 +83,7 @@ pub struct drawing_api {
             libc::c_int,
         ) -> (),
     >,
-    pub draw_circle: Option::<
+    pub draw_circle: Option<
         unsafe extern "C" fn(
             *mut libc::c_void,
             libc::c_int,
@@ -96,7 +93,7 @@ pub struct drawing_api {
             libc::c_int,
         ) -> (),
     >,
-    pub draw_update: Option::<
+    pub draw_update: Option<
         unsafe extern "C" fn(
             *mut libc::c_void,
             libc::c_int,
@@ -105,7 +102,7 @@ pub struct drawing_api {
             libc::c_int,
         ) -> (),
     >,
-    pub clip: Option::<
+    pub clip: Option<
         unsafe extern "C" fn(
             *mut libc::c_void,
             libc::c_int,
@@ -114,37 +111,22 @@ pub struct drawing_api {
             libc::c_int,
         ) -> (),
     >,
-    pub unclip: Option::<unsafe extern "C" fn(*mut libc::c_void) -> ()>,
-    pub start_draw: Option::<unsafe extern "C" fn(*mut libc::c_void) -> ()>,
-    pub end_draw: Option::<unsafe extern "C" fn(*mut libc::c_void) -> ()>,
-    pub status_bar: Option::<
-        unsafe extern "C" fn(*mut libc::c_void, *const libc::c_char) -> (),
+    pub unclip: Option<unsafe extern "C" fn(*mut libc::c_void) -> ()>,
+    pub start_draw: Option<unsafe extern "C" fn(*mut libc::c_void) -> ()>,
+    pub end_draw: Option<unsafe extern "C" fn(*mut libc::c_void) -> ()>,
+    pub status_bar: Option<unsafe extern "C" fn(*mut libc::c_void, *const libc::c_char) -> ()>,
+    pub blitter_new:
+        Option<unsafe extern "C" fn(*mut libc::c_void, libc::c_int, libc::c_int) -> *mut blitter>,
+    pub blitter_free: Option<unsafe extern "C" fn(*mut libc::c_void, *mut blitter) -> ()>,
+    pub blitter_save: Option<
+        unsafe extern "C" fn(*mut libc::c_void, *mut blitter, libc::c_int, libc::c_int) -> (),
     >,
-    pub blitter_new: Option::<
-        unsafe extern "C" fn(*mut libc::c_void, libc::c_int, libc::c_int) -> *mut blitter,
+    pub blitter_load: Option<
+        unsafe extern "C" fn(*mut libc::c_void, *mut blitter, libc::c_int, libc::c_int) -> (),
     >,
-    pub blitter_free: Option::<
-        unsafe extern "C" fn(*mut libc::c_void, *mut blitter) -> (),
-    >,
-    pub blitter_save: Option::<
-        unsafe extern "C" fn(
-            *mut libc::c_void,
-            *mut blitter,
-            libc::c_int,
-            libc::c_int,
-        ) -> (),
-    >,
-    pub blitter_load: Option::<
-        unsafe extern "C" fn(
-            *mut libc::c_void,
-            *mut blitter,
-            libc::c_int,
-            libc::c_int,
-        ) -> (),
-    >,
-    pub begin_doc: Option::<unsafe extern "C" fn(*mut libc::c_void, libc::c_int) -> ()>,
-    pub begin_page: Option::<unsafe extern "C" fn(*mut libc::c_void, libc::c_int) -> ()>,
-    pub begin_puzzle: Option::<
+    pub begin_doc: Option<unsafe extern "C" fn(*mut libc::c_void, libc::c_int) -> ()>,
+    pub begin_page: Option<unsafe extern "C" fn(*mut libc::c_void, libc::c_int) -> ()>,
+    pub begin_puzzle: Option<
         unsafe extern "C" fn(
             *mut libc::c_void,
             libc::c_float,
@@ -156,21 +138,19 @@ pub struct drawing_api {
             libc::c_float,
         ) -> (),
     >,
-    pub end_puzzle: Option::<unsafe extern "C" fn(*mut libc::c_void) -> ()>,
-    pub end_page: Option::<unsafe extern "C" fn(*mut libc::c_void, libc::c_int) -> ()>,
-    pub end_doc: Option::<unsafe extern "C" fn(*mut libc::c_void) -> ()>,
-    pub line_width: Option::<
-        unsafe extern "C" fn(*mut libc::c_void, libc::c_float) -> (),
-    >,
-    pub line_dotted: Option::<unsafe extern "C" fn(*mut libc::c_void, bool) -> ()>,
-    pub text_fallback: Option::<
+    pub end_puzzle: Option<unsafe extern "C" fn(*mut libc::c_void) -> ()>,
+    pub end_page: Option<unsafe extern "C" fn(*mut libc::c_void, libc::c_int) -> ()>,
+    pub end_doc: Option<unsafe extern "C" fn(*mut libc::c_void) -> ()>,
+    pub line_width: Option<unsafe extern "C" fn(*mut libc::c_void, libc::c_float) -> ()>,
+    pub line_dotted: Option<unsafe extern "C" fn(*mut libc::c_void, bool) -> ()>,
+    pub text_fallback: Option<
         unsafe extern "C" fn(
             *mut libc::c_void,
             *const *const libc::c_char,
             libc::c_int,
         ) -> *mut libc::c_char,
     >,
-    pub draw_thick_line: Option::<
+    pub draw_thick_line: Option<
         unsafe extern "C" fn(
             *mut libc::c_void,
             libc::c_float,
@@ -192,9 +172,8 @@ pub unsafe extern "C" fn drawing_new(
     mut me: *mut midend,
     mut handle: *mut libc::c_void,
 ) -> *mut drawing {
-    let mut dr: *mut drawing = smalloc(
-        ::core::mem::size_of::<drawing>() as libc::c_ulong,
-    ) as *mut drawing;
+    let mut dr: *mut drawing =
+        smalloc(::core::mem::size_of::<drawing>() as libc::c_ulong) as *mut drawing;
     (*dr).api = api;
     (*dr).handle = handle;
     (*dr).colours = 0 as *mut print_colour;
@@ -222,10 +201,16 @@ pub unsafe extern "C" fn draw_text(
     mut colour: libc::c_int,
     mut text: *const libc::c_char,
 ) {
-    ((*(*dr).api).draw_text)
-        .expect(
-            "non-null function pointer",
-        )((*dr).handle, x, y, fonttype, fontsize, align, colour, text);
+    ((*(*dr).api).draw_text).expect("non-null function pointer")(
+        (*dr).handle,
+        x,
+        y,
+        fonttype,
+        fontsize,
+        align,
+        colour,
+        text,
+    );
 }
 #[no_mangle]
 pub unsafe extern "C" fn draw_rect(
@@ -236,8 +221,7 @@ pub unsafe extern "C" fn draw_rect(
     mut h: libc::c_int,
     mut colour: libc::c_int,
 ) {
-    ((*(*dr).api).draw_rect)
-        .expect("non-null function pointer")((*dr).handle, x, y, w, h, colour);
+    ((*(*dr).api).draw_rect).expect("non-null function pointer")((*dr).handle, x, y, w, h, colour);
 }
 #[no_mangle]
 pub unsafe extern "C" fn draw_line(
@@ -248,8 +232,14 @@ pub unsafe extern "C" fn draw_line(
     mut y2: libc::c_int,
     mut colour: libc::c_int,
 ) {
-    ((*(*dr).api).draw_line)
-        .expect("non-null function pointer")((*dr).handle, x1, y1, x2, y2, colour);
+    ((*(*dr).api).draw_line).expect("non-null function pointer")(
+        (*dr).handle,
+        x1,
+        y1,
+        x2,
+        y2,
+        colour,
+    );
 }
 #[no_mangle]
 pub unsafe extern "C" fn draw_thick_line(
@@ -265,18 +255,21 @@ pub unsafe extern "C" fn draw_thick_line(
         thickness = 1.0f32;
     }
     if ((*(*dr).api).draw_thick_line).is_some() {
-        ((*(*dr).api).draw_thick_line)
-            .expect(
-                "non-null function pointer",
-            )((*dr).handle, thickness, x1, y1, x2, y2, colour);
-    } else {
-        let mut len: libc::c_float = __tg_sqrt(
-            (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1),
+        ((*(*dr).api).draw_thick_line).expect("non-null function pointer")(
+            (*dr).handle,
+            thickness,
+            x1,
+            y1,
+            x2,
+            y2,
+            colour,
         );
-        let mut tvhatx: libc::c_float = (x2 - x1) / len
-            * (thickness / 2 as libc::c_int as libc::c_float - 0.2f32);
-        let mut tvhaty: libc::c_float = (y2 - y1) / len
-            * (thickness / 2 as libc::c_int as libc::c_float - 0.2f32);
+    } else {
+        let mut len: libc::c_float = __tg_sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+        let mut tvhatx: libc::c_float =
+            (x2 - x1) / len * (thickness / 2 as libc::c_int as libc::c_float - 0.2f32);
+        let mut tvhaty: libc::c_float =
+            (y2 - y1) / len * (thickness / 2 as libc::c_int as libc::c_float - 0.2f32);
         let mut p: [libc::c_int; 8] = [0; 8];
         p[0 as libc::c_int as usize] = (x1 - tvhaty) as libc::c_int;
         p[1 as libc::c_int as usize] = (y1 + tvhatx) as libc::c_int;
@@ -286,10 +279,13 @@ pub unsafe extern "C" fn draw_thick_line(
         p[5 as libc::c_int as usize] = (y2 - tvhatx) as libc::c_int;
         p[6 as libc::c_int as usize] = (x1 + tvhaty) as libc::c_int;
         p[7 as libc::c_int as usize] = (y1 - tvhatx) as libc::c_int;
-        ((*(*dr).api).draw_polygon)
-            .expect(
-                "non-null function pointer",
-            )((*dr).handle, p.as_mut_ptr(), 4 as libc::c_int, colour, colour);
+        ((*(*dr).api).draw_polygon).expect("non-null function pointer")(
+            (*dr).handle,
+            p.as_mut_ptr(),
+            4 as libc::c_int,
+            colour,
+            colour,
+        );
     };
 }
 #[no_mangle]
@@ -300,10 +296,13 @@ pub unsafe extern "C" fn draw_polygon(
     mut fillcolour: libc::c_int,
     mut outlinecolour: libc::c_int,
 ) {
-    ((*(*dr).api).draw_polygon)
-        .expect(
-            "non-null function pointer",
-        )((*dr).handle, coords, npoints, fillcolour, outlinecolour);
+    ((*(*dr).api).draw_polygon).expect("non-null function pointer")(
+        (*dr).handle,
+        coords,
+        npoints,
+        fillcolour,
+        outlinecolour,
+    );
 }
 #[no_mangle]
 pub unsafe extern "C" fn draw_circle(
@@ -314,10 +313,14 @@ pub unsafe extern "C" fn draw_circle(
     mut fillcolour: libc::c_int,
     mut outlinecolour: libc::c_int,
 ) {
-    ((*(*dr).api).draw_circle)
-        .expect(
-            "non-null function pointer",
-        )((*dr).handle, cx, cy, radius, fillcolour, outlinecolour);
+    ((*(*dr).api).draw_circle).expect("non-null function pointer")(
+        (*dr).handle,
+        cx,
+        cy,
+        radius,
+        fillcolour,
+        outlinecolour,
+    );
 }
 #[no_mangle]
 pub unsafe extern "C" fn draw_update(
@@ -328,8 +331,7 @@ pub unsafe extern "C" fn draw_update(
     mut h: libc::c_int,
 ) {
     if ((*(*dr).api).draw_update).is_some() {
-        ((*(*dr).api).draw_update)
-            .expect("non-null function pointer")((*dr).handle, x, y, w, h);
+        ((*(*dr).api).draw_update).expect("non-null function pointer")((*dr).handle, x, y, w, h);
     }
 }
 #[no_mangle]
@@ -362,8 +364,11 @@ pub unsafe extern "C" fn text_fallback(
 ) -> *mut libc::c_char {
     let mut i: libc::c_int = 0;
     if !dr.is_null() && ((*(*dr).api).text_fallback).is_some() {
-        return ((*(*dr).api).text_fallback)
-            .expect("non-null function pointer")((*dr).handle, strings, nstrings);
+        return ((*(*dr).api).text_fallback).expect("non-null function pointer")(
+            (*dr).handle,
+            strings,
+            nstrings,
+        );
     }
     i = 0 as libc::c_int;
     while i < nstrings {
@@ -382,75 +387,69 @@ pub unsafe extern "C" fn text_fallback(
         i += 1;
         i;
     }
-    if (b"Should never get here\0" as *const u8 as *const libc::c_char).is_null()
-    {} else {
+    if (b"Should never get here\0" as *const u8 as *const libc::c_char).is_null() {
+    } else {
         __assert_fail(
             b"!\"Should never get here\"\0" as *const u8 as *const libc::c_char,
             b"/puzzles/drawing.c\0" as *const u8 as *const libc::c_char,
             193 as libc::c_int as libc::c_uint,
-            (*::core::mem::transmute::<
-                &[u8; 57],
-                &[libc::c_char; 57],
-            >(b"char *text_fallback(drawing *, const char *const *, int)\0"))
-                .as_ptr(),
+            (*::core::mem::transmute::<&[u8; 57], &[libc::c_char; 57]>(
+                b"char *text_fallback(drawing *, const char *const *, int)\0",
+            ))
+            .as_ptr(),
         );
     }
     'c_7049: {
-        if (b"Should never get here\0" as *const u8 as *const libc::c_char).is_null()
-        {} else {
+        if (b"Should never get here\0" as *const u8 as *const libc::c_char).is_null() {
+        } else {
             __assert_fail(
                 b"!\"Should never get here\"\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/drawing.c\0" as *const u8 as *const libc::c_char,
                 193 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 57],
-                    &[libc::c_char; 57],
-                >(b"char *text_fallback(drawing *, const char *const *, int)\0"))
-                    .as_ptr(),
+                (*::core::mem::transmute::<&[u8; 57], &[libc::c_char; 57]>(
+                    b"char *text_fallback(drawing *, const char *const *, int)\0",
+                ))
+                .as_ptr(),
             );
         }
     };
     return 0 as *mut libc::c_char;
 }
 #[no_mangle]
-pub unsafe extern "C" fn status_bar(
-    mut dr: *mut drawing,
-    mut text: *const libc::c_char,
-) {
+pub unsafe extern "C" fn status_bar(mut dr: *mut drawing, mut text: *const libc::c_char) {
     let mut rewritten: *mut libc::c_char = 0 as *mut libc::c_char;
     if ((*(*dr).api).status_bar).is_none() {
         return;
     }
-    if !((*dr).me).is_null() {} else {
+    if !((*dr).me).is_null() {
+    } else {
         __assert_fail(
             b"dr->me\0" as *const u8 as *const libc::c_char,
             b"/puzzles/drawing.c\0" as *const u8 as *const libc::c_char,
             204 as libc::c_int as libc::c_uint,
-            (*::core::mem::transmute::<
-                &[u8; 41],
-                &[libc::c_char; 41],
-            >(b"void status_bar(drawing *, const char *)\0"))
-                .as_ptr(),
+            (*::core::mem::transmute::<&[u8; 41], &[libc::c_char; 41]>(
+                b"void status_bar(drawing *, const char *)\0",
+            ))
+            .as_ptr(),
         );
     }
     'c_7258: {
-        if !((*dr).me).is_null() {} else {
+        if !((*dr).me).is_null() {
+        } else {
             __assert_fail(
                 b"dr->me\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/drawing.c\0" as *const u8 as *const libc::c_char,
                 204 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 41],
-                    &[libc::c_char; 41],
-                >(b"void status_bar(drawing *, const char *)\0"))
-                    .as_ptr(),
+                (*::core::mem::transmute::<&[u8; 41], &[libc::c_char; 41]>(
+                    b"void status_bar(drawing *, const char *)\0",
+                ))
+                .as_ptr(),
             );
         }
     };
     rewritten = midend_rewrite_statusbar((*dr).me, text);
     if ((*dr).laststatus).is_null() || strcmp(rewritten, (*dr).laststatus) != 0 {
-        ((*(*dr).api).status_bar)
-            .expect("non-null function pointer")((*dr).handle, rewritten);
+        ((*(*dr).api).status_bar).expect("non-null function pointer")((*dr).handle, rewritten);
         sfree((*dr).laststatus as *mut libc::c_void);
         (*dr).laststatus = rewritten;
     } else {
@@ -463,8 +462,7 @@ pub unsafe extern "C" fn blitter_new(
     mut w: libc::c_int,
     mut h: libc::c_int,
 ) -> *mut blitter {
-    return ((*(*dr).api).blitter_new)
-        .expect("non-null function pointer")((*dr).handle, w, h);
+    return ((*(*dr).api).blitter_new).expect("non-null function pointer")((*dr).handle, w, h);
 }
 #[no_mangle]
 pub unsafe extern "C" fn blitter_free(mut dr: *mut drawing, mut bl: *mut blitter) {
@@ -477,8 +475,7 @@ pub unsafe extern "C" fn blitter_save(
     mut x: libc::c_int,
     mut y: libc::c_int,
 ) {
-    ((*(*dr).api).blitter_save)
-        .expect("non-null function pointer")((*dr).handle, bl, x, y);
+    ((*(*dr).api).blitter_save).expect("non-null function pointer")((*dr).handle, bl, x, y);
 }
 #[no_mangle]
 pub unsafe extern "C" fn blitter_load(
@@ -487,18 +484,14 @@ pub unsafe extern "C" fn blitter_load(
     mut x: libc::c_int,
     mut y: libc::c_int,
 ) {
-    ((*(*dr).api).blitter_load)
-        .expect("non-null function pointer")((*dr).handle, bl, x, y);
+    ((*(*dr).api).blitter_load).expect("non-null function pointer")((*dr).handle, bl, x, y);
 }
 #[no_mangle]
 pub unsafe extern "C" fn print_begin_doc(mut dr: *mut drawing, mut pages: libc::c_int) {
     ((*(*dr).api).begin_doc).expect("non-null function pointer")((*dr).handle, pages);
 }
 #[no_mangle]
-pub unsafe extern "C" fn print_begin_page(
-    mut dr: *mut drawing,
-    mut number: libc::c_int,
-) {
+pub unsafe extern "C" fn print_begin_page(mut dr: *mut drawing, mut number: libc::c_int) {
     ((*(*dr).api).begin_page).expect("non-null function pointer")((*dr).handle, number);
 }
 #[no_mangle]
@@ -515,8 +508,16 @@ pub unsafe extern "C" fn print_begin_puzzle(
 ) {
     (*dr).scale = scale;
     (*dr).ncolours = 0 as libc::c_int;
-    ((*(*dr).api).begin_puzzle)
-        .expect("non-null function pointer")((*dr).handle, xm, xc, ym, yc, pw, ph, wmm);
+    ((*(*dr).api).begin_puzzle).expect("non-null function pointer")(
+        (*dr).handle,
+        xm,
+        xc,
+        ym,
+        yc,
+        pw,
+        ph,
+        wmm,
+    );
 }
 #[no_mangle]
 pub unsafe extern "C" fn print_end_puzzle(mut dr: *mut drawing) {
@@ -541,23 +542,21 @@ pub unsafe extern "C" fn print_get_colour(
     mut g: *mut libc::c_float,
     mut b: *mut libc::c_float,
 ) {
-    if colour >= 0 as libc::c_int && colour < (*dr).ncolours {} else {
+    if colour >= 0 as libc::c_int && colour < (*dr).ncolours {
+    } else {
         __assert_fail(
-            b"colour >= 0 && colour < dr->ncolours\0" as *const u8
-                as *const libc::c_char,
+            b"colour >= 0 && colour < dr->ncolours\0" as *const u8 as *const libc::c_char,
             b"/puzzles/drawing.c\0" as *const u8 as *const libc::c_char,
             274 as libc::c_int as libc::c_uint,
-            (*::core::mem::transmute::<
-                &[u8; 79],
-                &[libc::c_char; 79],
-            >(
+            (*::core::mem::transmute::<&[u8; 79], &[libc::c_char; 79]>(
                 b"void print_get_colour(drawing *, int, _Bool, int *, float *, float *, float *)\0",
             ))
-                .as_ptr(),
+            .as_ptr(),
         );
     }
     'c_7668: {
-        if colour >= 0 as libc::c_int && colour < (*dr).ncolours {} else {
+        if colour >= 0 as libc::c_int && colour < (*dr).ncolours {
+        } else {
             __assert_fail(
                 b"colour >= 0 && colour < dr->ncolours\0" as *const u8
                     as *const libc::c_char,
@@ -602,8 +601,7 @@ unsafe extern "C" fn print_generic_colour(
 ) -> libc::c_int {
     if (*dr).ncolours >= (*dr).coloursize {
         (*dr).coloursize = (*dr).ncolours + 16 as libc::c_int;
-        (*dr)
-            .colours = srealloc(
+        (*dr).colours = srealloc(
             (*dr).colours as *mut libc::c_void,
             ((*dr).coloursize as libc::c_ulong)
                 .wrapping_mul(::core::mem::size_of::<print_colour>() as libc::c_ulong),
@@ -690,15 +688,7 @@ pub unsafe extern "C" fn print_rgb_grey_colour(
     mut b: libc::c_float,
     mut grey: libc::c_float,
 ) -> libc::c_int {
-    return print_generic_colour(
-        dr,
-        r,
-        g,
-        b,
-        grey,
-        -(1 as libc::c_int),
-        0 as libc::c_int,
-    );
+    return print_generic_colour(dr, r, g, b, grey, -(1 as libc::c_int), 0 as libc::c_int);
 }
 #[no_mangle]
 pub unsafe extern "C" fn print_rgb_hatched_colour(
@@ -720,10 +710,10 @@ pub unsafe extern "C" fn print_rgb_hatched_colour(
 }
 #[no_mangle]
 pub unsafe extern "C" fn print_line_width(mut dr: *mut drawing, mut width: libc::c_int) {
-    ((*(*dr).api).line_width)
-        .expect(
-            "non-null function pointer",
-        )((*dr).handle, __tg_sqrt((*dr).scale) * width as libc::c_float);
+    ((*(*dr).api).line_width).expect("non-null function pointer")(
+        (*dr).handle,
+        __tg_sqrt((*dr).scale) * width as libc::c_float,
+    );
 }
 #[no_mangle]
 pub unsafe extern "C" fn print_line_dotted(mut dr: *mut drawing, mut dotted: bool) {

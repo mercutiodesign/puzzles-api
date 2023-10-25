@@ -32,10 +32,7 @@ pub struct scratch {
     pub Lorder: *mut libc::c_int,
 }
 #[no_mangle]
-pub unsafe extern "C" fn matching_scratch_size(
-    mut nl: libc::c_int,
-    mut nr: libc::c_int,
-) -> size_t {
+pub unsafe extern "C" fn matching_scratch_size(mut nl: libc::c_int, mut nr: libc::c_int) -> size_t {
     let mut n: size_t = 0;
     let mut nmin: libc::c_int = if nl < nr { nl } else { nr };
     n = (::core::mem::size_of::<scratch>() as libc::c_ulong)
@@ -71,14 +68,12 @@ pub unsafe extern "C" fn matching_with_scratch(
     let mut j: libc::c_int = 0;
     let mut p: *mut libc::c_int = scratchv as *mut libc::c_int;
     let mut nmin: libc::c_int = if nl < nr { nl } else { nr };
-    p = p
-        .offset(
-            (::core::mem::size_of::<scratch>() as libc::c_ulong)
-                .wrapping_add(::core::mem::size_of::<libc::c_int>() as libc::c_ulong)
-                .wrapping_sub(1 as libc::c_int as libc::c_ulong)
-                .wrapping_div(::core::mem::size_of::<libc::c_int>() as libc::c_ulong)
-                as isize,
-        );
+    p = p.offset(
+        (::core::mem::size_of::<scratch>() as libc::c_ulong)
+            .wrapping_add(::core::mem::size_of::<libc::c_int>() as libc::c_ulong)
+            .wrapping_sub(1 as libc::c_int as libc::c_ulong)
+            .wrapping_div(::core::mem::size_of::<libc::c_int>() as libc::c_ulong) as isize,
+    );
     (*s).LtoR = p;
     p = p.offset(nl as isize);
     (*s).RtoL = p;
@@ -145,7 +140,8 @@ pub unsafe extern "C" fn matching_with_scratch(
             i = 0 as libc::c_int;
             while i < Lqs {
                 L = *((*s).Lqueue).offset(i as isize);
-                if *((*s).Llayer).offset(L as isize) == layer {} else {
+                if *((*s).Llayer).offset(L as isize) == layer {
+                } else {
                     __assert_fail(
                         b"s->Llayer[L] == layer\0" as *const u8 as *const libc::c_char,
                         b"/puzzles/matching.c\0" as *const u8 as *const libc::c_char,
@@ -160,7 +156,8 @@ pub unsafe extern "C" fn matching_with_scratch(
                     );
                 }
                 'c_3728: {
-                    if *((*s).Llayer).offset(L as isize) == layer {} else {
+                    if *((*s).Llayer).offset(L as isize) == layer {
+                    } else {
                         __assert_fail(
                             b"s->Llayer[L] == layer\0" as *const u8
                                 as *const libc::c_char,
@@ -208,7 +205,8 @@ pub unsafe extern "C" fn matching_with_scratch(
             j = 0 as libc::c_int;
             while j < Rqs {
                 R = *((*s).Rqueue).offset(j as isize);
-                if *((*s).Rlayer).offset(R as isize) == layer {} else {
+                if *((*s).Rlayer).offset(R as isize) == layer {
+                } else {
                     __assert_fail(
                         b"s->Rlayer[R] == layer\0" as *const u8 as *const libc::c_char,
                         b"/puzzles/matching.c\0" as *const u8 as *const libc::c_char,
@@ -223,7 +221,8 @@ pub unsafe extern "C" fn matching_with_scratch(
                     );
                 }
                 'c_3534: {
-                    if *((*s).Rlayer).offset(R as isize) == layer {} else {
+                    if *((*s).Rlayer).offset(R as isize) == layer {
+                    } else {
                         __assert_fail(
                             b"s->Rlayer[R] == layer\0" as *const u8
                                 as *const libc::c_char,
@@ -297,8 +296,7 @@ pub unsafe extern "C" fn matching_with_scratch(
                     continue;
                 }
             } else {
-                L = *((*s).augpath)
-                    .offset((2 as libc::c_int * i - 2 as libc::c_int) as isize);
+                L = *((*s).augpath).offset((2 as libc::c_int * i - 2 as libc::c_int) as isize);
                 let ref mut fresh5 = *((*s).dfsstate).offset(i as isize);
                 let fresh6 = *fresh5;
                 *fresh5 = *fresh5 + 1;
@@ -308,45 +306,32 @@ pub unsafe extern "C" fn matching_with_scratch(
                     i;
                     continue;
                 } else {
-                    if !rs.is_null()
-                        && *adjsizes.offset(L as isize) - j > 1 as libc::c_int
-                    {
-                        let mut which: libc::c_int = (j as libc::c_ulong)
-                            .wrapping_add(
-                                random_upto(
-                                    rs,
-                                    (*adjsizes.offset(L as isize) - j) as libc::c_ulong,
-                                ),
-                            ) as libc::c_int;
-                        let mut tmp: libc::c_int = *(*adjlists.offset(L as isize))
-                            .offset(which as isize);
-                        *(*adjlists.offset(L as isize))
-                            .offset(
-                                which as isize,
-                            ) = *(*adjlists.offset(L as isize)).offset(j as isize);
+                    if !rs.is_null() && *adjsizes.offset(L as isize) - j > 1 as libc::c_int {
+                        let mut which: libc::c_int = (j as libc::c_ulong).wrapping_add(random_upto(
+                            rs,
+                            (*adjsizes.offset(L as isize) - j) as libc::c_ulong,
+                        )) as libc::c_int;
+                        let mut tmp: libc::c_int =
+                            *(*adjlists.offset(L as isize)).offset(which as isize);
+                        *(*adjlists.offset(L as isize)).offset(which as isize) =
+                            *(*adjlists.offset(L as isize)).offset(j as isize);
                         *(*adjlists.offset(L as isize)).offset(j as isize) = tmp;
                     }
                     R = *(*adjlists.offset(L as isize)).offset(j as isize);
-                    if *((*s).Rlayer).offset(R as isize)
-                        != 2 as libc::c_int * i - 1 as libc::c_int
+                    if *((*s).Rlayer).offset(R as isize) != 2 as libc::c_int * i - 1 as libc::c_int
                     {
                         continue;
                     }
-                    *((*s).augpath)
-                        .offset((2 as libc::c_int * i - 1 as libc::c_int) as isize) = R;
+                    *((*s).augpath).offset((2 as libc::c_int * i - 1 as libc::c_int) as isize) = R;
                     *((*s).Rlayer).offset(R as isize) = -(1 as libc::c_int);
                     if 2 as libc::c_int * i - 1 as libc::c_int == target_layer {
                         j = 0 as libc::c_int;
                         while j < 2 as libc::c_int * i {
-                            *((*s).LtoR)
-                                .offset(
-                                    *((*s).augpath).offset(j as isize) as isize,
-                                ) = *((*s).augpath).offset((j + 1 as libc::c_int) as isize);
+                            *((*s).LtoR).offset(*((*s).augpath).offset(j as isize) as isize) =
+                                *((*s).augpath).offset((j + 1 as libc::c_int) as isize);
                             *((*s).RtoL)
-                                .offset(
-                                    *((*s).augpath).offset((j + 1 as libc::c_int) as isize)
-                                        as isize,
-                                ) = *((*s).augpath).offset(j as isize);
+                                .offset(*((*s).augpath).offset((j + 1 as libc::c_int) as isize)
+                                    as isize) = *((*s).augpath).offset(j as isize);
                             j += 2 as libc::c_int;
                         }
                         i = 0 as libc::c_int;
@@ -428,21 +413,15 @@ pub unsafe extern "C" fn matching_witness(
     let mut j: libc::c_int = 0;
     i = 0 as libc::c_int;
     while i < nl {
-        *witness
-            .offset(
-                i as isize,
-            ) = (*((*s).Llayer).offset(i as isize) == -(1 as libc::c_int))
-            as libc::c_int;
+        *witness.offset(i as isize) =
+            (*((*s).Llayer).offset(i as isize) == -(1 as libc::c_int)) as libc::c_int;
         i += 1;
         i;
     }
     j = 0 as libc::c_int;
     while j < nr {
-        *witness
-            .offset(
-                (nl + j) as isize,
-            ) = (*((*s).Rlayer).offset(j as isize) == -(1 as libc::c_int))
-            as libc::c_int;
+        *witness.offset((nl + j) as isize) =
+            (*((*s).Rlayer).offset(j as isize) == -(1 as libc::c_int)) as libc::c_int;
         j += 1;
         j;
     }

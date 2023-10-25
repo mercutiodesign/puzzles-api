@@ -16,9 +16,8 @@ pub struct tree234_Tag {
     pub root: *mut node234,
     pub cmp: cmpfn234,
 }
-pub type cmpfn234 = Option::<
-    unsafe extern "C" fn(*mut libc::c_void, *mut libc::c_void) -> libc::c_int,
->;
+pub type cmpfn234 =
+    Option<unsafe extern "C" fn(*mut libc::c_void, *mut libc::c_void) -> libc::c_int>;
 pub type node234 = node234_Tag;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -29,9 +28,8 @@ pub struct node234_Tag {
     pub elems: [*mut libc::c_void; 3],
 }
 pub type tree234 = tree234_Tag;
-pub type copyfn234 = Option::<
-    unsafe extern "C" fn(*mut libc::c_void, *mut libc::c_void) -> *mut libc::c_void,
->;
+pub type copyfn234 =
+    Option<unsafe extern "C" fn(*mut libc::c_void, *mut libc::c_void) -> *mut libc::c_void>;
 pub type C2RustUnnamed = libc::c_uint;
 pub const REL234_GE: C2RustUnnamed = 4;
 pub const REL234_GT: C2RustUnnamed = 3;
@@ -40,9 +38,8 @@ pub const REL234_LT: C2RustUnnamed = 1;
 pub const REL234_EQ: C2RustUnnamed = 0;
 #[no_mangle]
 pub unsafe extern "C" fn newtree234(mut cmp: cmpfn234) -> *mut tree234 {
-    let mut ret: *mut tree234 = smalloc(
-        ::core::mem::size_of::<tree234>() as libc::c_ulong,
-    ) as *mut tree234;
+    let mut ret: *mut tree234 =
+        smalloc(::core::mem::size_of::<tree234>() as libc::c_ulong) as *mut tree234;
     (*ret).root = 0 as *mut node234;
     (*ret).cmp = cmp;
     return ret;
@@ -88,9 +85,9 @@ unsafe extern "C" fn countnode234(mut n: *mut node234) -> libc::c_int {
 #[no_mangle]
 pub unsafe extern "C" fn count234(mut t: *mut tree234) -> libc::c_int {
     if !((*t).root).is_null() {
-        return countnode234((*t).root)
+        return countnode234((*t).root);
     } else {
-        return 0 as libc::c_int
+        return 0 as libc::c_int;
     };
 }
 unsafe extern "C" fn add234_insert(
@@ -108,15 +105,9 @@ unsafe extern "C" fn add234_insert(
     while !n.is_null() {
         if ((*n).elems[1 as libc::c_int as usize]).is_null() {
             if ki == 0 as libc::c_int {
-                (*n)
-                    .kids[2 as libc::c_int
-                    as usize] = (*n).kids[1 as libc::c_int as usize];
-                (*n)
-                    .counts[2 as libc::c_int
-                    as usize] = (*n).counts[1 as libc::c_int as usize];
-                (*n)
-                    .elems[1 as libc::c_int
-                    as usize] = (*n).elems[0 as libc::c_int as usize];
+                (*n).kids[2 as libc::c_int as usize] = (*n).kids[1 as libc::c_int as usize];
+                (*n).counts[2 as libc::c_int as usize] = (*n).counts[1 as libc::c_int as usize];
+                (*n).elems[1 as libc::c_int as usize] = (*n).elems[0 as libc::c_int as usize];
                 (*n).kids[1 as libc::c_int as usize] = right;
                 (*n).counts[1 as libc::c_int as usize] = rcount;
                 (*n).elems[0 as libc::c_int as usize] = e;
@@ -141,39 +132,21 @@ unsafe extern "C" fn add234_insert(
             break;
         } else if ((*n).elems[2 as libc::c_int as usize]).is_null() {
             if ki == 0 as libc::c_int {
-                (*n)
-                    .kids[3 as libc::c_int
-                    as usize] = (*n).kids[2 as libc::c_int as usize];
-                (*n)
-                    .counts[3 as libc::c_int
-                    as usize] = (*n).counts[2 as libc::c_int as usize];
-                (*n)
-                    .elems[2 as libc::c_int
-                    as usize] = (*n).elems[1 as libc::c_int as usize];
-                (*n)
-                    .kids[2 as libc::c_int
-                    as usize] = (*n).kids[1 as libc::c_int as usize];
-                (*n)
-                    .counts[2 as libc::c_int
-                    as usize] = (*n).counts[1 as libc::c_int as usize];
-                (*n)
-                    .elems[1 as libc::c_int
-                    as usize] = (*n).elems[0 as libc::c_int as usize];
+                (*n).kids[3 as libc::c_int as usize] = (*n).kids[2 as libc::c_int as usize];
+                (*n).counts[3 as libc::c_int as usize] = (*n).counts[2 as libc::c_int as usize];
+                (*n).elems[2 as libc::c_int as usize] = (*n).elems[1 as libc::c_int as usize];
+                (*n).kids[2 as libc::c_int as usize] = (*n).kids[1 as libc::c_int as usize];
+                (*n).counts[2 as libc::c_int as usize] = (*n).counts[1 as libc::c_int as usize];
+                (*n).elems[1 as libc::c_int as usize] = (*n).elems[0 as libc::c_int as usize];
                 (*n).kids[1 as libc::c_int as usize] = right;
                 (*n).counts[1 as libc::c_int as usize] = rcount;
                 (*n).elems[0 as libc::c_int as usize] = e;
                 (*n).kids[0 as libc::c_int as usize] = left;
                 (*n).counts[0 as libc::c_int as usize] = lcount;
             } else if ki == 1 as libc::c_int {
-                (*n)
-                    .kids[3 as libc::c_int
-                    as usize] = (*n).kids[2 as libc::c_int as usize];
-                (*n)
-                    .counts[3 as libc::c_int
-                    as usize] = (*n).counts[2 as libc::c_int as usize];
-                (*n)
-                    .elems[2 as libc::c_int
-                    as usize] = (*n).elems[1 as libc::c_int as usize];
+                (*n).kids[3 as libc::c_int as usize] = (*n).kids[2 as libc::c_int as usize];
+                (*n).counts[3 as libc::c_int as usize] = (*n).counts[2 as libc::c_int as usize];
+                (*n).elems[2 as libc::c_int as usize] = (*n).elems[1 as libc::c_int as usize];
                 (*n).kids[2 as libc::c_int as usize] = right;
                 (*n).counts[2 as libc::c_int as usize] = rcount;
                 (*n).elems[1 as libc::c_int as usize] = e;
@@ -200,9 +173,8 @@ unsafe extern "C" fn add234_insert(
             }
             break;
         } else {
-            let mut m: *mut node234 = smalloc(
-                ::core::mem::size_of::<node234>() as libc::c_ulong,
-            ) as *mut node234;
+            let mut m: *mut node234 =
+                smalloc(::core::mem::size_of::<node234>() as libc::c_ulong) as *mut node234;
             (*m).parent = (*n).parent;
             if ki == 0 as libc::c_int {
                 (*m).kids[0 as libc::c_int as usize] = left;
@@ -210,119 +182,53 @@ unsafe extern "C" fn add234_insert(
                 (*m).elems[0 as libc::c_int as usize] = e;
                 (*m).kids[1 as libc::c_int as usize] = right;
                 (*m).counts[1 as libc::c_int as usize] = rcount;
-                (*m)
-                    .elems[1 as libc::c_int
-                    as usize] = (*n).elems[0 as libc::c_int as usize];
-                (*m)
-                    .kids[2 as libc::c_int
-                    as usize] = (*n).kids[1 as libc::c_int as usize];
-                (*m)
-                    .counts[2 as libc::c_int
-                    as usize] = (*n).counts[1 as libc::c_int as usize];
+                (*m).elems[1 as libc::c_int as usize] = (*n).elems[0 as libc::c_int as usize];
+                (*m).kids[2 as libc::c_int as usize] = (*n).kids[1 as libc::c_int as usize];
+                (*m).counts[2 as libc::c_int as usize] = (*n).counts[1 as libc::c_int as usize];
                 e = (*n).elems[1 as libc::c_int as usize];
-                (*n)
-                    .kids[0 as libc::c_int
-                    as usize] = (*n).kids[2 as libc::c_int as usize];
-                (*n)
-                    .counts[0 as libc::c_int
-                    as usize] = (*n).counts[2 as libc::c_int as usize];
-                (*n)
-                    .elems[0 as libc::c_int
-                    as usize] = (*n).elems[2 as libc::c_int as usize];
-                (*n)
-                    .kids[1 as libc::c_int
-                    as usize] = (*n).kids[3 as libc::c_int as usize];
-                (*n)
-                    .counts[1 as libc::c_int
-                    as usize] = (*n).counts[3 as libc::c_int as usize];
+                (*n).kids[0 as libc::c_int as usize] = (*n).kids[2 as libc::c_int as usize];
+                (*n).counts[0 as libc::c_int as usize] = (*n).counts[2 as libc::c_int as usize];
+                (*n).elems[0 as libc::c_int as usize] = (*n).elems[2 as libc::c_int as usize];
+                (*n).kids[1 as libc::c_int as usize] = (*n).kids[3 as libc::c_int as usize];
+                (*n).counts[1 as libc::c_int as usize] = (*n).counts[3 as libc::c_int as usize];
             } else if ki == 1 as libc::c_int {
-                (*m)
-                    .kids[0 as libc::c_int
-                    as usize] = (*n).kids[0 as libc::c_int as usize];
-                (*m)
-                    .counts[0 as libc::c_int
-                    as usize] = (*n).counts[0 as libc::c_int as usize];
-                (*m)
-                    .elems[0 as libc::c_int
-                    as usize] = (*n).elems[0 as libc::c_int as usize];
+                (*m).kids[0 as libc::c_int as usize] = (*n).kids[0 as libc::c_int as usize];
+                (*m).counts[0 as libc::c_int as usize] = (*n).counts[0 as libc::c_int as usize];
+                (*m).elems[0 as libc::c_int as usize] = (*n).elems[0 as libc::c_int as usize];
                 (*m).kids[1 as libc::c_int as usize] = left;
                 (*m).counts[1 as libc::c_int as usize] = lcount;
                 (*m).elems[1 as libc::c_int as usize] = e;
                 (*m).kids[2 as libc::c_int as usize] = right;
                 (*m).counts[2 as libc::c_int as usize] = rcount;
                 e = (*n).elems[1 as libc::c_int as usize];
-                (*n)
-                    .kids[0 as libc::c_int
-                    as usize] = (*n).kids[2 as libc::c_int as usize];
-                (*n)
-                    .counts[0 as libc::c_int
-                    as usize] = (*n).counts[2 as libc::c_int as usize];
-                (*n)
-                    .elems[0 as libc::c_int
-                    as usize] = (*n).elems[2 as libc::c_int as usize];
-                (*n)
-                    .kids[1 as libc::c_int
-                    as usize] = (*n).kids[3 as libc::c_int as usize];
-                (*n)
-                    .counts[1 as libc::c_int
-                    as usize] = (*n).counts[3 as libc::c_int as usize];
+                (*n).kids[0 as libc::c_int as usize] = (*n).kids[2 as libc::c_int as usize];
+                (*n).counts[0 as libc::c_int as usize] = (*n).counts[2 as libc::c_int as usize];
+                (*n).elems[0 as libc::c_int as usize] = (*n).elems[2 as libc::c_int as usize];
+                (*n).kids[1 as libc::c_int as usize] = (*n).kids[3 as libc::c_int as usize];
+                (*n).counts[1 as libc::c_int as usize] = (*n).counts[3 as libc::c_int as usize];
             } else if ki == 2 as libc::c_int {
-                (*m)
-                    .kids[0 as libc::c_int
-                    as usize] = (*n).kids[0 as libc::c_int as usize];
-                (*m)
-                    .counts[0 as libc::c_int
-                    as usize] = (*n).counts[0 as libc::c_int as usize];
-                (*m)
-                    .elems[0 as libc::c_int
-                    as usize] = (*n).elems[0 as libc::c_int as usize];
-                (*m)
-                    .kids[1 as libc::c_int
-                    as usize] = (*n).kids[1 as libc::c_int as usize];
-                (*m)
-                    .counts[1 as libc::c_int
-                    as usize] = (*n).counts[1 as libc::c_int as usize];
-                (*m)
-                    .elems[1 as libc::c_int
-                    as usize] = (*n).elems[1 as libc::c_int as usize];
+                (*m).kids[0 as libc::c_int as usize] = (*n).kids[0 as libc::c_int as usize];
+                (*m).counts[0 as libc::c_int as usize] = (*n).counts[0 as libc::c_int as usize];
+                (*m).elems[0 as libc::c_int as usize] = (*n).elems[0 as libc::c_int as usize];
+                (*m).kids[1 as libc::c_int as usize] = (*n).kids[1 as libc::c_int as usize];
+                (*m).counts[1 as libc::c_int as usize] = (*n).counts[1 as libc::c_int as usize];
+                (*m).elems[1 as libc::c_int as usize] = (*n).elems[1 as libc::c_int as usize];
                 (*m).kids[2 as libc::c_int as usize] = left;
                 (*m).counts[2 as libc::c_int as usize] = lcount;
                 (*n).kids[0 as libc::c_int as usize] = right;
                 (*n).counts[0 as libc::c_int as usize] = rcount;
-                (*n)
-                    .elems[0 as libc::c_int
-                    as usize] = (*n).elems[2 as libc::c_int as usize];
-                (*n)
-                    .kids[1 as libc::c_int
-                    as usize] = (*n).kids[3 as libc::c_int as usize];
-                (*n)
-                    .counts[1 as libc::c_int
-                    as usize] = (*n).counts[3 as libc::c_int as usize];
+                (*n).elems[0 as libc::c_int as usize] = (*n).elems[2 as libc::c_int as usize];
+                (*n).kids[1 as libc::c_int as usize] = (*n).kids[3 as libc::c_int as usize];
+                (*n).counts[1 as libc::c_int as usize] = (*n).counts[3 as libc::c_int as usize];
             } else {
-                (*m)
-                    .kids[0 as libc::c_int
-                    as usize] = (*n).kids[0 as libc::c_int as usize];
-                (*m)
-                    .counts[0 as libc::c_int
-                    as usize] = (*n).counts[0 as libc::c_int as usize];
-                (*m)
-                    .elems[0 as libc::c_int
-                    as usize] = (*n).elems[0 as libc::c_int as usize];
-                (*m)
-                    .kids[1 as libc::c_int
-                    as usize] = (*n).kids[1 as libc::c_int as usize];
-                (*m)
-                    .counts[1 as libc::c_int
-                    as usize] = (*n).counts[1 as libc::c_int as usize];
-                (*m)
-                    .elems[1 as libc::c_int
-                    as usize] = (*n).elems[1 as libc::c_int as usize];
-                (*m)
-                    .kids[2 as libc::c_int
-                    as usize] = (*n).kids[2 as libc::c_int as usize];
-                (*m)
-                    .counts[2 as libc::c_int
-                    as usize] = (*n).counts[2 as libc::c_int as usize];
+                (*m).kids[0 as libc::c_int as usize] = (*n).kids[0 as libc::c_int as usize];
+                (*m).counts[0 as libc::c_int as usize] = (*n).counts[0 as libc::c_int as usize];
+                (*m).elems[0 as libc::c_int as usize] = (*n).elems[0 as libc::c_int as usize];
+                (*m).kids[1 as libc::c_int as usize] = (*n).kids[1 as libc::c_int as usize];
+                (*m).counts[1 as libc::c_int as usize] = (*n).counts[1 as libc::c_int as usize];
+                (*m).elems[1 as libc::c_int as usize] = (*n).elems[1 as libc::c_int as usize];
+                (*m).kids[2 as libc::c_int as usize] = (*n).kids[2 as libc::c_int as usize];
+                (*m).counts[2 as libc::c_int as usize] = (*n).counts[2 as libc::c_int as usize];
                 (*n).kids[0 as libc::c_int as usize] = left;
                 (*n).counts[0 as libc::c_int as usize] = lcount;
                 (*n).elems[0 as libc::c_int as usize] = e;
@@ -334,19 +240,11 @@ unsafe extern "C" fn add234_insert(
             (*n).kids[3 as libc::c_int as usize] = (*n).kids[2 as libc::c_int as usize];
             (*m).kids[3 as libc::c_int as usize] = (*n).kids[3 as libc::c_int as usize];
             (*n).counts[2 as libc::c_int as usize] = 0 as libc::c_int;
-            (*n)
-                .counts[3 as libc::c_int
-                as usize] = (*n).counts[2 as libc::c_int as usize];
-            (*m)
-                .counts[3 as libc::c_int
-                as usize] = (*n).counts[3 as libc::c_int as usize];
+            (*n).counts[3 as libc::c_int as usize] = (*n).counts[2 as libc::c_int as usize];
+            (*m).counts[3 as libc::c_int as usize] = (*n).counts[3 as libc::c_int as usize];
             (*n).elems[1 as libc::c_int as usize] = 0 as *mut libc::c_void;
-            (*n)
-                .elems[2 as libc::c_int
-                as usize] = (*n).elems[1 as libc::c_int as usize];
-            (*m)
-                .elems[2 as libc::c_int
-                as usize] = (*n).elems[2 as libc::c_int as usize];
+            (*n).elems[2 as libc::c_int as usize] = (*n).elems[1 as libc::c_int as usize];
+            (*m).elems[2 as libc::c_int as usize] = (*n).elems[2 as libc::c_int as usize];
             if !((*m).kids[0 as libc::c_int as usize]).is_null() {
                 (*(*m).kids[0 as libc::c_int as usize]).parent = m;
             }
@@ -398,8 +296,7 @@ unsafe extern "C" fn add234_insert(
         }
         return 0 as libc::c_int;
     } else {
-        *root = smalloc(::core::mem::size_of::<node234>() as libc::c_ulong)
-            as *mut node234;
+        *root = smalloc(::core::mem::size_of::<node234>() as libc::c_ulong) as *mut node234;
         (**root).kids[0 as libc::c_int as usize] = left;
         (**root).counts[0 as libc::c_int as usize] = lcount;
         (**root).elems[0 as libc::c_int as usize] = e;
@@ -431,29 +328,20 @@ unsafe extern "C" fn add234_internal(
     let mut orig_e: *mut libc::c_void = e;
     let mut c: libc::c_int = 0;
     if ((*t).root).is_null() {
-        (*t)
-            .root = smalloc(::core::mem::size_of::<node234>() as libc::c_ulong)
-            as *mut node234;
+        (*t).root = smalloc(::core::mem::size_of::<node234>() as libc::c_ulong) as *mut node234;
         (*(*t).root).elems[2 as libc::c_int as usize] = 0 as *mut libc::c_void;
-        (*(*t).root)
-            .elems[1 as libc::c_int
-            as usize] = (*(*t).root).elems[2 as libc::c_int as usize];
+        (*(*t).root).elems[1 as libc::c_int as usize] =
+            (*(*t).root).elems[2 as libc::c_int as usize];
         (*(*t).root).kids[1 as libc::c_int as usize] = 0 as *mut node234;
-        (*(*t).root)
-            .kids[0 as libc::c_int
-            as usize] = (*(*t).root).kids[1 as libc::c_int as usize];
+        (*(*t).root).kids[0 as libc::c_int as usize] = (*(*t).root).kids[1 as libc::c_int as usize];
         (*(*t).root).kids[3 as libc::c_int as usize] = 0 as *mut node234;
-        (*(*t).root)
-            .kids[2 as libc::c_int
-            as usize] = (*(*t).root).kids[3 as libc::c_int as usize];
+        (*(*t).root).kids[2 as libc::c_int as usize] = (*(*t).root).kids[3 as libc::c_int as usize];
         (*(*t).root).counts[1 as libc::c_int as usize] = 0 as libc::c_int;
-        (*(*t).root)
-            .counts[0 as libc::c_int
-            as usize] = (*(*t).root).counts[1 as libc::c_int as usize];
+        (*(*t).root).counts[0 as libc::c_int as usize] =
+            (*(*t).root).counts[1 as libc::c_int as usize];
         (*(*t).root).counts[3 as libc::c_int as usize] = 0 as libc::c_int;
-        (*(*t).root)
-            .counts[2 as libc::c_int
-            as usize] = (*(*t).root).counts[3 as libc::c_int as usize];
+        (*(*t).root).counts[2 as libc::c_int as usize] =
+            (*(*t).root).counts[3 as libc::c_int as usize];
         (*(*t).root).parent = 0 as *mut node234;
         (*(*t).root).elems[0 as libc::c_int as usize] = e;
         return orig_e;
@@ -474,49 +362,44 @@ unsafe extern "C" fn add234_internal(
                     if index <= (*n).counts[2 as libc::c_int as usize] {
                         ki = 2 as libc::c_int;
                     } else {
-                        index
-                            -= (*n).counts[2 as libc::c_int as usize] + 1 as libc::c_int;
+                        index -= (*n).counts[2 as libc::c_int as usize] + 1 as libc::c_int;
                         if index <= (*n).counts[3 as libc::c_int as usize] {
                             ki = 3 as libc::c_int;
                         } else {
-                            return 0 as *mut libc::c_void
+                            return 0 as *mut libc::c_void;
                         }
                     }
                 }
             }
         } else {
-            c = ((*t).cmp)
-                .expect(
-                    "non-null function pointer",
-                )(e, (*n).elems[0 as libc::c_int as usize]);
+            c = ((*t).cmp).expect("non-null function pointer")(
+                e,
+                (*n).elems[0 as libc::c_int as usize],
+            );
             if c < 0 as libc::c_int {
                 ki = 0 as libc::c_int;
             } else if c == 0 as libc::c_int {
-                return (*n).elems[0 as libc::c_int as usize]
-            } else if ((*n).elems[1 as libc::c_int as usize]).is_null()
-                || {
-                    c = ((*t).cmp)
-                        .expect(
-                            "non-null function pointer",
-                        )(e, (*n).elems[1 as libc::c_int as usize]);
-                    c < 0 as libc::c_int
-                }
-            {
+                return (*n).elems[0 as libc::c_int as usize];
+            } else if ((*n).elems[1 as libc::c_int as usize]).is_null() || {
+                c = ((*t).cmp).expect("non-null function pointer")(
+                    e,
+                    (*n).elems[1 as libc::c_int as usize],
+                );
+                c < 0 as libc::c_int
+            } {
                 ki = 1 as libc::c_int;
             } else if c == 0 as libc::c_int {
-                return (*n).elems[1 as libc::c_int as usize]
-            } else if ((*n).elems[2 as libc::c_int as usize]).is_null()
-                || {
-                    c = ((*t).cmp)
-                        .expect(
-                            "non-null function pointer",
-                        )(e, (*n).elems[2 as libc::c_int as usize]);
-                    c < 0 as libc::c_int
-                }
-            {
+                return (*n).elems[1 as libc::c_int as usize];
+            } else if ((*n).elems[2 as libc::c_int as usize]).is_null() || {
+                c = ((*t).cmp).expect("non-null function pointer")(
+                    e,
+                    (*n).elems[2 as libc::c_int as usize],
+                );
+                c < 0 as libc::c_int
+            } {
                 ki = 2 as libc::c_int;
             } else if c == 0 as libc::c_int {
-                return (*n).elems[2 as libc::c_int as usize]
+                return (*n).elems[2 as libc::c_int as usize];
             } else {
                 ki = 3 as libc::c_int;
             }
@@ -529,7 +412,14 @@ unsafe extern "C" fn add234_internal(
             break;
         }
     }
-    add234_insert(0 as *mut node234, e, 0 as *mut node234, &mut (*t).root, n, ki);
+    add234_insert(
+        0 as *mut node234,
+        e,
+        0 as *mut node234,
+        &mut (*t).root,
+        n,
+        ki,
+    );
     return orig_e;
 }
 #[no_mangle]
@@ -572,19 +462,19 @@ pub unsafe extern "C" fn index234(
         } else {
             index -= (*n).counts[0 as libc::c_int as usize] + 1 as libc::c_int;
             if index < 0 as libc::c_int {
-                return (*n).elems[0 as libc::c_int as usize]
+                return (*n).elems[0 as libc::c_int as usize];
             } else if index < (*n).counts[1 as libc::c_int as usize] {
                 n = (*n).kids[1 as libc::c_int as usize];
             } else {
                 index -= (*n).counts[1 as libc::c_int as usize] + 1 as libc::c_int;
                 if index < 0 as libc::c_int {
-                    return (*n).elems[1 as libc::c_int as usize]
+                    return (*n).elems[1 as libc::c_int as usize];
                 } else if index < (*n).counts[2 as libc::c_int as usize] {
                     n = (*n).kids[2 as libc::c_int as usize];
                 } else {
                     index -= (*n).counts[2 as libc::c_int as usize] + 1 as libc::c_int;
                     if index < 0 as libc::c_int {
-                        return (*n).elems[2 as libc::c_int as usize]
+                        return (*n).elems[2 as libc::c_int as usize];
                     } else {
                         n = (*n).kids[3 as libc::c_int as usize];
                     }
@@ -620,34 +510,31 @@ pub unsafe extern "C" fn findrelpos234(
     ecount = -(1 as libc::c_int);
     cmpret = 0 as libc::c_int;
     if e.is_null() {
-        if relation == REL234_LT as libc::c_int || relation == REL234_GT as libc::c_int
-        {} else {
+        if relation == REL234_LT as libc::c_int || relation == REL234_GT as libc::c_int {
+        } else {
             __assert_fail(
                 b"relation == REL234_LT || relation == REL234_GT\0" as *const u8
                     as *const libc::c_char,
                 b"/puzzles/tree234.c\0" as *const u8 as *const libc::c_char,
                 463 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 61],
-                    &[libc::c_char; 61],
-                >(b"void *findrelpos234(tree234 *, void *, cmpfn234, int, int *)\0"))
-                    .as_ptr(),
+                (*::core::mem::transmute::<&[u8; 61], &[libc::c_char; 61]>(
+                    b"void *findrelpos234(tree234 *, void *, cmpfn234, int, int *)\0",
+                ))
+                .as_ptr(),
             );
         }
         'c_4879: {
-            if relation == REL234_LT as libc::c_int
-                || relation == REL234_GT as libc::c_int
-            {} else {
+            if relation == REL234_LT as libc::c_int || relation == REL234_GT as libc::c_int {
+            } else {
                 __assert_fail(
                     b"relation == REL234_LT || relation == REL234_GT\0" as *const u8
                         as *const libc::c_char,
                     b"/puzzles/tree234.c\0" as *const u8 as *const libc::c_char,
                     463 as libc::c_int as libc::c_uint,
-                    (*::core::mem::transmute::<
-                        &[u8; 61],
-                        &[libc::c_char; 61],
-                    >(b"void *findrelpos234(tree234 *, void *, cmpfn234, int, int *)\0"))
-                        .as_ptr(),
+                    (*::core::mem::transmute::<&[u8; 61], &[libc::c_char; 61]>(
+                        b"void *findrelpos234(tree234 *, void *, cmpfn234, int, int *)\0",
+                    ))
+                    .as_ptr(),
                 );
             }
         };
@@ -660,19 +547,14 @@ pub unsafe extern "C" fn findrelpos234(
     loop {
         kcount = 0 as libc::c_int;
         while kcount < 4 as libc::c_int {
-            if kcount >= 3 as libc::c_int || ((*n).elems[kcount as usize]).is_null()
-                || {
-                    c = (if cmpret != 0 {
-                        cmpret
-                    } else {
-                        cmp
-                            .expect(
-                                "non-null function pointer",
-                            )(e, (*n).elems[kcount as usize])
-                    });
-                    c < 0 as libc::c_int
-                }
-            {
+            if kcount >= 3 as libc::c_int || ((*n).elems[kcount as usize]).is_null() || {
+                c = (if cmpret != 0 {
+                    cmpret
+                } else {
+                    cmp.expect("non-null function pointer")(e, (*n).elems[kcount as usize])
+                });
+                c < 0 as libc::c_int
+            } {
                 break;
             }
             if !((*n).kids[kcount as usize]).is_null() {
@@ -765,16 +647,13 @@ unsafe extern "C" fn trans234_subtree_right(
     src = (*n).kids[ki as usize];
     dest = (*n).kids[(ki + 1 as libc::c_int) as usize];
     (*dest).kids[3 as libc::c_int as usize] = (*dest).kids[2 as libc::c_int as usize];
-    (*dest)
-        .counts[3 as libc::c_int as usize] = (*dest).counts[2 as libc::c_int as usize];
+    (*dest).counts[3 as libc::c_int as usize] = (*dest).counts[2 as libc::c_int as usize];
     (*dest).elems[2 as libc::c_int as usize] = (*dest).elems[1 as libc::c_int as usize];
     (*dest).kids[2 as libc::c_int as usize] = (*dest).kids[1 as libc::c_int as usize];
-    (*dest)
-        .counts[2 as libc::c_int as usize] = (*dest).counts[1 as libc::c_int as usize];
+    (*dest).counts[2 as libc::c_int as usize] = (*dest).counts[1 as libc::c_int as usize];
     (*dest).elems[1 as libc::c_int as usize] = (*dest).elems[0 as libc::c_int as usize];
     (*dest).kids[1 as libc::c_int as usize] = (*dest).kids[0 as libc::c_int as usize];
-    (*dest)
-        .counts[1 as libc::c_int as usize] = (*dest).counts[0 as libc::c_int as usize];
+    (*dest).counts[1 as libc::c_int as usize] = (*dest).counts[0 as libc::c_int as usize];
     i = if !((*src).elems[2 as libc::c_int as usize]).is_null() {
         2 as libc::c_int
     } else if !((*src).elems[1 as libc::c_int as usize]).is_null() {
@@ -785,11 +664,8 @@ unsafe extern "C" fn trans234_subtree_right(
     (*dest).elems[0 as libc::c_int as usize] = (*n).elems[ki as usize];
     (*n).elems[ki as usize] = (*src).elems[i as usize];
     (*src).elems[i as usize] = 0 as *mut libc::c_void;
-    (*dest)
-        .kids[0 as libc::c_int as usize] = (*src).kids[(i + 1 as libc::c_int) as usize];
-    (*dest)
-        .counts[0 as libc::c_int
-        as usize] = (*src).counts[(i + 1 as libc::c_int) as usize];
+    (*dest).kids[0 as libc::c_int as usize] = (*src).kids[(i + 1 as libc::c_int) as usize];
+    (*dest).counts[0 as libc::c_int as usize] = (*src).counts[(i + 1 as libc::c_int) as usize];
     (*src).kids[(i + 1 as libc::c_int) as usize] = 0 as *mut node234;
     (*src).counts[(i + 1 as libc::c_int) as usize] = 0 as libc::c_int;
     if !((*dest).kids[0 as libc::c_int as usize]).is_null() {
@@ -829,14 +705,9 @@ unsafe extern "C" fn trans234_subtree_left(
         0 as libc::c_int
     };
     (*dest).elems[i as usize] = (*n).elems[(ki - 1 as libc::c_int) as usize];
-    (*n)
-        .elems[(ki - 1 as libc::c_int)
-        as usize] = (*src).elems[0 as libc::c_int as usize];
-    (*dest)
-        .kids[(i + 1 as libc::c_int) as usize] = (*src).kids[0 as libc::c_int as usize];
-    (*dest)
-        .counts[(i + 1 as libc::c_int)
-        as usize] = (*src).counts[0 as libc::c_int as usize];
+    (*n).elems[(ki - 1 as libc::c_int) as usize] = (*src).elems[0 as libc::c_int as usize];
+    (*dest).kids[(i + 1 as libc::c_int) as usize] = (*src).kids[0 as libc::c_int as usize];
+    (*dest).counts[(i + 1 as libc::c_int) as usize] = (*src).counts[0 as libc::c_int as usize];
     if !((*dest).kids[(i + 1 as libc::c_int) as usize]).is_null() {
         (*(*dest).kids[(i + 1 as libc::c_int) as usize]).parent = dest;
     }
@@ -858,8 +729,7 @@ unsafe extern "C" fn trans234_subtree_left(
         if *k == ki {
             *index -= adjust;
             if *index < 0 as libc::c_int {
-                *index
-                    += (*n).counts[(ki - 1 as libc::c_int) as usize] + 1 as libc::c_int;
+                *index += (*n).counts[(ki - 1 as libc::c_int) as usize] + 1 as libc::c_int;
                 *k -= 1;
                 *k;
             }
@@ -885,32 +755,31 @@ unsafe extern "C" fn trans234_subtree_merge(
     rightlen = (*n).counts[(ki + 1 as libc::c_int) as usize];
     if ((*left).elems[2 as libc::c_int as usize]).is_null()
         && ((*right).elems[2 as libc::c_int as usize]).is_null()
-    {} else {
+    {
+    } else {
         __assert_fail(
             b"!left->elems[2] && !right->elems[2]\0" as *const u8 as *const libc::c_char,
             b"/puzzles/tree234.c\0" as *const u8 as *const libc::c_char,
             801 as libc::c_int as libc::c_uint,
-            (*::core::mem::transmute::<
-                &[u8; 58],
-                &[libc::c_char; 58],
-            >(b"void trans234_subtree_merge(node234 *, int, int *, int *)\0"))
-                .as_ptr(),
+            (*::core::mem::transmute::<&[u8; 58], &[libc::c_char; 58]>(
+                b"void trans234_subtree_merge(node234 *, int, int *, int *)\0",
+            ))
+            .as_ptr(),
         );
     }
     'c_5751: {
         if ((*left).elems[2 as libc::c_int as usize]).is_null()
             && ((*right).elems[2 as libc::c_int as usize]).is_null()
-        {} else {
+        {
+        } else {
             __assert_fail(
-                b"!left->elems[2] && !right->elems[2]\0" as *const u8
-                    as *const libc::c_char,
+                b"!left->elems[2] && !right->elems[2]\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/tree234.c\0" as *const u8 as *const libc::c_char,
                 801 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 58],
-                    &[libc::c_char; 58],
-                >(b"void trans234_subtree_merge(node234 *, int, int *, int *)\0"))
-                    .as_ptr(),
+                (*::core::mem::transmute::<&[u8; 58], &[libc::c_char; 58]>(
+                    b"void trans234_subtree_merge(node234 *, int, int *, int *)\0",
+                ))
+                .as_ptr(),
             );
         }
     };
@@ -931,18 +800,13 @@ unsafe extern "C" fn trans234_subtree_merge(
     (*left).elems[lsize as usize] = (*n).elems[ki as usize];
     i = 0 as libc::c_int;
     while i < rsize + 1 as libc::c_int {
-        (*left)
-            .kids[(lsize + 1 as libc::c_int + i) as usize] = (*right).kids[i as usize];
-        (*left)
-            .counts[(lsize + 1 as libc::c_int + i)
-            as usize] = (*right).counts[i as usize];
+        (*left).kids[(lsize + 1 as libc::c_int + i) as usize] = (*right).kids[i as usize];
+        (*left).counts[(lsize + 1 as libc::c_int + i) as usize] = (*right).counts[i as usize];
         if !((*left).kids[(lsize + 1 as libc::c_int + i) as usize]).is_null() {
             (*(*left).kids[(lsize + 1 as libc::c_int + i) as usize]).parent = left;
         }
         if i < rsize {
-            (*left)
-                .elems[(lsize + 1 as libc::c_int + i)
-                as usize] = (*right).elems[i as usize];
+            (*left).elems[(lsize + 1 as libc::c_int + i) as usize] = (*right).elems[i as usize];
         }
         i += 1;
         i;
@@ -1007,22 +871,20 @@ unsafe extern "C" fn delpos234_internal(
                             b"0\0" as *const u8 as *const libc::c_char,
                             b"/puzzles/tree234.c\0" as *const u8 as *const libc::c_char,
                             892 as libc::c_int as libc::c_uint,
-                            (*::core::mem::transmute::<
-                                &[u8; 41],
-                                &[libc::c_char; 41],
-                            >(b"void *delpos234_internal(tree234 *, int)\0"))
-                                .as_ptr(),
+                            (*::core::mem::transmute::<&[u8; 41], &[libc::c_char; 41]>(
+                                b"void *delpos234_internal(tree234 *, int)\0",
+                            ))
+                            .as_ptr(),
                         );
                         'c_6939: {
                             __assert_fail(
                                 b"0\0" as *const u8 as *const libc::c_char,
                                 b"/puzzles/tree234.c\0" as *const u8 as *const libc::c_char,
                                 892 as libc::c_int as libc::c_uint,
-                                (*::core::mem::transmute::<
-                                    &[u8; 41],
-                                    &[libc::c_char; 41],
-                                >(b"void *delpos234_internal(tree234 *, int)\0"))
-                                    .as_ptr(),
+                                (*::core::mem::transmute::<&[u8; 41], &[libc::c_char; 41]>(
+                                    b"void *delpos234_internal(tree234 *, int)\0",
+                                ))
+                                .as_ptr(),
                             );
                         };
                     }
@@ -1034,29 +896,29 @@ unsafe extern "C" fn delpos234_internal(
         }
         if index == (*n).counts[ki as usize] {
             let mut m: *mut node234 = 0 as *mut node234;
-            if !((*n).elems[ki as usize]).is_null() {} else {
+            if !((*n).elems[ki as usize]).is_null() {
+            } else {
                 __assert_fail(
                     b"n->elems[ki]\0" as *const u8 as *const libc::c_char,
                     b"/puzzles/tree234.c\0" as *const u8 as *const libc::c_char,
                     908 as libc::c_int as libc::c_uint,
-                    (*::core::mem::transmute::<
-                        &[u8; 41],
-                        &[libc::c_char; 41],
-                    >(b"void *delpos234_internal(tree234 *, int)\0"))
-                        .as_ptr(),
+                    (*::core::mem::transmute::<&[u8; 41], &[libc::c_char; 41]>(
+                        b"void *delpos234_internal(tree234 *, int)\0",
+                    ))
+                    .as_ptr(),
                 );
             }
             'c_6863: {
-                if !((*n).elems[ki as usize]).is_null() {} else {
+                if !((*n).elems[ki as usize]).is_null() {
+                } else {
                     __assert_fail(
                         b"n->elems[ki]\0" as *const u8 as *const libc::c_char,
                         b"/puzzles/tree234.c\0" as *const u8 as *const libc::c_char,
                         908 as libc::c_int as libc::c_uint,
-                        (*::core::mem::transmute::<
-                            &[u8; 41],
-                            &[libc::c_char; 41],
-                        >(b"void *delpos234_internal(tree234 *, int)\0"))
-                            .as_ptr(),
+                        (*::core::mem::transmute::<&[u8; 41], &[libc::c_char; 41]>(
+                            b"void *delpos234_internal(tree234 *, int)\0",
+                        ))
+                        .as_ptr(),
                     );
                 }
             };
@@ -1068,29 +930,31 @@ unsafe extern "C" fn delpos234_internal(
                 m = (*m).kids[0 as libc::c_int as usize];
             }
             retval = (*n).elems[(ki - 1 as libc::c_int) as usize];
-            (*n)
-                .elems[(ki - 1 as libc::c_int)
-                as usize] = (*m).elems[0 as libc::c_int as usize];
+            (*n).elems[(ki - 1 as libc::c_int) as usize] = (*m).elems[0 as libc::c_int as usize];
         }
         sub = (*n).kids[ki as usize];
         if ((*sub).elems[1 as libc::c_int as usize]).is_null() {
             if ki > 0 as libc::c_int
-                && !((*(*n).kids[(ki - 1 as libc::c_int) as usize])
-                    .elems[1 as libc::c_int as usize])
+                && !((*(*n).kids[(ki - 1 as libc::c_int) as usize]).elems
+                    [1 as libc::c_int as usize])
                     .is_null()
             {
                 trans234_subtree_right(n, ki - 1 as libc::c_int, &mut ki, &mut index);
             } else if ki < 3 as libc::c_int
                 && !((*n).kids[(ki + 1 as libc::c_int) as usize]).is_null()
-                && !((*(*n).kids[(ki + 1 as libc::c_int) as usize])
-                    .elems[1 as libc::c_int as usize])
+                && !((*(*n).kids[(ki + 1 as libc::c_int) as usize]).elems
+                    [1 as libc::c_int as usize])
                     .is_null()
             {
                 trans234_subtree_left(n, ki + 1 as libc::c_int, &mut ki, &mut index);
             } else {
                 trans234_subtree_merge(
                     n,
-                    if ki > 0 as libc::c_int { ki - 1 as libc::c_int } else { ki },
+                    if ki > 0 as libc::c_int {
+                        ki - 1 as libc::c_int
+                    } else {
+                        ki
+                    },
                     &mut ki,
                     &mut index,
                 );
@@ -1109,29 +973,29 @@ unsafe extern "C" fn delpos234_internal(
         }
         n = sub;
     }
-    if ((*n).kids[0 as libc::c_int as usize]).is_null() {} else {
+    if ((*n).kids[0 as libc::c_int as usize]).is_null() {
+    } else {
         __assert_fail(
             b"!n->kids[0]\0" as *const u8 as *const libc::c_char,
             b"/puzzles/tree234.c\0" as *const u8 as *const libc::c_char,
             972 as libc::c_int as libc::c_uint,
-            (*::core::mem::transmute::<
-                &[u8; 41],
-                &[libc::c_char; 41],
-            >(b"void *delpos234_internal(tree234 *, int)\0"))
-                .as_ptr(),
+            (*::core::mem::transmute::<&[u8; 41], &[libc::c_char; 41]>(
+                b"void *delpos234_internal(tree234 *, int)\0",
+            ))
+            .as_ptr(),
         );
     }
     'c_5196: {
-        if ((*n).kids[0 as libc::c_int as usize]).is_null() {} else {
+        if ((*n).kids[0 as libc::c_int as usize]).is_null() {
+        } else {
             __assert_fail(
                 b"!n->kids[0]\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/tree234.c\0" as *const u8 as *const libc::c_char,
                 972 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 41],
-                    &[libc::c_char; 41],
-                >(b"void *delpos234_internal(tree234 *, int)\0"))
-                    .as_ptr(),
+                (*::core::mem::transmute::<&[u8; 41], &[libc::c_char; 41]>(
+                    b"void *delpos234_internal(tree234 *, int)\0",
+                ))
+                .as_ptr(),
             );
         }
     };
@@ -1139,38 +1003,36 @@ unsafe extern "C" fn delpos234_internal(
         retval = (*n).elems[ki as usize];
     }
     i = ki;
-    while i < 2 as libc::c_int
-        && !((*n).elems[(i + 1 as libc::c_int) as usize]).is_null()
-    {
+    while i < 2 as libc::c_int && !((*n).elems[(i + 1 as libc::c_int) as usize]).is_null() {
         (*n).elems[i as usize] = (*n).elems[(i + 1 as libc::c_int) as usize];
         i += 1;
         i;
     }
     (*n).elems[i as usize] = 0 as *mut libc::c_void;
     if ((*n).elems[0 as libc::c_int as usize]).is_null() {
-        if n == (*t).root {} else {
+        if n == (*t).root {
+        } else {
             __assert_fail(
                 b"n == t->root\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/tree234.c\0" as *const u8 as *const libc::c_char,
                 987 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 41],
-                    &[libc::c_char; 41],
-                >(b"void *delpos234_internal(tree234 *, int)\0"))
-                    .as_ptr(),
+                (*::core::mem::transmute::<&[u8; 41], &[libc::c_char; 41]>(
+                    b"void *delpos234_internal(tree234 *, int)\0",
+                ))
+                .as_ptr(),
             );
         }
         'c_5077: {
-            if n == (*t).root {} else {
+            if n == (*t).root {
+            } else {
                 __assert_fail(
                     b"n == t->root\0" as *const u8 as *const libc::c_char,
                     b"/puzzles/tree234.c\0" as *const u8 as *const libc::c_char,
                     987 as libc::c_int as libc::c_uint,
-                    (*::core::mem::transmute::<
-                        &[u8; 41],
-                        &[libc::c_char; 41],
-                    >(b"void *delpos234_internal(tree234 *, int)\0"))
-                        .as_ptr(),
+                    (*::core::mem::transmute::<&[u8; 41], &[libc::c_char; 41]>(
+                        b"void *delpos234_internal(tree234 *, int)\0",
+                    ))
+                    .as_ptr(),
                 );
             }
         };
@@ -1212,8 +1074,7 @@ unsafe extern "C" fn join234_internal(
     let mut ki: libc::c_int = 0;
     if relht == 0 as libc::c_int {
         let mut newroot: *mut node234 = 0 as *mut node234;
-        newroot = smalloc(::core::mem::size_of::<node234>() as libc::c_ulong)
-            as *mut node234;
+        newroot = smalloc(::core::mem::size_of::<node234>() as libc::c_ulong) as *mut node234;
         (*newroot).kids[0 as libc::c_int as usize] = left;
         (*newroot).counts[0 as libc::c_int as usize] = countnode234(left);
         (*newroot).elems[0 as libc::c_int as usize] = sep;
@@ -1287,10 +1148,7 @@ pub unsafe extern "C" fn height234(mut t: *mut tree234) -> libc::c_int {
     return level;
 }
 #[no_mangle]
-pub unsafe extern "C" fn join234(
-    mut t1: *mut tree234,
-    mut t2: *mut tree234,
-) -> *mut tree234 {
+pub unsafe extern "C" fn join234(mut t1: *mut tree234, mut t2: *mut tree234) -> *mut tree234 {
     let mut size2: libc::c_int = countnode234((*t2).root);
     if size2 > 0 as libc::c_int {
         let mut element: *mut libc::c_void = 0 as *mut libc::c_void;
@@ -1316,10 +1174,7 @@ pub unsafe extern "C" fn join234(
     return t1;
 }
 #[no_mangle]
-pub unsafe extern "C" fn join234r(
-    mut t1: *mut tree234,
-    mut t2: *mut tree234,
-) -> *mut tree234 {
+pub unsafe extern "C" fn join234r(mut t1: *mut tree234, mut t2: *mut tree234) -> *mut tree234 {
     let mut size1: libc::c_int = countnode234((*t1).root);
     if size1 > 0 as libc::c_int {
         let mut element: *mut libc::c_void = 0 as *mut libc::c_void;
@@ -1394,21 +1249,18 @@ unsafe extern "C" fn split234_internal(
             }
         }
         sub = (*n).kids[ki as usize];
-        sib = smalloc(::core::mem::size_of::<node234>() as libc::c_ulong)
-            as *mut node234;
+        sib = smalloc(::core::mem::size_of::<node234>() as libc::c_ulong) as *mut node234;
         i = 0 as libc::c_int;
         while i < 3 as libc::c_int {
             if i + ki < 3 as libc::c_int && !((*n).elems[(i + ki) as usize]).is_null() {
                 (*sib).elems[i as usize] = (*n).elems[(i + ki) as usize];
-                (*sib)
-                    .kids[(i + 1 as libc::c_int)
-                    as usize] = (*n).kids[(i + ki + 1 as libc::c_int) as usize];
+                (*sib).kids[(i + 1 as libc::c_int) as usize] =
+                    (*n).kids[(i + ki + 1 as libc::c_int) as usize];
                 if !((*sib).kids[(i + 1 as libc::c_int) as usize]).is_null() {
                     (*(*sib).kids[(i + 1 as libc::c_int) as usize]).parent = sib;
                 }
-                (*sib)
-                    .counts[(i + 1 as libc::c_int)
-                    as usize] = (*n).counts[(i + ki + 1 as libc::c_int) as usize];
+                (*sib).counts[(i + 1 as libc::c_int) as usize] =
+                    (*n).counts[(i + ki + 1 as libc::c_int) as usize];
                 (*n).elems[(i + ki) as usize] = 0 as *mut libc::c_void;
                 (*n).kids[(i + ki + 1 as libc::c_int) as usize] = 0 as *mut node234;
                 (*n).counts[(i + ki + 1 as libc::c_int) as usize] = 0 as libc::c_int;
@@ -1438,55 +1290,55 @@ unsafe extern "C" fn split234_internal(
         pki = ki;
         n = sub;
     }
-    if !(halves[0 as libc::c_int as usize]).is_null() {} else {
+    if !(halves[0 as libc::c_int as usize]).is_null() {
+    } else {
         __assert_fail(
             b"halves[0] != NULL\0" as *const u8 as *const libc::c_char,
             b"/puzzles/tree234.c\0" as *const u8 as *const libc::c_char,
             1269 as libc::c_int as libc::c_uint,
-            (*::core::mem::transmute::<
-                &[u8; 43],
-                &[libc::c_char; 43],
-            >(b"node234 *split234_internal(tree234 *, int)\0"))
-                .as_ptr(),
+            (*::core::mem::transmute::<&[u8; 43], &[libc::c_char; 43]>(
+                b"node234 *split234_internal(tree234 *, int)\0",
+            ))
+            .as_ptr(),
         );
     }
     'c_7722: {
-        if !(halves[0 as libc::c_int as usize]).is_null() {} else {
+        if !(halves[0 as libc::c_int as usize]).is_null() {
+        } else {
             __assert_fail(
                 b"halves[0] != NULL\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/tree234.c\0" as *const u8 as *const libc::c_char,
                 1269 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 43],
-                    &[libc::c_char; 43],
-                >(b"node234 *split234_internal(tree234 *, int)\0"))
-                    .as_ptr(),
+                (*::core::mem::transmute::<&[u8; 43], &[libc::c_char; 43]>(
+                    b"node234 *split234_internal(tree234 *, int)\0",
+                ))
+                .as_ptr(),
             );
         }
     };
-    if !(halves[1 as libc::c_int as usize]).is_null() {} else {
+    if !(halves[1 as libc::c_int as usize]).is_null() {
+    } else {
         __assert_fail(
             b"halves[1] != NULL\0" as *const u8 as *const libc::c_char,
             b"/puzzles/tree234.c\0" as *const u8 as *const libc::c_char,
             1270 as libc::c_int as libc::c_uint,
-            (*::core::mem::transmute::<
-                &[u8; 43],
-                &[libc::c_char; 43],
-            >(b"node234 *split234_internal(tree234 *, int)\0"))
-                .as_ptr(),
+            (*::core::mem::transmute::<&[u8; 43], &[libc::c_char; 43]>(
+                b"node234 *split234_internal(tree234 *, int)\0",
+            ))
+            .as_ptr(),
         );
     }
     'c_7673: {
-        if !(halves[1 as libc::c_int as usize]).is_null() {} else {
+        if !(halves[1 as libc::c_int as usize]).is_null() {
+        } else {
             __assert_fail(
                 b"halves[1] != NULL\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/tree234.c\0" as *const u8 as *const libc::c_char,
                 1270 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 43],
-                    &[libc::c_char; 43],
-                >(b"node234 *split234_internal(tree234 *, int)\0"))
-                    .as_ptr(),
+                (*::core::mem::transmute::<&[u8; 43], &[libc::c_char; 43]>(
+                    b"node234 *split234_internal(tree234 *, int)\0",
+                ))
+                .as_ptr(),
             );
         }
     };
@@ -1499,14 +1351,13 @@ unsafe extern "C" fn split234_internal(
         while !(halves[half as usize]).is_null()
             && ((*halves[half as usize]).elems[0 as libc::c_int as usize]).is_null()
         {
-            halves[half
-                as usize] = (*halves[half as usize]).kids[0 as libc::c_int as usize];
+            halves[half as usize] = (*halves[half as usize]).kids[0 as libc::c_int as usize];
             sfree((*halves[half as usize]).parent as *mut libc::c_void);
             (*halves[half as usize]).parent = 0 as *mut node234;
         }
         n = halves[half as usize];
         while !n.is_null() {
-            let mut toward: Option::<
+            let mut toward: Option<
                 unsafe extern "C" fn(
                     *mut node234,
                     libc::c_int,
@@ -1551,44 +1402,37 @@ unsafe extern "C" fn split234_internal(
             }
             sub = (*n).kids[ki as usize];
             if !sub.is_null() && ((*sub).elems[1 as libc::c_int as usize]).is_null() {
-                let mut undersized: bool = ((*sub).elems[0 as libc::c_int as usize])
-                    .is_null();
+                let mut undersized: bool = ((*sub).elems[0 as libc::c_int as usize]).is_null();
                 if ((*(*n).kids[ni as usize]).elems[1 as libc::c_int as usize]).is_null()
                     || undersized as libc::c_int != 0
-                        && ((*(*n).kids[ni as usize]).elems[2 as libc::c_int as usize])
-                            .is_null()
+                        && ((*(*n).kids[ni as usize]).elems[2 as libc::c_int as usize]).is_null()
                 {
-                    trans234_subtree_merge(
-                        n,
-                        merge,
-                        0 as *mut libc::c_int,
-                        0 as *mut libc::c_int,
-                    );
+                    trans234_subtree_merge(n, merge, 0 as *mut libc::c_int, 0 as *mut libc::c_int);
                     sub = (*n).kids[merge as usize];
                     if ((*n).elems[0 as libc::c_int as usize]).is_null() {
-                        if ((*n).parent).is_null() {} else {
+                        if ((*n).parent).is_null() {
+                        } else {
                             __assert_fail(
                                 b"!n->parent\0" as *const u8 as *const libc::c_char,
                                 b"/puzzles/tree234.c\0" as *const u8 as *const libc::c_char,
                                 1351 as libc::c_int as libc::c_uint,
-                                (*::core::mem::transmute::<
-                                    &[u8; 43],
-                                    &[libc::c_char; 43],
-                                >(b"node234 *split234_internal(tree234 *, int)\0"))
-                                    .as_ptr(),
+                                (*::core::mem::transmute::<&[u8; 43], &[libc::c_char; 43]>(
+                                    b"node234 *split234_internal(tree234 *, int)\0",
+                                ))
+                                .as_ptr(),
                             );
                         }
                         'c_7363: {
-                            if ((*n).parent).is_null() {} else {
+                            if ((*n).parent).is_null() {
+                            } else {
                                 __assert_fail(
                                     b"!n->parent\0" as *const u8 as *const libc::c_char,
                                     b"/puzzles/tree234.c\0" as *const u8 as *const libc::c_char,
                                     1351 as libc::c_int as libc::c_uint,
-                                    (*::core::mem::transmute::<
-                                        &[u8; 43],
-                                        &[libc::c_char; 43],
-                                    >(b"node234 *split234_internal(tree234 *, int)\0"))
-                                        .as_ptr(),
+                                    (*::core::mem::transmute::<&[u8; 43], &[libc::c_char; 43]>(
+                                        b"node234 *split234_internal(tree234 *, int)\0",
+                                    ))
+                                    .as_ptr(),
                                 );
                             }
                         };
@@ -1597,15 +1441,19 @@ unsafe extern "C" fn split234_internal(
                         sfree(n as *mut libc::c_void);
                     }
                 } else {
-                    toward
-                        .expect(
-                            "non-null function pointer",
-                        )(n, ni, 0 as *mut libc::c_int, 0 as *mut libc::c_int);
+                    toward.expect("non-null function pointer")(
+                        n,
+                        ni,
+                        0 as *mut libc::c_int,
+                        0 as *mut libc::c_int,
+                    );
                     if undersized {
-                        toward
-                            .expect(
-                                "non-null function pointer",
-                            )(n, ni, 0 as *mut libc::c_int, 0 as *mut libc::c_int);
+                        toward.expect("non-null function pointer")(
+                            n,
+                            ni,
+                            0 as *mut libc::c_int,
+                            0 as *mut libc::c_int,
+                        );
                     }
                 }
             }
@@ -1649,29 +1497,29 @@ pub unsafe extern "C" fn split234(
 ) -> *mut tree234 {
     let mut before: bool = false;
     let mut index: libc::c_int = 0;
-    if rel != REL234_EQ as libc::c_int {} else {
+    if rel != REL234_EQ as libc::c_int {
+    } else {
         __assert_fail(
             b"rel != REL234_EQ\0" as *const u8 as *const libc::c_char,
             b"/puzzles/tree234.c\0" as *const u8 as *const libc::c_char,
             1398 as libc::c_int as libc::c_uint,
-            (*::core::mem::transmute::<
-                &[u8; 52],
-                &[libc::c_char; 52],
-            >(b"tree234 *split234(tree234 *, void *, cmpfn234, int)\0"))
-                .as_ptr(),
+            (*::core::mem::transmute::<&[u8; 52], &[libc::c_char; 52]>(
+                b"tree234 *split234(tree234 *, void *, cmpfn234, int)\0",
+            ))
+            .as_ptr(),
         );
     }
     'c_8421: {
-        if rel != REL234_EQ as libc::c_int {} else {
+        if rel != REL234_EQ as libc::c_int {
+        } else {
             __assert_fail(
                 b"rel != REL234_EQ\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/tree234.c\0" as *const u8 as *const libc::c_char,
                 1398 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 52],
-                    &[libc::c_char; 52],
-                >(b"tree234 *split234(tree234 *, void *, cmpfn234, int)\0"))
-                    .as_ptr(),
+                (*::core::mem::transmute::<&[u8; 52], &[libc::c_char; 52]>(
+                    b"tree234 *split234(tree234 *, void *, cmpfn234, int)\0",
+                ))
+                .as_ptr(),
             );
         }
     };
@@ -1696,18 +1544,13 @@ unsafe extern "C" fn copynode234(
     mut copyfnstate: *mut libc::c_void,
 ) -> *mut node234 {
     let mut i: libc::c_int = 0;
-    let mut n2: *mut node234 = smalloc(
-        ::core::mem::size_of::<node234>() as libc::c_ulong,
-    ) as *mut node234;
+    let mut n2: *mut node234 =
+        smalloc(::core::mem::size_of::<node234>() as libc::c_ulong) as *mut node234;
     i = 0 as libc::c_int;
     while i < 3 as libc::c_int {
         if !((*n).elems[i as usize]).is_null() && copyfn.is_some() {
-            (*n2)
-                .elems[i
-                as usize] = copyfn
-                .expect(
-                    "non-null function pointer",
-                )(copyfnstate, (*n).elems[i as usize]);
+            (*n2).elems[i as usize] =
+                copyfn.expect("non-null function pointer")(copyfnstate, (*n).elems[i as usize]);
         } else {
             (*n2).elems[i as usize] = (*n).elems[i as usize];
         }
@@ -1717,9 +1560,7 @@ unsafe extern "C" fn copynode234(
     i = 0 as libc::c_int;
     while i < 4 as libc::c_int {
         if !((*n).kids[i as usize]).is_null() {
-            (*n2)
-                .kids[i
-                as usize] = copynode234((*n).kids[i as usize], copyfn, copyfnstate);
+            (*n2).kids[i as usize] = copynode234((*n).kids[i as usize], copyfn, copyfnstate);
             (*(*n2).kids[i as usize]).parent = n2;
         } else {
             (*n2).kids[i as usize] = 0 as *mut node234;

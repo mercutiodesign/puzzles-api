@@ -6,11 +6,7 @@ extern "C" {
         __line: libc::c_uint,
         __function: *const libc::c_char,
     ) -> !;
-    fn memset(
-        _: *mut libc::c_void,
-        _: libc::c_int,
-        _: libc::c_ulong,
-    ) -> *mut libc::c_void;
+    fn memset(_: *mut libc::c_void, _: libc::c_int, _: libc::c_ulong) -> *mut libc::c_void;
     fn smalloc(size: size_t) -> *mut libc::c_void;
     fn sfree(p: *mut libc::c_void);
 }
@@ -48,67 +44,63 @@ pub unsafe extern "C" fn reset_combi(mut combi: *mut combi_ctx) {
     }
 }
 #[no_mangle]
-pub unsafe extern "C" fn new_combi(
-    mut r: libc::c_int,
-    mut n: libc::c_int,
-) -> *mut combi_ctx {
+pub unsafe extern "C" fn new_combi(mut r: libc::c_int, mut n: libc::c_int) -> *mut combi_ctx {
     let mut nfr: libc::c_long = 0;
     let mut nrf: libc::c_long = 0;
     let mut combi: *mut combi_ctx = 0 as *mut combi_ctx;
-    if r <= n {} else {
+    if r <= n {
+    } else {
         __assert_fail(
             b"r <= n\0" as *const u8 as *const libc::c_char,
             b"/puzzles/combi.c\0" as *const u8 as *const libc::c_char,
             29 as libc::c_int as libc::c_uint,
-            (*::core::mem::transmute::<
-                &[u8; 31],
-                &[libc::c_char; 31],
-            >(b"combi_ctx *new_combi(int, int)\0"))
-                .as_ptr(),
+            (*::core::mem::transmute::<&[u8; 31], &[libc::c_char; 31]>(
+                b"combi_ctx *new_combi(int, int)\0",
+            ))
+            .as_ptr(),
         );
     }
     'c_3271: {
-        if r <= n {} else {
+        if r <= n {
+        } else {
             __assert_fail(
                 b"r <= n\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/combi.c\0" as *const u8 as *const libc::c_char,
                 29 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 31],
-                    &[libc::c_char; 31],
-                >(b"combi_ctx *new_combi(int, int)\0"))
-                    .as_ptr(),
+                (*::core::mem::transmute::<&[u8; 31], &[libc::c_char; 31]>(
+                    b"combi_ctx *new_combi(int, int)\0",
+                ))
+                .as_ptr(),
             );
         }
     };
-    if n >= 1 as libc::c_int {} else {
+    if n >= 1 as libc::c_int {
+    } else {
         __assert_fail(
             b"n >= 1\0" as *const u8 as *const libc::c_char,
             b"/puzzles/combi.c\0" as *const u8 as *const libc::c_char,
             30 as libc::c_int as libc::c_uint,
-            (*::core::mem::transmute::<
-                &[u8; 31],
-                &[libc::c_char; 31],
-            >(b"combi_ctx *new_combi(int, int)\0"))
-                .as_ptr(),
+            (*::core::mem::transmute::<&[u8; 31], &[libc::c_char; 31]>(
+                b"combi_ctx *new_combi(int, int)\0",
+            ))
+            .as_ptr(),
         );
     }
     'c_3230: {
-        if n >= 1 as libc::c_int {} else {
+        if n >= 1 as libc::c_int {
+        } else {
             __assert_fail(
                 b"n >= 1\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/combi.c\0" as *const u8 as *const libc::c_char,
                 30 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 31],
-                    &[libc::c_char; 31],
-                >(b"combi_ctx *new_combi(int, int)\0"))
-                    .as_ptr(),
+                (*::core::mem::transmute::<&[u8; 31], &[libc::c_char; 31]>(
+                    b"combi_ctx *new_combi(int, int)\0",
+                ))
+                .as_ptr(),
             );
         }
     };
-    combi = smalloc(::core::mem::size_of::<combi_ctx>() as libc::c_ulong)
-        as *mut combi_ctx;
+    combi = smalloc(::core::mem::size_of::<combi_ctx>() as libc::c_ulong) as *mut combi_ctx;
     memset(
         combi as *mut libc::c_void,
         0 as libc::c_int,
@@ -116,16 +108,13 @@ pub unsafe extern "C" fn new_combi(
     );
     (*combi).r = r;
     (*combi).n = n;
-    (*combi)
-        .a = smalloc(
-        (r as libc::c_ulong)
-            .wrapping_mul(::core::mem::size_of::<libc::c_int>() as libc::c_ulong),
+    (*combi).a = smalloc(
+        (r as libc::c_ulong).wrapping_mul(::core::mem::size_of::<libc::c_int>() as libc::c_ulong),
     ) as *mut libc::c_int;
     memset(
         (*combi).a as *mut libc::c_void,
         0 as libc::c_int,
-        (r as libc::c_ulong)
-            .wrapping_mul(::core::mem::size_of::<libc::c_int>() as libc::c_ulong),
+        (r as libc::c_ulong).wrapping_mul(::core::mem::size_of::<libc::c_int>() as libc::c_ulong),
     );
     nfr = factx(n as libc::c_long, (r + 1 as libc::c_int) as libc::c_long);
     nrf = factx((n - r) as libc::c_long, 1 as libc::c_int as libc::c_long);
