@@ -2,11 +2,7 @@ use ::libc;
 extern "C" {
     pub type random_state;
     pub type tree234_Tag;
-    fn memset(
-        _: *mut libc::c_void,
-        _: libc::c_int,
-        _: libc::c_ulong,
-    ) -> *mut libc::c_void;
+    fn memset(_: *mut libc::c_void, _: libc::c_int, _: libc::c_ulong) -> *mut libc::c_void;
     fn __assert_fail(
         __assertion: *const libc::c_char,
         __file: *const libc::c_char,
@@ -32,9 +28,8 @@ extern "C" {
 }
 pub type size_t = libc::c_ulong;
 pub type tree234 = tree234_Tag;
-pub type cmpfn234 = Option::<
-    unsafe extern "C" fn(*mut libc::c_void, *mut libc::c_void) -> libc::c_int,
->;
+pub type cmpfn234 =
+    Option<unsafe extern "C" fn(*mut libc::c_void, *mut libc::c_void) -> libc::c_int>;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct grid_face {
@@ -88,13 +83,8 @@ pub type face_colour = libc::c_uint;
 pub const FACE_BLACK: face_colour = 2;
 pub const FACE_GREY: face_colour = 1;
 pub const FACE_WHITE: face_colour = 0;
-pub type loopgen_bias_fn_t = Option::<
-    unsafe extern "C" fn(
-        *mut libc::c_void,
-        *mut libc::c_char,
-        libc::c_int,
-    ) -> libc::c_int,
->;
+pub type loopgen_bias_fn_t =
+    Option<unsafe extern "C" fn(*mut libc::c_void, *mut libc::c_char, libc::c_int) -> libc::c_int>;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct face_score {
@@ -116,9 +106,9 @@ unsafe extern "C" fn generic_sort_cmpfn(
         return r;
     }
     if (*f1).random < (*f2).random {
-        return -(1 as libc::c_int)
+        return -(1 as libc::c_int);
     } else if (*f1).random > (*f2).random {
-        return 1 as libc::c_int
+        return 1 as libc::c_int;
     }
     return f1.offset_from(f2) as libc::c_long as libc::c_int;
 }
@@ -150,31 +140,29 @@ unsafe extern "C" fn can_colour_face(
     let mut current_state: bool = false;
     let mut s: bool = false;
     let mut found_same_coloured_neighbour: bool = 0 as libc::c_int != 0;
-    if *board.offset(face_index as isize) as libc::c_uint != colour as libc::c_uint
-    {} else {
+    if *board.offset(face_index as isize) as libc::c_uint != colour as libc::c_uint {
+    } else {
         __assert_fail(
             b"board[face_index] != colour\0" as *const u8 as *const libc::c_char,
             b"/puzzles/loopgen.c\0" as *const u8 as *const libc::c_char,
             92 as libc::c_int as libc::c_uint,
-            (*::core::mem::transmute::<
-                &[u8; 61],
-                &[libc::c_char; 61],
-            >(b"_Bool can_colour_face(grid *, char *, int, enum face_colour)\0"))
-                .as_ptr(),
+            (*::core::mem::transmute::<&[u8; 61], &[libc::c_char; 61]>(
+                b"_Bool can_colour_face(grid *, char *, int, enum face_colour)\0",
+            ))
+            .as_ptr(),
         );
     }
     'c_8325: {
-        if *board.offset(face_index as isize) as libc::c_uint != colour as libc::c_uint
-        {} else {
+        if *board.offset(face_index as isize) as libc::c_uint != colour as libc::c_uint {
+        } else {
             __assert_fail(
                 b"board[face_index] != colour\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/loopgen.c\0" as *const u8 as *const libc::c_char,
                 92 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 61],
-                    &[libc::c_char; 61],
-                >(b"_Bool can_colour_face(grid *, char *, int, enum face_colour)\0"))
-                    .as_ptr(),
+                (*::core::mem::transmute::<&[u8; 61], &[libc::c_char; 61]>(
+                    b"_Bool can_colour_face(grid *, char *, int, enum face_colour)\0",
+                ))
+                .as_ptr(),
             );
         }
     };
@@ -190,7 +178,8 @@ unsafe extern "C" fn can_colour_face(
             FACE_BLACK as libc::c_int
         } else {
             *board.offset((*f).index as isize) as libc::c_int
-        }) as libc::c_uint == colour as libc::c_uint
+        }) as libc::c_uint
+            == colour as libc::c_uint
         {
             found_same_coloured_neighbour = 1 as libc::c_int != 0;
             break;
@@ -216,7 +205,8 @@ unsafe extern "C" fn can_colour_face(
         FACE_BLACK as libc::c_int
     } else {
         *board.offset((*current_face).index as isize) as libc::c_int
-    }) as libc::c_uint == colour as libc::c_uint;
+    }) as libc::c_uint
+        == colour as libc::c_uint;
     starting_dot = 0 as *mut grid_dot;
     starting_face = 0 as *mut grid_face;
     loop {
@@ -246,44 +236,40 @@ unsafe extern "C" fn can_colour_face(
                 j += 1;
                 j;
             }
-            if j != (**((*test_face).dots).offset(i as isize)).order {} else {
+            if j != (**((*test_face).dots).offset(i as isize)).order {
+            } else {
                 __assert_fail(
-                    b"j != test_face->dots[i]->order\0" as *const u8
-                        as *const libc::c_char,
+                    b"j != test_face->dots[i]->order\0" as *const u8 as *const libc::c_char,
                     b"/puzzles/loopgen.c\0" as *const u8 as *const libc::c_char,
                     187 as libc::c_int as libc::c_uint,
-                    (*::core::mem::transmute::<
-                        &[u8; 61],
-                        &[libc::c_char; 61],
-                    >(b"_Bool can_colour_face(grid *, char *, int, enum face_colour)\0"))
-                        .as_ptr(),
+                    (*::core::mem::transmute::<&[u8; 61], &[libc::c_char; 61]>(
+                        b"_Bool can_colour_face(grid *, char *, int, enum face_colour)\0",
+                    ))
+                    .as_ptr(),
                 );
             }
             'c_8004: {
-                if j != (**((*test_face).dots).offset(i as isize)).order {} else {
+                if j != (**((*test_face).dots).offset(i as isize)).order {
+                } else {
                     __assert_fail(
-                        b"j != test_face->dots[i]->order\0" as *const u8
-                            as *const libc::c_char,
+                        b"j != test_face->dots[i]->order\0" as *const u8 as *const libc::c_char,
                         b"/puzzles/loopgen.c\0" as *const u8 as *const libc::c_char,
                         187 as libc::c_int as libc::c_uint,
-                        (*::core::mem::transmute::<
-                            &[u8; 61],
-                            &[libc::c_char; 61],
-                        >(
+                        (*::core::mem::transmute::<&[u8; 61], &[libc::c_char; 61]>(
                             b"_Bool can_colour_face(grid *, char *, int, enum face_colour)\0",
                         ))
-                            .as_ptr(),
+                        .as_ptr(),
                     );
                 }
             };
         }
-        current_face = *((**((*test_face).dots).offset(i as isize)).faces)
-            .offset(j as isize);
+        current_face = *((**((*test_face).dots).offset(i as isize)).faces).offset(j as isize);
         s = (if current_face.is_null() {
             FACE_BLACK as libc::c_int
         } else {
             *board.offset((*current_face).index as isize) as libc::c_int
-        }) as libc::c_uint == colour as libc::c_uint;
+        }) as libc::c_uint
+            == colour as libc::c_uint;
         if starting_dot.is_null() {
             starting_dot = *((*test_face).dots).offset(i as isize);
             starting_face = current_face;
@@ -323,12 +309,17 @@ unsafe extern "C" fn face_num_neighbours(
     i = 0 as libc::c_int;
     while i < (*face).order {
         e = *((*face).edges).offset(i as isize);
-        f = if (*e).face1 == face { (*e).face2 } else { (*e).face1 };
+        f = if (*e).face1 == face {
+            (*e).face2
+        } else {
+            (*e).face1
+        };
         if (if f.is_null() {
             FACE_BLACK as libc::c_int
         } else {
             *board.offset((*f).index as isize) as libc::c_int
-        }) as libc::c_uint == colour as libc::c_uint
+        }) as libc::c_uint
+            == colour as libc::c_uint
         {
             colour_count += 1;
             colour_count;
@@ -384,24 +375,14 @@ pub unsafe extern "C" fn generate_loop(
     }
     i = random_upto(rs, num_faces as libc::c_ulong) as libc::c_int;
     *board.offset(i as isize) = FACE_WHITE as libc::c_int as libc::c_char;
-    lightable_faces_sorted = newtree234(
-        Some(
-            white_sort_cmpfn
-                as unsafe extern "C" fn(
-                    *mut libc::c_void,
-                    *mut libc::c_void,
-                ) -> libc::c_int,
-        ),
-    );
-    darkable_faces_sorted = newtree234(
-        Some(
-            black_sort_cmpfn
-                as unsafe extern "C" fn(
-                    *mut libc::c_void,
-                    *mut libc::c_void,
-                ) -> libc::c_int,
-        ),
-    );
+    lightable_faces_sorted = newtree234(Some(
+        white_sort_cmpfn
+            as unsafe extern "C" fn(*mut libc::c_void, *mut libc::c_void) -> libc::c_int,
+    ));
+    darkable_faces_sorted = newtree234(Some(
+        black_sort_cmpfn
+            as unsafe extern "C" fn(*mut libc::c_void, *mut libc::c_void) -> libc::c_int,
+    ));
     i = 0 as libc::c_int;
     while i < num_faces {
         let mut f: *mut grid_face = *((*g).faces).offset(i as isize);
@@ -427,7 +408,8 @@ pub unsafe extern "C" fn generate_loop(
         if c_lightable == 0 as libc::c_int && c_darkable == 0 as libc::c_int {
             break;
         }
-        if c_lightable != 0 as libc::c_int && c_darkable != 0 as libc::c_int {} else {
+        if c_lightable != 0 as libc::c_int && c_darkable != 0 as libc::c_int {
+        } else {
             __assert_fail(
                 b"c_lightable != 0 && c_darkable != 0\0" as *const u8
                     as *const libc::c_char,
@@ -443,8 +425,8 @@ pub unsafe extern "C" fn generate_loop(
             );
         }
         'c_9090: {
-            if c_lightable != 0 as libc::c_int && c_darkable != 0 as libc::c_int
-            {} else {
+            if c_lightable != 0 as libc::c_int && c_darkable != 0 as libc::c_int {
+            } else {
                 __assert_fail(
                     b"c_lightable != 0 && c_darkable != 0\0" as *const u8
                         as *const libc::c_char,
@@ -482,7 +464,8 @@ pub unsafe extern "C" fn generate_loop(
                 if fs.is_null() {
                     break;
                 }
-                if !fs.is_null() {} else {
+                if !fs.is_null() {
+                } else {
                     __assert_fail(
                         b"fs\0" as *const u8 as *const libc::c_char,
                         b"/puzzles/loopgen.c\0" as *const u8 as *const libc::c_char,
@@ -497,7 +480,8 @@ pub unsafe extern "C" fn generate_loop(
                     );
                 }
                 'c_9008: {
-                    if !fs.is_null() {} else {
+                    if !fs.is_null() {
+                    } else {
                         __assert_fail(
                             b"fs\0" as *const u8 as *const libc::c_char,
                             b"/puzzles/loopgen.c\0" as *const u8 as *const libc::c_char,
@@ -513,8 +497,8 @@ pub unsafe extern "C" fn generate_loop(
                     }
                 };
                 k = fs.offset_from(face_scores) as libc::c_long as libc::c_int;
-                if *board.offset(k as isize) as libc::c_int == FACE_GREY as libc::c_int
-                {} else {
+                if *board.offset(k as isize) as libc::c_int == FACE_GREY as libc::c_int {
+                } else {
                     __assert_fail(
                         b"board[k] == FACE_GREY\0" as *const u8 as *const libc::c_char,
                         b"/puzzles/loopgen.c\0" as *const u8 as *const libc::c_char,
@@ -529,9 +513,8 @@ pub unsafe extern "C" fn generate_loop(
                     );
                 }
                 'c_8954: {
-                    if *board.offset(k as isize) as libc::c_int
-                        == FACE_GREY as libc::c_int
-                    {} else {
+                    if *board.offset(k as isize) as libc::c_int == FACE_GREY as libc::c_int {
+                    } else {
                         __assert_fail(
                             b"board[k] == FACE_GREY\0" as *const u8
                                 as *const libc::c_char,
@@ -562,7 +545,8 @@ pub unsafe extern "C" fn generate_loop(
         } else {
             fs = index234(faces_to_pick, 0 as libc::c_int) as *mut face_score;
         }
-        if !fs.is_null() {} else {
+        if !fs.is_null() {
+        } else {
             __assert_fail(
                 b"fs\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/loopgen.c\0" as *const u8 as *const libc::c_char,
@@ -577,7 +561,8 @@ pub unsafe extern "C" fn generate_loop(
             );
         }
         'c_8819: {
-            if !fs.is_null() {} else {
+            if !fs.is_null() {
+            } else {
                 __assert_fail(
                     b"fs\0" as *const u8 as *const libc::c_char,
                     b"/puzzles/loopgen.c\0" as *const u8 as *const libc::c_char,
@@ -593,7 +578,8 @@ pub unsafe extern "C" fn generate_loop(
             }
         };
         i = fs.offset_from(face_scores) as libc::c_long as libc::c_int;
-        if *board.offset(i as isize) as libc::c_int == FACE_GREY as libc::c_int {} else {
+        if *board.offset(i as isize) as libc::c_int == FACE_GREY as libc::c_int {
+        } else {
             __assert_fail(
                 b"board[i] == FACE_GREY\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/loopgen.c\0" as *const u8 as *const libc::c_char,
@@ -608,8 +594,8 @@ pub unsafe extern "C" fn generate_loop(
             );
         }
         'c_8763: {
-            if *board.offset(i as isize) as libc::c_int == FACE_GREY as libc::c_int
-            {} else {
+            if *board.offset(i as isize) as libc::c_int == FACE_GREY as libc::c_int {
+            } else {
                 __assert_fail(
                     b"board[i] == FACE_GREY\0" as *const u8 as *const libc::c_char,
                     b"/puzzles/loopgen.c\0" as *const u8 as *const libc::c_char,
@@ -693,13 +679,12 @@ pub unsafe extern "C" fn generate_loop(
         i = 0 as libc::c_int;
         while i < num_faces {
             let mut j_1: libc::c_int = *face_list.offset(i as isize);
-            let mut opp: face_colour = (if *board.offset(j_1 as isize) as libc::c_int
-                == FACE_WHITE as libc::c_int
-            {
-                FACE_BLACK as libc::c_int
-            } else {
-                FACE_WHITE as libc::c_int
-            }) as face_colour;
+            let mut opp: face_colour =
+                (if *board.offset(j_1 as isize) as libc::c_int == FACE_WHITE as libc::c_int {
+                    FACE_BLACK as libc::c_int
+                } else {
+                    FACE_WHITE as libc::c_int
+                }) as face_colour;
             if can_colour_face(g, board, j_1, opp) {
                 let mut face: *mut grid_face = *((*g).faces).offset(j_1 as isize);
                 if do_random_pass {

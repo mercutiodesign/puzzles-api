@@ -13,11 +13,7 @@ extern "C" {
     pub type document;
     static mut stderr: *mut FILE;
     fn fprintf(_: *mut FILE, _: *const libc::c_char, _: ...) -> libc::c_int;
-    fn vfprintf(
-        _: *mut FILE,
-        _: *const libc::c_char,
-        _: ::core::ffi::VaList,
-    ) -> libc::c_int;
+    fn vfprintf(_: *mut FILE, _: *const libc::c_char, _: ::core::ffi::VaList) -> libc::c_int;
     fn exit(_: libc::c_int) -> !;
     fn smalloc(size: size_t) -> *mut libc::c_void;
     fn sfree(p: *mut libc::c_void);
@@ -109,36 +105,21 @@ pub struct game {
     pub name: *const libc::c_char,
     pub winhelp_topic: *const libc::c_char,
     pub htmlhelp_topic: *const libc::c_char,
-    pub default_params: Option::<unsafe extern "C" fn() -> *mut game_params>,
-    pub fetch_preset: Option::<
-        unsafe extern "C" fn(
-            libc::c_int,
-            *mut *mut libc::c_char,
-            *mut *mut game_params,
-        ) -> bool,
+    pub default_params: Option<unsafe extern "C" fn() -> *mut game_params>,
+    pub fetch_preset: Option<
+        unsafe extern "C" fn(libc::c_int, *mut *mut libc::c_char, *mut *mut game_params) -> bool,
     >,
-    pub preset_menu: Option::<unsafe extern "C" fn() -> *mut preset_menu>,
-    pub decode_params: Option::<
-        unsafe extern "C" fn(*mut game_params, *const libc::c_char) -> (),
-    >,
-    pub encode_params: Option::<
-        unsafe extern "C" fn(*const game_params, bool) -> *mut libc::c_char,
-    >,
-    pub free_params: Option::<unsafe extern "C" fn(*mut game_params) -> ()>,
-    pub dup_params: Option::<
-        unsafe extern "C" fn(*const game_params) -> *mut game_params,
-    >,
+    pub preset_menu: Option<unsafe extern "C" fn() -> *mut preset_menu>,
+    pub decode_params: Option<unsafe extern "C" fn(*mut game_params, *const libc::c_char) -> ()>,
+    pub encode_params: Option<unsafe extern "C" fn(*const game_params, bool) -> *mut libc::c_char>,
+    pub free_params: Option<unsafe extern "C" fn(*mut game_params) -> ()>,
+    pub dup_params: Option<unsafe extern "C" fn(*const game_params) -> *mut game_params>,
     pub can_configure: bool,
-    pub configure: Option::<
-        unsafe extern "C" fn(*const game_params) -> *mut config_item,
-    >,
-    pub custom_params: Option::<
-        unsafe extern "C" fn(*const config_item) -> *mut game_params,
-    >,
-    pub validate_params: Option::<
-        unsafe extern "C" fn(*const game_params, bool) -> *const libc::c_char,
-    >,
-    pub new_desc: Option::<
+    pub configure: Option<unsafe extern "C" fn(*const game_params) -> *mut config_item>,
+    pub custom_params: Option<unsafe extern "C" fn(*const config_item) -> *mut game_params>,
+    pub validate_params:
+        Option<unsafe extern "C" fn(*const game_params, bool) -> *const libc::c_char>,
+    pub new_desc: Option<
         unsafe extern "C" fn(
             *const game_params,
             *mut random_state,
@@ -146,23 +127,20 @@ pub struct game {
             bool,
         ) -> *mut libc::c_char,
     >,
-    pub validate_desc: Option::<
-        unsafe extern "C" fn(
-            *const game_params,
-            *const libc::c_char,
-        ) -> *const libc::c_char,
+    pub validate_desc: Option<
+        unsafe extern "C" fn(*const game_params, *const libc::c_char) -> *const libc::c_char,
     >,
-    pub new_game: Option::<
+    pub new_game: Option<
         unsafe extern "C" fn(
             *mut midend,
             *const game_params,
             *const libc::c_char,
         ) -> *mut game_state,
     >,
-    pub dup_game: Option::<unsafe extern "C" fn(*const game_state) -> *mut game_state>,
-    pub free_game: Option::<unsafe extern "C" fn(*mut game_state) -> ()>,
+    pub dup_game: Option<unsafe extern "C" fn(*const game_state) -> *mut game_state>,
+    pub free_game: Option<unsafe extern "C" fn(*mut game_state) -> ()>,
     pub can_solve: bool,
-    pub solve: Option::<
+    pub solve: Option<
         unsafe extern "C" fn(
             *const game_state,
             *const game_state,
@@ -171,36 +149,23 @@ pub struct game {
         ) -> *mut libc::c_char,
     >,
     pub can_format_as_text_ever: bool,
-    pub can_format_as_text_now: Option::<
-        unsafe extern "C" fn(*const game_params) -> bool,
+    pub can_format_as_text_now: Option<unsafe extern "C" fn(*const game_params) -> bool>,
+    pub text_format: Option<unsafe extern "C" fn(*const game_state) -> *mut libc::c_char>,
+    pub get_prefs: Option<unsafe extern "C" fn(*mut game_ui) -> *mut config_item>,
+    pub set_prefs: Option<unsafe extern "C" fn(*mut game_ui, *const config_item) -> ()>,
+    pub new_ui: Option<unsafe extern "C" fn(*const game_state) -> *mut game_ui>,
+    pub free_ui: Option<unsafe extern "C" fn(*mut game_ui) -> ()>,
+    pub encode_ui: Option<unsafe extern "C" fn(*const game_ui) -> *mut libc::c_char>,
+    pub decode_ui:
+        Option<unsafe extern "C" fn(*mut game_ui, *const libc::c_char, *const game_state) -> ()>,
+    pub request_keys:
+        Option<unsafe extern "C" fn(*const game_params, *mut libc::c_int) -> *mut key_label>,
+    pub changed_state:
+        Option<unsafe extern "C" fn(*mut game_ui, *const game_state, *const game_state) -> ()>,
+    pub current_key_label: Option<
+        unsafe extern "C" fn(*const game_ui, *const game_state, libc::c_int) -> *const libc::c_char,
     >,
-    pub text_format: Option::<
-        unsafe extern "C" fn(*const game_state) -> *mut libc::c_char,
-    >,
-    pub get_prefs: Option::<unsafe extern "C" fn(*mut game_ui) -> *mut config_item>,
-    pub set_prefs: Option::<
-        unsafe extern "C" fn(*mut game_ui, *const config_item) -> (),
-    >,
-    pub new_ui: Option::<unsafe extern "C" fn(*const game_state) -> *mut game_ui>,
-    pub free_ui: Option::<unsafe extern "C" fn(*mut game_ui) -> ()>,
-    pub encode_ui: Option::<unsafe extern "C" fn(*const game_ui) -> *mut libc::c_char>,
-    pub decode_ui: Option::<
-        unsafe extern "C" fn(*mut game_ui, *const libc::c_char, *const game_state) -> (),
-    >,
-    pub request_keys: Option::<
-        unsafe extern "C" fn(*const game_params, *mut libc::c_int) -> *mut key_label,
-    >,
-    pub changed_state: Option::<
-        unsafe extern "C" fn(*mut game_ui, *const game_state, *const game_state) -> (),
-    >,
-    pub current_key_label: Option::<
-        unsafe extern "C" fn(
-            *const game_ui,
-            *const game_state,
-            libc::c_int,
-        ) -> *const libc::c_char,
-    >,
-    pub interpret_move: Option::<
+    pub interpret_move: Option<
         unsafe extern "C" fn(
             *const game_state,
             *mut game_ui,
@@ -210,11 +175,10 @@ pub struct game {
             libc::c_int,
         ) -> *mut libc::c_char,
     >,
-    pub execute_move: Option::<
-        unsafe extern "C" fn(*const game_state, *const libc::c_char) -> *mut game_state,
-    >,
+    pub execute_move:
+        Option<unsafe extern "C" fn(*const game_state, *const libc::c_char) -> *mut game_state>,
     pub preferred_tilesize: libc::c_int,
-    pub compute_size: Option::<
+    pub compute_size: Option<
         unsafe extern "C" fn(
             *const game_params,
             libc::c_int,
@@ -223,7 +187,7 @@ pub struct game {
             *mut libc::c_int,
         ) -> (),
     >,
-    pub set_size: Option::<
+    pub set_size: Option<
         unsafe extern "C" fn(
             *mut drawing,
             *mut game_drawstate,
@@ -231,16 +195,12 @@ pub struct game {
             libc::c_int,
         ) -> (),
     >,
-    pub colours: Option::<
-        unsafe extern "C" fn(*mut frontend, *mut libc::c_int) -> *mut libc::c_float,
-    >,
-    pub new_drawstate: Option::<
-        unsafe extern "C" fn(*mut drawing, *const game_state) -> *mut game_drawstate,
-    >,
-    pub free_drawstate: Option::<
-        unsafe extern "C" fn(*mut drawing, *mut game_drawstate) -> (),
-    >,
-    pub redraw: Option::<
+    pub colours:
+        Option<unsafe extern "C" fn(*mut frontend, *mut libc::c_int) -> *mut libc::c_float>,
+    pub new_drawstate:
+        Option<unsafe extern "C" fn(*mut drawing, *const game_state) -> *mut game_drawstate>,
+    pub free_drawstate: Option<unsafe extern "C" fn(*mut drawing, *mut game_drawstate) -> ()>,
+    pub redraw: Option<
         unsafe extern "C" fn(
             *mut drawing,
             *mut game_drawstate,
@@ -252,7 +212,7 @@ pub struct game {
             libc::c_float,
         ) -> (),
     >,
-    pub anim_length: Option::<
+    pub anim_length: Option<
         unsafe extern "C" fn(
             *const game_state,
             *const game_state,
@@ -260,7 +220,7 @@ pub struct game {
             *mut game_ui,
         ) -> libc::c_float,
     >,
-    pub flash_length: Option::<
+    pub flash_length: Option<
         unsafe extern "C" fn(
             *const game_state,
             *const game_state,
@@ -268,7 +228,7 @@ pub struct game {
             *mut game_ui,
         ) -> libc::c_float,
     >,
-    pub get_cursor_location: Option::<
+    pub get_cursor_location: Option<
         unsafe extern "C" fn(
             *const game_ui,
             *const game_drawstate,
@@ -280,10 +240,10 @@ pub struct game {
             *mut libc::c_int,
         ) -> (),
     >,
-    pub status: Option::<unsafe extern "C" fn(*const game_state) -> libc::c_int>,
+    pub status: Option<unsafe extern "C" fn(*const game_state) -> libc::c_int>,
     pub can_print: bool,
     pub can_print_in_colour: bool,
-    pub print_size: Option::<
+    pub print_size: Option<
         unsafe extern "C" fn(
             *const game_params,
             *const game_ui,
@@ -291,19 +251,12 @@ pub struct game {
             *mut libc::c_float,
         ) -> (),
     >,
-    pub print: Option::<
-        unsafe extern "C" fn(
-            *mut drawing,
-            *const game_state,
-            *const game_ui,
-            libc::c_int,
-        ) -> (),
+    pub print: Option<
+        unsafe extern "C" fn(*mut drawing, *const game_state, *const game_ui, libc::c_int) -> (),
     >,
     pub wants_statusbar: bool,
     pub is_timed: bool,
-    pub timing_state: Option::<
-        unsafe extern "C" fn(*const game_state, *mut game_ui) -> bool,
-    >,
+    pub timing_state: Option<unsafe extern "C" fn(*const game_state, *mut game_ui) -> bool>,
     pub flags: libc::c_int,
 }
 #[derive(Copy, Clone)]
@@ -340,7 +293,7 @@ pub struct blitter {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct drawing_api {
-    pub draw_text: Option::<
+    pub draw_text: Option<
         unsafe extern "C" fn(
             *mut libc::c_void,
             libc::c_int,
@@ -352,7 +305,7 @@ pub struct drawing_api {
             *const libc::c_char,
         ) -> (),
     >,
-    pub draw_rect: Option::<
+    pub draw_rect: Option<
         unsafe extern "C" fn(
             *mut libc::c_void,
             libc::c_int,
@@ -362,7 +315,7 @@ pub struct drawing_api {
             libc::c_int,
         ) -> (),
     >,
-    pub draw_line: Option::<
+    pub draw_line: Option<
         unsafe extern "C" fn(
             *mut libc::c_void,
             libc::c_int,
@@ -372,7 +325,7 @@ pub struct drawing_api {
             libc::c_int,
         ) -> (),
     >,
-    pub draw_polygon: Option::<
+    pub draw_polygon: Option<
         unsafe extern "C" fn(
             *mut libc::c_void,
             *const libc::c_int,
@@ -381,7 +334,7 @@ pub struct drawing_api {
             libc::c_int,
         ) -> (),
     >,
-    pub draw_circle: Option::<
+    pub draw_circle: Option<
         unsafe extern "C" fn(
             *mut libc::c_void,
             libc::c_int,
@@ -391,7 +344,7 @@ pub struct drawing_api {
             libc::c_int,
         ) -> (),
     >,
-    pub draw_update: Option::<
+    pub draw_update: Option<
         unsafe extern "C" fn(
             *mut libc::c_void,
             libc::c_int,
@@ -400,7 +353,7 @@ pub struct drawing_api {
             libc::c_int,
         ) -> (),
     >,
-    pub clip: Option::<
+    pub clip: Option<
         unsafe extern "C" fn(
             *mut libc::c_void,
             libc::c_int,
@@ -409,37 +362,22 @@ pub struct drawing_api {
             libc::c_int,
         ) -> (),
     >,
-    pub unclip: Option::<unsafe extern "C" fn(*mut libc::c_void) -> ()>,
-    pub start_draw: Option::<unsafe extern "C" fn(*mut libc::c_void) -> ()>,
-    pub end_draw: Option::<unsafe extern "C" fn(*mut libc::c_void) -> ()>,
-    pub status_bar: Option::<
-        unsafe extern "C" fn(*mut libc::c_void, *const libc::c_char) -> (),
+    pub unclip: Option<unsafe extern "C" fn(*mut libc::c_void) -> ()>,
+    pub start_draw: Option<unsafe extern "C" fn(*mut libc::c_void) -> ()>,
+    pub end_draw: Option<unsafe extern "C" fn(*mut libc::c_void) -> ()>,
+    pub status_bar: Option<unsafe extern "C" fn(*mut libc::c_void, *const libc::c_char) -> ()>,
+    pub blitter_new:
+        Option<unsafe extern "C" fn(*mut libc::c_void, libc::c_int, libc::c_int) -> *mut blitter>,
+    pub blitter_free: Option<unsafe extern "C" fn(*mut libc::c_void, *mut blitter) -> ()>,
+    pub blitter_save: Option<
+        unsafe extern "C" fn(*mut libc::c_void, *mut blitter, libc::c_int, libc::c_int) -> (),
     >,
-    pub blitter_new: Option::<
-        unsafe extern "C" fn(*mut libc::c_void, libc::c_int, libc::c_int) -> *mut blitter,
+    pub blitter_load: Option<
+        unsafe extern "C" fn(*mut libc::c_void, *mut blitter, libc::c_int, libc::c_int) -> (),
     >,
-    pub blitter_free: Option::<
-        unsafe extern "C" fn(*mut libc::c_void, *mut blitter) -> (),
-    >,
-    pub blitter_save: Option::<
-        unsafe extern "C" fn(
-            *mut libc::c_void,
-            *mut blitter,
-            libc::c_int,
-            libc::c_int,
-        ) -> (),
-    >,
-    pub blitter_load: Option::<
-        unsafe extern "C" fn(
-            *mut libc::c_void,
-            *mut blitter,
-            libc::c_int,
-            libc::c_int,
-        ) -> (),
-    >,
-    pub begin_doc: Option::<unsafe extern "C" fn(*mut libc::c_void, libc::c_int) -> ()>,
-    pub begin_page: Option::<unsafe extern "C" fn(*mut libc::c_void, libc::c_int) -> ()>,
-    pub begin_puzzle: Option::<
+    pub begin_doc: Option<unsafe extern "C" fn(*mut libc::c_void, libc::c_int) -> ()>,
+    pub begin_page: Option<unsafe extern "C" fn(*mut libc::c_void, libc::c_int) -> ()>,
+    pub begin_puzzle: Option<
         unsafe extern "C" fn(
             *mut libc::c_void,
             libc::c_float,
@@ -451,21 +389,19 @@ pub struct drawing_api {
             libc::c_float,
         ) -> (),
     >,
-    pub end_puzzle: Option::<unsafe extern "C" fn(*mut libc::c_void) -> ()>,
-    pub end_page: Option::<unsafe extern "C" fn(*mut libc::c_void, libc::c_int) -> ()>,
-    pub end_doc: Option::<unsafe extern "C" fn(*mut libc::c_void) -> ()>,
-    pub line_width: Option::<
-        unsafe extern "C" fn(*mut libc::c_void, libc::c_float) -> (),
-    >,
-    pub line_dotted: Option::<unsafe extern "C" fn(*mut libc::c_void, bool) -> ()>,
-    pub text_fallback: Option::<
+    pub end_puzzle: Option<unsafe extern "C" fn(*mut libc::c_void) -> ()>,
+    pub end_page: Option<unsafe extern "C" fn(*mut libc::c_void, libc::c_int) -> ()>,
+    pub end_doc: Option<unsafe extern "C" fn(*mut libc::c_void) -> ()>,
+    pub line_width: Option<unsafe extern "C" fn(*mut libc::c_void, libc::c_float) -> ()>,
+    pub line_dotted: Option<unsafe extern "C" fn(*mut libc::c_void, bool) -> ()>,
+    pub text_fallback: Option<
         unsafe extern "C" fn(
             *mut libc::c_void,
             *const *const libc::c_char,
             libc::c_int,
         ) -> *mut libc::c_char,
     >,
-    pub draw_thick_line: Option::<
+    pub draw_thick_line: Option<
         unsafe extern "C" fn(
             *mut libc::c_void,
             libc::c_float,
@@ -481,7 +417,8 @@ pub struct drawing_api {
 pub unsafe extern "C" fn frontend_default_colour(
     mut fe: *mut frontend,
     mut output: *mut libc::c_float,
-) {}
+) {
+}
 #[no_mangle]
 pub unsafe extern "C" fn get_random_seed(
     mut randseed: *mut *mut libc::c_void,
@@ -521,7 +458,8 @@ pub unsafe extern "C" fn draw_text(
     mut align: libc::c_int,
     mut colour: libc::c_int,
     mut text: *const libc::c_char,
-) {}
+) {
+}
 #[no_mangle]
 pub unsafe extern "C" fn draw_rect(
     mut dr: *mut drawing,
@@ -530,7 +468,8 @@ pub unsafe extern "C" fn draw_rect(
     mut w: libc::c_int,
     mut h: libc::c_int,
     mut colour: libc::c_int,
-) {}
+) {
+}
 #[no_mangle]
 pub unsafe extern "C" fn draw_line(
     mut dr: *mut drawing,
@@ -539,7 +478,8 @@ pub unsafe extern "C" fn draw_line(
     mut x2: libc::c_int,
     mut y2: libc::c_int,
     mut colour: libc::c_int,
-) {}
+) {
+}
 #[no_mangle]
 pub unsafe extern "C" fn draw_thick_line(
     mut dr: *mut drawing,
@@ -549,7 +489,8 @@ pub unsafe extern "C" fn draw_thick_line(
     mut x2: libc::c_float,
     mut y2: libc::c_float,
     mut colour: libc::c_int,
-) {}
+) {
+}
 #[no_mangle]
 pub unsafe extern "C" fn draw_polygon(
     mut dr: *mut drawing,
@@ -557,7 +498,8 @@ pub unsafe extern "C" fn draw_polygon(
     mut npoints: libc::c_int,
     mut fillcolour: libc::c_int,
     mut outlinecolour: libc::c_int,
-) {}
+) {
+}
 #[no_mangle]
 pub unsafe extern "C" fn draw_circle(
     mut dr: *mut drawing,
@@ -566,7 +508,8 @@ pub unsafe extern "C" fn draw_circle(
     mut radius: libc::c_int,
     mut fillcolour: libc::c_int,
     mut outlinecolour: libc::c_int,
-) {}
+) {
+}
 #[no_mangle]
 pub unsafe extern "C" fn text_fallback(
     mut dr: *mut drawing,
@@ -582,7 +525,8 @@ pub unsafe extern "C" fn clip(
     mut y: libc::c_int,
     mut w: libc::c_int,
     mut h: libc::c_int,
-) {}
+) {
+}
 #[no_mangle]
 pub unsafe extern "C" fn unclip(mut dr: *mut drawing) {}
 #[no_mangle]
@@ -594,7 +538,8 @@ pub unsafe extern "C" fn draw_update(
     mut y: libc::c_int,
     mut w: libc::c_int,
     mut h: libc::c_int,
-) {}
+) {
+}
 #[no_mangle]
 pub unsafe extern "C" fn end_draw(mut dr: *mut drawing) {}
 #[no_mangle]
@@ -615,14 +560,16 @@ pub unsafe extern "C" fn blitter_save(
     mut bl: *mut blitter,
     mut x: libc::c_int,
     mut y: libc::c_int,
-) {}
+) {
+}
 #[no_mangle]
 pub unsafe extern "C" fn blitter_load(
     mut dr: *mut drawing,
     mut bl: *mut blitter,
     mut x: libc::c_int,
     mut y: libc::c_int,
-) {}
+) {
+}
 #[no_mangle]
 pub unsafe extern "C" fn print_mono_colour(
     mut dr: *mut drawing,
@@ -679,10 +626,7 @@ pub unsafe extern "C" fn print_line_width(mut dr: *mut drawing, mut width: libc:
 #[no_mangle]
 pub unsafe extern "C" fn print_line_dotted(mut dr: *mut drawing, mut dotted: bool) {}
 #[no_mangle]
-pub unsafe extern "C" fn status_bar(
-    mut dr: *mut drawing,
-    mut text: *const libc::c_char,
-) {}
+pub unsafe extern "C" fn status_bar(mut dr: *mut drawing, mut text: *const libc::c_char) {}
 #[no_mangle]
 pub unsafe extern "C" fn document_add_puzzle(
     mut doc: *mut document,
@@ -691,11 +635,15 @@ pub unsafe extern "C" fn document_add_puzzle(
     mut ui: *mut game_ui,
     mut st: *mut game_state,
     mut st2: *mut game_state,
-) {}
+) {
+}
 #[no_mangle]
 pub unsafe extern "C" fn fatal(mut fmt: *const libc::c_char, mut args: ...) {
     let mut ap: ::core::ffi::VaListImpl;
-    fprintf(stderr, b"fatal error: \0" as *const u8 as *const libc::c_char);
+    fprintf(
+        stderr,
+        b"fatal error: \0" as *const u8 as *const libc::c_char,
+    );
     ap = args.clone();
     vfprintf(stderr, fmt, ap.as_va_list());
     fprintf(stderr, b"\n\0" as *const u8 as *const libc::c_char);

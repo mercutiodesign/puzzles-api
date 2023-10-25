@@ -109,59 +109,53 @@ pub unsafe extern "C" fn divvy_rectangle_attempt(
     let mut qhead: libc::c_int = 0;
     let mut qtail: libc::c_int = 0;
     n = wh / k;
-    if wh == k * n {} else {
+    if wh == k * n {
+    } else {
         __assert_fail(
             b"wh == k*n\0" as *const u8 as *const libc::c_char,
             b"/puzzles/divvy.c\0" as *const u8 as *const libc::c_char,
             272 as libc::c_int as libc::c_uint,
-            (*::core::mem::transmute::<
-                &[u8; 60],
-                &[libc::c_char; 60],
-            >(b"DSF *divvy_rectangle_attempt(int, int, int, random_state *)\0"))
-                .as_ptr(),
+            (*::core::mem::transmute::<&[u8; 60], &[libc::c_char; 60]>(
+                b"DSF *divvy_rectangle_attempt(int, int, int, random_state *)\0",
+            ))
+            .as_ptr(),
         );
     }
     'c_4697: {
-        if wh == k * n {} else {
+        if wh == k * n {
+        } else {
             __assert_fail(
                 b"wh == k*n\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/divvy.c\0" as *const u8 as *const libc::c_char,
                 272 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 60],
-                    &[libc::c_char; 60],
-                >(b"DSF *divvy_rectangle_attempt(int, int, int, random_state *)\0"))
-                    .as_ptr(),
+                (*::core::mem::transmute::<&[u8; 60], &[libc::c_char; 60]>(
+                    b"DSF *divvy_rectangle_attempt(int, int, int, random_state *)\0",
+                ))
+                .as_ptr(),
             );
         }
     };
     order = smalloc(
-        (wh as libc::c_ulong)
-            .wrapping_mul(::core::mem::size_of::<libc::c_int>() as libc::c_ulong),
+        (wh as libc::c_ulong).wrapping_mul(::core::mem::size_of::<libc::c_int>() as libc::c_ulong),
     ) as *mut libc::c_int;
     tmp = smalloc(
-        (wh as libc::c_ulong)
-            .wrapping_mul(::core::mem::size_of::<libc::c_int>() as libc::c_ulong),
+        (wh as libc::c_ulong).wrapping_mul(::core::mem::size_of::<libc::c_int>() as libc::c_ulong),
     ) as *mut libc::c_int;
     own = smalloc(
-        (wh as libc::c_ulong)
-            .wrapping_mul(::core::mem::size_of::<libc::c_int>() as libc::c_ulong),
+        (wh as libc::c_ulong).wrapping_mul(::core::mem::size_of::<libc::c_int>() as libc::c_ulong),
     ) as *mut libc::c_int;
     sizes = smalloc(
-        (n as libc::c_ulong)
-            .wrapping_mul(::core::mem::size_of::<libc::c_int>() as libc::c_ulong),
+        (n as libc::c_ulong).wrapping_mul(::core::mem::size_of::<libc::c_int>() as libc::c_ulong),
     ) as *mut libc::c_int;
     queue = smalloc(
-        (n as libc::c_ulong)
-            .wrapping_mul(::core::mem::size_of::<libc::c_int>() as libc::c_ulong),
+        (n as libc::c_ulong).wrapping_mul(::core::mem::size_of::<libc::c_int>() as libc::c_ulong),
     ) as *mut libc::c_int;
     addable = smalloc(
         ((wh * 4 as libc::c_int) as libc::c_ulong)
             .wrapping_mul(::core::mem::size_of::<libc::c_int>() as libc::c_ulong),
     ) as *mut libc::c_int;
     removable = smalloc(
-        (wh as libc::c_ulong)
-            .wrapping_mul(::core::mem::size_of::<bool>() as libc::c_ulong),
+        (wh as libc::c_ulong).wrapping_mul(::core::mem::size_of::<bool>() as libc::c_ulong),
     ) as *mut bool;
     tmpdsf = 0 as *mut DSF;
     retdsf = tmpdsf;
@@ -224,27 +218,13 @@ pub unsafe extern "C" fn divvy_rectangle_attempt(
                     let mut sx: libc::c_int = x + dx;
                     let mut sy: libc::c_int = y + dy;
                     let mut syx: libc::c_int = sy * w + sx;
-                    *addable
-                        .offset(
-                            (yx * 4 as libc::c_int + dir) as isize,
-                        ) = -(1 as libc::c_int);
-                    if !(sx < 0 as libc::c_int || sx >= w || sy < 0 as libc::c_int
-                        || sy >= h)
-                    {
+                    *addable.offset((yx * 4 as libc::c_int + dir) as isize) = -(1 as libc::c_int);
+                    if !(sx < 0 as libc::c_int || sx >= w || sy < 0 as libc::c_int || sy >= h) {
                         if !(*own.offset(syx as isize) < 0 as libc::c_int) {
                             if !(*own.offset(syx as isize) == *own.offset(yx as isize)) {
-                                if addremcommon(
-                                    w,
-                                    h,
-                                    x,
-                                    y,
-                                    own,
-                                    *own.offset(syx as isize),
-                                ) {
-                                    *addable
-                                        .offset(
-                                            (yx * 4 as libc::c_int + dir) as isize,
-                                        ) = *own.offset(syx as isize);
+                                if addremcommon(w, h, x, y, own, *own.offset(syx as isize)) {
+                                    *addable.offset((yx * 4 as libc::c_int + dir) as isize) =
+                                        *own.offset(syx as isize);
                                 }
                             }
                         }
@@ -274,36 +254,35 @@ pub unsafe extern "C" fn divvy_rectangle_attempt(
             break;
         }
         j = *tmp.offset(random_upto(rs, j as libc::c_ulong) as isize);
-        if wh >= 2 as libc::c_int * n {} else {
+        if wh >= 2 as libc::c_int * n {
+        } else {
             __assert_fail(
                 b"wh >= 2*n\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/divvy.c\0" as *const u8 as *const libc::c_char,
                 406 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 60],
-                    &[libc::c_char; 60],
-                >(b"DSF *divvy_rectangle_attempt(int, int, int, random_state *)\0"))
-                    .as_ptr(),
+                (*::core::mem::transmute::<&[u8; 60], &[libc::c_char; 60]>(
+                    b"DSF *divvy_rectangle_attempt(int, int, int, random_state *)\0",
+                ))
+                .as_ptr(),
             );
         }
         'c_4133: {
-            if wh >= 2 as libc::c_int * n {} else {
+            if wh >= 2 as libc::c_int * n {
+            } else {
                 __assert_fail(
                     b"wh >= 2*n\0" as *const u8 as *const libc::c_char,
                     b"/puzzles/divvy.c\0" as *const u8 as *const libc::c_char,
                     406 as libc::c_int as libc::c_uint,
-                    (*::core::mem::transmute::<
-                        &[u8; 60],
-                        &[libc::c_char; 60],
-                    >(b"DSF *divvy_rectangle_attempt(int, int, int, random_state *)\0"))
-                        .as_ptr(),
+                    (*::core::mem::transmute::<&[u8; 60], &[libc::c_char; 60]>(
+                        b"DSF *divvy_rectangle_attempt(int, int, int, random_state *)\0",
+                    ))
+                    .as_ptr(),
                 );
             }
         };
         i = 0 as libc::c_int;
         while i < n {
-            let ref mut fresh1 = *tmp
-                .offset((2 as libc::c_int * i + 1 as libc::c_int) as isize);
+            let ref mut fresh1 = *tmp.offset((2 as libc::c_int * i + 1 as libc::c_int) as isize);
             *fresh1 = -(1 as libc::c_int);
             *tmp.offset((2 as libc::c_int * i) as isize) = *fresh1;
             i += 1;
@@ -314,8 +293,7 @@ pub unsafe extern "C" fn divvy_rectangle_attempt(
         let fresh2 = qtail;
         qtail = qtail + 1;
         *queue.offset(fresh2 as isize) = j;
-        let ref mut fresh3 = *tmp
-            .offset((2 as libc::c_int * j + 1 as libc::c_int) as isize);
+        let ref mut fresh3 = *tmp.offset((2 as libc::c_int * j + 1 as libc::c_int) as isize);
         *fresh3 = -(2 as libc::c_int);
         *tmp.offset((2 as libc::c_int * j) as isize) = *fresh3;
         while qhead < qtail {
@@ -323,33 +301,29 @@ pub unsafe extern "C" fn divvy_rectangle_attempt(
             j = *queue.offset(qhead as isize);
             tmpsq = *tmp.offset((2 as libc::c_int * j + 1 as libc::c_int) as isize);
             if tmpsq >= 0 as libc::c_int {
-                if *own.offset(tmpsq as isize) == j {} else {
+                if *own.offset(tmpsq as isize) == j {
+                } else {
                     __assert_fail(
                         b"own[tmpsq] == j\0" as *const u8 as *const libc::c_char,
                         b"/puzzles/divvy.c\0" as *const u8 as *const libc::c_char,
                         427 as libc::c_int as libc::c_uint,
-                        (*::core::mem::transmute::<
-                            &[u8; 60],
-                            &[libc::c_char; 60],
-                        >(
+                        (*::core::mem::transmute::<&[u8; 60], &[libc::c_char; 60]>(
                             b"DSF *divvy_rectangle_attempt(int, int, int, random_state *)\0",
                         ))
-                            .as_ptr(),
+                        .as_ptr(),
                     );
                 }
                 'c_3994: {
-                    if *own.offset(tmpsq as isize) == j {} else {
+                    if *own.offset(tmpsq as isize) == j {
+                    } else {
                         __assert_fail(
                             b"own[tmpsq] == j\0" as *const u8 as *const libc::c_char,
                             b"/puzzles/divvy.c\0" as *const u8 as *const libc::c_char,
                             427 as libc::c_int as libc::c_uint,
-                            (*::core::mem::transmute::<
-                                &[u8; 60],
-                                &[libc::c_char; 60],
-                            >(
+                            (*::core::mem::transmute::<&[u8; 60], &[libc::c_char; 60]>(
                                 b"DSF *divvy_rectangle_attempt(int, int, int, random_state *)\0",
                             ))
-                                .as_ptr(),
+                            .as_ptr(),
                         );
                     }
                 };
@@ -358,21 +332,15 @@ pub unsafe extern "C" fn divvy_rectangle_attempt(
             i = 0 as libc::c_int;
             while i < wh {
                 let mut dir_0: libc::c_int = 0;
-                if !(*own.offset(*order.offset(i as isize) as isize)
-                    != -(1 as libc::c_int))
-                {
-                    if *sizes.offset(j as isize) == 1 as libc::c_int
-                        && tmpsq >= 0 as libc::c_int
-                    {
+                if !(*own.offset(*order.offset(i as isize) as isize) != -(1 as libc::c_int)) {
+                    if *sizes.offset(j as isize) == 1 as libc::c_int && tmpsq >= 0 as libc::c_int {
                         break;
                     }
                     dir_0 = 0 as libc::c_int;
                     while dir_0 < 4 as libc::c_int {
                         if *addable
-                            .offset(
-                                (*order.offset(i as isize) * 4 as libc::c_int + dir_0)
-                                    as isize,
-                            ) == j
+                            .offset((*order.offset(i as isize) * 4 as libc::c_int + dir_0) as isize)
+                            == j
                         {
                             if addremcommon(
                                 w,
@@ -402,9 +370,7 @@ pub unsafe extern "C" fn divvy_rectangle_attempt(
                 }
                 loop {
                     *own.offset(i as isize) = j;
-                    if *tmp.offset((2 as libc::c_int * j) as isize)
-                        == -(2 as libc::c_int)
-                    {
+                    if *tmp.offset((2 as libc::c_int * j) as isize) == -(2 as libc::c_int) {
                         break;
                     }
                     i = *tmp.offset((2 as libc::c_int * j + 1 as libc::c_int) as isize);
@@ -421,17 +387,14 @@ pub unsafe extern "C" fn divvy_rectangle_attempt(
                     let mut nj: libc::c_int = 0;
                     nj = *own.offset(*order.offset(i as isize) as isize);
                     if !(nj < 0 as libc::c_int
-                        || *tmp.offset((2 as libc::c_int * nj) as isize)
-                            != -(1 as libc::c_int))
+                        || *tmp.offset((2 as libc::c_int * nj) as isize) != -(1 as libc::c_int))
                     {
                         if *removable.offset(*order.offset(i as isize) as isize) {
                             dir_1 = 0 as libc::c_int;
                             while dir_1 < 4 as libc::c_int {
-                                if *addable
-                                    .offset(
-                                        (*order.offset(i as isize) * 4 as libc::c_int + dir_1)
-                                            as isize,
-                                    ) == j
+                                if *addable.offset(
+                                    (*order.offset(i as isize) * 4 as libc::c_int + dir_1) as isize,
+                                ) == j
                                 {
                                     if addremcommon(
                                         w,
@@ -441,7 +404,8 @@ pub unsafe extern "C" fn divvy_rectangle_attempt(
                                         own,
                                         j,
                                     ) {
-                                        if qtail < n {} else {
+                                        if qtail < n {
+                                        } else {
                                             __assert_fail(
                                                 b"qtail < n\0" as *const u8 as *const libc::c_char,
                                                 b"/puzzles/divvy.c\0" as *const u8 as *const libc::c_char,
@@ -456,7 +420,8 @@ pub unsafe extern "C" fn divvy_rectangle_attempt(
                                             );
                                         }
                                         'c_3390: {
-                                            if qtail < n {} else {
+                                            if qtail < n {
+                                            } else {
                                                 __assert_fail(
                                                     b"qtail < n\0" as *const u8 as *const libc::c_char,
                                                     b"/puzzles/divvy.c\0" as *const u8 as *const libc::c_char,
@@ -475,10 +440,9 @@ pub unsafe extern "C" fn divvy_rectangle_attempt(
                                         qtail = qtail + 1;
                                         *queue.offset(fresh5 as isize) = nj;
                                         *tmp.offset((2 as libc::c_int * nj) as isize) = j;
-                                        *tmp
-                                            .offset(
-                                                (2 as libc::c_int * nj + 1 as libc::c_int) as isize,
-                                            ) = *order.offset(i as isize);
+                                        *tmp.offset(
+                                            (2 as libc::c_int * nj + 1 as libc::c_int) as isize,
+                                        ) = *order.offset(i as isize);
                                         break;
                                     }
                                 }
@@ -508,39 +472,29 @@ pub unsafe extern "C" fn divvy_rectangle_attempt(
         8937240710477387595 => {
             i = 0 as libc::c_int;
             while i < wh {
-                if *own.offset(i as isize) >= 0 as libc::c_int
-                    && *own.offset(i as isize) < n
-                {} else {
+                if *own.offset(i as isize) >= 0 as libc::c_int && *own.offset(i as isize) < n {
+                } else {
                     __assert_fail(
-                        b"own[i] >= 0 && own[i] < n\0" as *const u8
-                            as *const libc::c_char,
+                        b"own[i] >= 0 && own[i] < n\0" as *const u8 as *const libc::c_char,
                         b"/puzzles/divvy.c\0" as *const u8 as *const libc::c_char,
                         611 as libc::c_int as libc::c_uint,
-                        (*::core::mem::transmute::<
-                            &[u8; 60],
-                            &[libc::c_char; 60],
-                        >(
+                        (*::core::mem::transmute::<&[u8; 60], &[libc::c_char; 60]>(
                             b"DSF *divvy_rectangle_attempt(int, int, int, random_state *)\0",
                         ))
-                            .as_ptr(),
+                        .as_ptr(),
                     );
                 }
                 'c_3203: {
-                    if *own.offset(i as isize) >= 0 as libc::c_int
-                        && *own.offset(i as isize) < n
-                    {} else {
+                    if *own.offset(i as isize) >= 0 as libc::c_int && *own.offset(i as isize) < n {
+                    } else {
                         __assert_fail(
-                            b"own[i] >= 0 && own[i] < n\0" as *const u8
-                                as *const libc::c_char,
+                            b"own[i] >= 0 && own[i] < n\0" as *const u8 as *const libc::c_char,
                             b"/puzzles/divvy.c\0" as *const u8 as *const libc::c_char,
                             611 as libc::c_int as libc::c_uint,
-                            (*::core::mem::transmute::<
-                                &[u8; 60],
-                                &[libc::c_char; 60],
-                            >(
+                            (*::core::mem::transmute::<&[u8; 60], &[libc::c_char; 60]>(
                                 b"DSF *divvy_rectangle_attempt(int, int, int, random_state *)\0",
                             ))
-                                .as_ptr(),
+                            .as_ptr(),
                         );
                     }
                 };
@@ -589,35 +543,29 @@ pub unsafe extern "C" fn divvy_rectangle_attempt(
             i = 0 as libc::c_int;
             while i < wh {
                 j = dsf_canonify(retdsf, i);
-                if dsf_equivalent(tmpdsf, j, i) {} else {
+                if dsf_equivalent(tmpdsf, j, i) {
+                } else {
                     __assert_fail(
-                        b"dsf_equivalent(tmpdsf, j, i)\0" as *const u8
-                            as *const libc::c_char,
+                        b"dsf_equivalent(tmpdsf, j, i)\0" as *const u8 as *const libc::c_char,
                         b"/puzzles/divvy.c\0" as *const u8 as *const libc::c_char,
                         635 as libc::c_int as libc::c_uint,
-                        (*::core::mem::transmute::<
-                            &[u8; 60],
-                            &[libc::c_char; 60],
-                        >(
+                        (*::core::mem::transmute::<&[u8; 60], &[libc::c_char; 60]>(
                             b"DSF *divvy_rectangle_attempt(int, int, int, random_state *)\0",
                         ))
-                            .as_ptr(),
+                        .as_ptr(),
                     );
                 }
                 'c_2900: {
-                    if dsf_equivalent(tmpdsf, j, i) {} else {
+                    if dsf_equivalent(tmpdsf, j, i) {
+                    } else {
                         __assert_fail(
-                            b"dsf_equivalent(tmpdsf, j, i)\0" as *const u8
-                                as *const libc::c_char,
+                            b"dsf_equivalent(tmpdsf, j, i)\0" as *const u8 as *const libc::c_char,
                             b"/puzzles/divvy.c\0" as *const u8 as *const libc::c_char,
                             635 as libc::c_int as libc::c_uint,
-                            (*::core::mem::transmute::<
-                                &[u8; 60],
-                                &[libc::c_char; 60],
-                            >(
+                            (*::core::mem::transmute::<&[u8; 60], &[libc::c_char; 60]>(
                                 b"DSF *divvy_rectangle_attempt(int, int, int, random_state *)\0",
                             ))
-                                .as_ptr(),
+                            .as_ptr(),
                         );
                     }
                 };

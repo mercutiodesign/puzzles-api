@@ -1,151 +1,151 @@
 [
 {
   "directory": "/home/martin/programming/c++/puzzles-api/puzzles-clean",
-  "command": "/usr/bin/clang -I/usr/lib/clang/16/include   -I/home/martin/programming/c++/puzzles-api/puzzles-clean  -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/puzzles -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/build -o CMakeFiles/core_obj.dir/combi.c.o -c /home/martin/programming/c++/puzzles-api/puzzles-clean/combi.c",
+  "command": "/usr/bin/clang  -I/home/martin/programming/c++/puzzles-api/puzzles-clean  -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/puzzles -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/build -o CMakeFiles/core_obj.dir/combi.c.o -c /home/martin/programming/c++/puzzles-api/puzzles-clean/combi.c",
   "file": "/home/martin/programming/c++/puzzles-api/puzzles-clean/combi.c",
   "output": "CMakeFiles/core_obj.dir/combi.c.o"
 },
 {
   "directory": "/home/martin/programming/c++/puzzles-api/puzzles-clean",
-  "command": "/usr/bin/clang -I/usr/lib/clang/16/include   -I/home/martin/programming/c++/puzzles-api/puzzles-clean  -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/puzzles -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/build -o CMakeFiles/core_obj.dir/divvy.c.o -c /home/martin/programming/c++/puzzles-api/puzzles-clean/divvy.c",
+  "command": "/usr/bin/clang  -I/home/martin/programming/c++/puzzles-api/puzzles-clean  -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/puzzles -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/build -o CMakeFiles/core_obj.dir/divvy.c.o -c /home/martin/programming/c++/puzzles-api/puzzles-clean/divvy.c",
   "file": "/home/martin/programming/c++/puzzles-api/puzzles-clean/divvy.c",
   "output": "CMakeFiles/core_obj.dir/divvy.c.o"
 },
 {
   "directory": "/home/martin/programming/c++/puzzles-api/puzzles-clean",
-  "command": "/usr/bin/clang -I/usr/lib/clang/16/include   -I/home/martin/programming/c++/puzzles-api/puzzles-clean  -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/puzzles -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/build -o CMakeFiles/core_obj.dir/drawing.c.o -c /home/martin/programming/c++/puzzles-api/puzzles-clean/drawing.c",
+  "command": "/usr/bin/clang  -I/home/martin/programming/c++/puzzles-api/puzzles-clean  -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/puzzles -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/build -o CMakeFiles/core_obj.dir/drawing.c.o -c /home/martin/programming/c++/puzzles-api/puzzles-clean/drawing.c",
   "file": "/home/martin/programming/c++/puzzles-api/puzzles-clean/drawing.c",
   "output": "CMakeFiles/core_obj.dir/drawing.c.o"
 },
 {
   "directory": "/home/martin/programming/c++/puzzles-api/puzzles-clean",
-  "command": "/usr/bin/clang -I/usr/lib/clang/16/include   -I/home/martin/programming/c++/puzzles-api/puzzles-clean  -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/puzzles -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/build -o CMakeFiles/core_obj.dir/dsf.c.o -c /home/martin/programming/c++/puzzles-api/puzzles-clean/dsf.c",
+  "command": "/usr/bin/clang  -I/home/martin/programming/c++/puzzles-api/puzzles-clean  -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/puzzles -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/build -o CMakeFiles/core_obj.dir/dsf.c.o -c /home/martin/programming/c++/puzzles-api/puzzles-clean/dsf.c",
   "file": "/home/martin/programming/c++/puzzles-api/puzzles-clean/dsf.c",
   "output": "CMakeFiles/core_obj.dir/dsf.c.o"
 },
 {
   "directory": "/home/martin/programming/c++/puzzles-api/puzzles-clean",
-  "command": "/usr/bin/clang -I/usr/lib/clang/16/include   -I/home/martin/programming/c++/puzzles-api/puzzles-clean  -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/puzzles -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/build -o CMakeFiles/core_obj.dir/findloop.c.o -c /home/martin/programming/c++/puzzles-api/puzzles-clean/findloop.c",
+  "command": "/usr/bin/clang  -I/home/martin/programming/c++/puzzles-api/puzzles-clean  -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/puzzles -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/build -o CMakeFiles/core_obj.dir/findloop.c.o -c /home/martin/programming/c++/puzzles-api/puzzles-clean/findloop.c",
   "file": "/home/martin/programming/c++/puzzles-api/puzzles-clean/findloop.c",
   "output": "CMakeFiles/core_obj.dir/findloop.c.o"
 },
 {
   "directory": "/home/martin/programming/c++/puzzles-api/puzzles-clean",
-  "command": "/usr/bin/clang -I/usr/lib/clang/16/include   -I/home/martin/programming/c++/puzzles-api/puzzles-clean  -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/puzzles -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/build -o CMakeFiles/core_obj.dir/grid.c.o -c /home/martin/programming/c++/puzzles-api/puzzles-clean/grid.c",
+  "command": "/usr/bin/clang  -I/home/martin/programming/c++/puzzles-api/puzzles-clean  -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/puzzles -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/build -o CMakeFiles/core_obj.dir/grid.c.o -c /home/martin/programming/c++/puzzles-api/puzzles-clean/grid.c",
   "file": "/home/martin/programming/c++/puzzles-api/puzzles-clean/grid.c",
   "output": "CMakeFiles/core_obj.dir/grid.c.o"
 },
 {
   "directory": "/home/martin/programming/c++/puzzles-api/puzzles-clean",
-  "command": "/usr/bin/clang -I/usr/lib/clang/16/include   -I/home/martin/programming/c++/puzzles-api/puzzles-clean  -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/puzzles -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/build -o CMakeFiles/core_obj.dir/latin.c.o -c /home/martin/programming/c++/puzzles-api/puzzles-clean/latin.c",
+  "command": "/usr/bin/clang  -I/home/martin/programming/c++/puzzles-api/puzzles-clean  -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/puzzles -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/build -o CMakeFiles/core_obj.dir/latin.c.o -c /home/martin/programming/c++/puzzles-api/puzzles-clean/latin.c",
   "file": "/home/martin/programming/c++/puzzles-api/puzzles-clean/latin.c",
   "output": "CMakeFiles/core_obj.dir/latin.c.o"
 },
 {
   "directory": "/home/martin/programming/c++/puzzles-api/puzzles-clean",
-  "command": "/usr/bin/clang -I/usr/lib/clang/16/include   -I/home/martin/programming/c++/puzzles-api/puzzles-clean  -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/puzzles -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/build -o CMakeFiles/core_obj.dir/laydomino.c.o -c /home/martin/programming/c++/puzzles-api/puzzles-clean/laydomino.c",
+  "command": "/usr/bin/clang  -I/home/martin/programming/c++/puzzles-api/puzzles-clean  -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/puzzles -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/build -o CMakeFiles/core_obj.dir/laydomino.c.o -c /home/martin/programming/c++/puzzles-api/puzzles-clean/laydomino.c",
   "file": "/home/martin/programming/c++/puzzles-api/puzzles-clean/laydomino.c",
   "output": "CMakeFiles/core_obj.dir/laydomino.c.o"
 },
 {
   "directory": "/home/martin/programming/c++/puzzles-api/puzzles-clean",
-  "command": "/usr/bin/clang -I/usr/lib/clang/16/include   -I/home/martin/programming/c++/puzzles-api/puzzles-clean  -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/puzzles -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/build -o CMakeFiles/core_obj.dir/loopgen.c.o -c /home/martin/programming/c++/puzzles-api/puzzles-clean/loopgen.c",
+  "command": "/usr/bin/clang  -I/home/martin/programming/c++/puzzles-api/puzzles-clean  -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/puzzles -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/build -o CMakeFiles/core_obj.dir/loopgen.c.o -c /home/martin/programming/c++/puzzles-api/puzzles-clean/loopgen.c",
   "file": "/home/martin/programming/c++/puzzles-api/puzzles-clean/loopgen.c",
   "output": "CMakeFiles/core_obj.dir/loopgen.c.o"
 },
 {
   "directory": "/home/martin/programming/c++/puzzles-api/puzzles-clean",
-  "command": "/usr/bin/clang -I/usr/lib/clang/16/include   -I/home/martin/programming/c++/puzzles-api/puzzles-clean  -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/puzzles -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/build -o CMakeFiles/core_obj.dir/malloc.c.o -c /home/martin/programming/c++/puzzles-api/puzzles-clean/malloc.c",
+  "command": "/usr/bin/clang  -I/home/martin/programming/c++/puzzles-api/puzzles-clean  -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/puzzles -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/build -o CMakeFiles/core_obj.dir/malloc.c.o -c /home/martin/programming/c++/puzzles-api/puzzles-clean/malloc.c",
   "file": "/home/martin/programming/c++/puzzles-api/puzzles-clean/malloc.c",
   "output": "CMakeFiles/core_obj.dir/malloc.c.o"
 },
 {
   "directory": "/home/martin/programming/c++/puzzles-api/puzzles-clean",
-  "command": "/usr/bin/clang -I/usr/lib/clang/16/include   -I/home/martin/programming/c++/puzzles-api/puzzles-clean  -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/puzzles -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/build -o CMakeFiles/core_obj.dir/matching.c.o -c /home/martin/programming/c++/puzzles-api/puzzles-clean/matching.c",
+  "command": "/usr/bin/clang  -I/home/martin/programming/c++/puzzles-api/puzzles-clean  -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/puzzles -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/build -o CMakeFiles/core_obj.dir/matching.c.o -c /home/martin/programming/c++/puzzles-api/puzzles-clean/matching.c",
   "file": "/home/martin/programming/c++/puzzles-api/puzzles-clean/matching.c",
   "output": "CMakeFiles/core_obj.dir/matching.c.o"
 },
 {
   "directory": "/home/martin/programming/c++/puzzles-api/puzzles-clean",
-  "command": "/usr/bin/clang -I/usr/lib/clang/16/include   -I/home/martin/programming/c++/puzzles-api/puzzles-clean  -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/puzzles -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/build -o CMakeFiles/core_obj.dir/midend.c.o -c /home/martin/programming/c++/puzzles-api/puzzles-clean/midend.c",
+  "command": "/usr/bin/clang  -I/home/martin/programming/c++/puzzles-api/puzzles-clean  -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/puzzles -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/build -o CMakeFiles/core_obj.dir/midend.c.o -c /home/martin/programming/c++/puzzles-api/puzzles-clean/midend.c",
   "file": "/home/martin/programming/c++/puzzles-api/puzzles-clean/midend.c",
   "output": "CMakeFiles/core_obj.dir/midend.c.o"
 },
 {
   "directory": "/home/martin/programming/c++/puzzles-api/puzzles-clean",
-  "command": "/usr/bin/clang -I/usr/lib/clang/16/include   -I/home/martin/programming/c++/puzzles-api/puzzles-clean  -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/puzzles -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/build -o CMakeFiles/core_obj.dir/misc.c.o -c /home/martin/programming/c++/puzzles-api/puzzles-clean/misc.c",
+  "command": "/usr/bin/clang  -I/home/martin/programming/c++/puzzles-api/puzzles-clean  -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/puzzles -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/build -o CMakeFiles/core_obj.dir/misc.c.o -c /home/martin/programming/c++/puzzles-api/puzzles-clean/misc.c",
   "file": "/home/martin/programming/c++/puzzles-api/puzzles-clean/misc.c",
   "output": "CMakeFiles/core_obj.dir/misc.c.o"
 },
 {
   "directory": "/home/martin/programming/c++/puzzles-api/puzzles-clean",
-  "command": "/usr/bin/clang -I/usr/lib/clang/16/include   -I/home/martin/programming/c++/puzzles-api/puzzles-clean  -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/puzzles -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/build -o CMakeFiles/core_obj.dir/penrose.c.o -c /home/martin/programming/c++/puzzles-api/puzzles-clean/penrose.c",
+  "command": "/usr/bin/clang  -I/home/martin/programming/c++/puzzles-api/puzzles-clean  -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/puzzles -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/build -o CMakeFiles/core_obj.dir/penrose.c.o -c /home/martin/programming/c++/puzzles-api/puzzles-clean/penrose.c",
   "file": "/home/martin/programming/c++/puzzles-api/puzzles-clean/penrose.c",
   "output": "CMakeFiles/core_obj.dir/penrose.c.o"
 },
 {
   "directory": "/home/martin/programming/c++/puzzles-api/puzzles-clean",
-  "command": "/usr/bin/clang -I/usr/lib/clang/16/include   -I/home/martin/programming/c++/puzzles-api/puzzles-clean  -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/puzzles -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/build -o CMakeFiles/core_obj.dir/penrose-legacy.c.o -c /home/martin/programming/c++/puzzles-api/puzzles-clean/penrose-legacy.c",
+  "command": "/usr/bin/clang  -I/home/martin/programming/c++/puzzles-api/puzzles-clean  -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/puzzles -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/build -o CMakeFiles/core_obj.dir/penrose-legacy.c.o -c /home/martin/programming/c++/puzzles-api/puzzles-clean/penrose-legacy.c",
   "file": "/home/martin/programming/c++/puzzles-api/puzzles-clean/penrose-legacy.c",
   "output": "CMakeFiles/core_obj.dir/penrose-legacy.c.o"
 },
 {
   "directory": "/home/martin/programming/c++/puzzles-api/puzzles-clean",
-  "command": "/usr/bin/clang -I/usr/lib/clang/16/include   -I/home/martin/programming/c++/puzzles-api/puzzles-clean  -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/puzzles -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/build -o CMakeFiles/core_obj.dir/ps.c.o -c /home/martin/programming/c++/puzzles-api/puzzles-clean/ps.c",
+  "command": "/usr/bin/clang  -I/home/martin/programming/c++/puzzles-api/puzzles-clean  -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/puzzles -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/build -o CMakeFiles/core_obj.dir/ps.c.o -c /home/martin/programming/c++/puzzles-api/puzzles-clean/ps.c",
   "file": "/home/martin/programming/c++/puzzles-api/puzzles-clean/ps.c",
   "output": "CMakeFiles/core_obj.dir/ps.c.o"
 },
 {
   "directory": "/home/martin/programming/c++/puzzles-api/puzzles-clean",
-  "command": "/usr/bin/clang -I/usr/lib/clang/16/include   -I/home/martin/programming/c++/puzzles-api/puzzles-clean  -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/puzzles -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/build -o CMakeFiles/core_obj.dir/random.c.o -c /home/martin/programming/c++/puzzles-api/puzzles-clean/random.c",
+  "command": "/usr/bin/clang  -I/home/martin/programming/c++/puzzles-api/puzzles-clean  -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/puzzles -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/build -o CMakeFiles/core_obj.dir/random.c.o -c /home/martin/programming/c++/puzzles-api/puzzles-clean/random.c",
   "file": "/home/martin/programming/c++/puzzles-api/puzzles-clean/random.c",
   "output": "CMakeFiles/core_obj.dir/random.c.o"
 },
 {
   "directory": "/home/martin/programming/c++/puzzles-api/puzzles-clean",
-  "command": "/usr/bin/clang -I/usr/lib/clang/16/include   -I/home/martin/programming/c++/puzzles-api/puzzles-clean  -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/puzzles -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/build -o CMakeFiles/core_obj.dir/sort.c.o -c /home/martin/programming/c++/puzzles-api/puzzles-clean/sort.c",
+  "command": "/usr/bin/clang  -I/home/martin/programming/c++/puzzles-api/puzzles-clean  -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/puzzles -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/build -o CMakeFiles/core_obj.dir/sort.c.o -c /home/martin/programming/c++/puzzles-api/puzzles-clean/sort.c",
   "file": "/home/martin/programming/c++/puzzles-api/puzzles-clean/sort.c",
   "output": "CMakeFiles/core_obj.dir/sort.c.o"
 },
 {
   "directory": "/home/martin/programming/c++/puzzles-api/puzzles-clean",
-  "command": "/usr/bin/clang -I/usr/lib/clang/16/include   -I/home/martin/programming/c++/puzzles-api/puzzles-clean  -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/puzzles -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/build -o CMakeFiles/core_obj.dir/tdq.c.o -c /home/martin/programming/c++/puzzles-api/puzzles-clean/tdq.c",
+  "command": "/usr/bin/clang  -I/home/martin/programming/c++/puzzles-api/puzzles-clean  -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/puzzles -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/build -o CMakeFiles/core_obj.dir/tdq.c.o -c /home/martin/programming/c++/puzzles-api/puzzles-clean/tdq.c",
   "file": "/home/martin/programming/c++/puzzles-api/puzzles-clean/tdq.c",
   "output": "CMakeFiles/core_obj.dir/tdq.c.o"
 },
 {
   "directory": "/home/martin/programming/c++/puzzles-api/puzzles-clean",
-  "command": "/usr/bin/clang -I/usr/lib/clang/16/include   -I/home/martin/programming/c++/puzzles-api/puzzles-clean  -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/puzzles -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/build -o CMakeFiles/core_obj.dir/tree234.c.o -c /home/martin/programming/c++/puzzles-api/puzzles-clean/tree234.c",
+  "command": "/usr/bin/clang  -I/home/martin/programming/c++/puzzles-api/puzzles-clean  -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/puzzles -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/build -o CMakeFiles/core_obj.dir/tree234.c.o -c /home/martin/programming/c++/puzzles-api/puzzles-clean/tree234.c",
   "file": "/home/martin/programming/c++/puzzles-api/puzzles-clean/tree234.c",
   "output": "CMakeFiles/core_obj.dir/tree234.c.o"
 },
 {
   "directory": "/home/martin/programming/c++/puzzles-api/puzzles-clean",
-  "command": "/usr/bin/clang -I/usr/lib/clang/16/include   -I/home/martin/programming/c++/puzzles-api/puzzles-clean  -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/puzzles -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/build -o CMakeFiles/core_obj.dir/version.c.o -c /home/martin/programming/c++/puzzles-api/puzzles-clean/version.c",
+  "command": "/usr/bin/clang  -I/home/martin/programming/c++/puzzles-api/puzzles-clean  -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/puzzles -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/build -o CMakeFiles/core_obj.dir/version.c.o -c /home/martin/programming/c++/puzzles-api/puzzles-clean/version.c",
   "file": "/home/martin/programming/c++/puzzles-api/puzzles-clean/version.c",
   "output": "CMakeFiles/core_obj.dir/version.c.o"
 },
 {
   "directory": "/home/martin/programming/c++/puzzles-api/puzzles-clean",
-  "command": "/usr/bin/clang -I/usr/lib/clang/16/include   -I/home/martin/programming/c++/puzzles-api/puzzles-clean  -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/puzzles -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/build -o CMakeFiles/common.dir/hat.c.o -c /home/martin/programming/c++/puzzles-api/puzzles-clean/hat.c",
+  "command": "/usr/bin/clang  -I/home/martin/programming/c++/puzzles-api/puzzles-clean  -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/puzzles -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/build -o CMakeFiles/common.dir/hat.c.o -c /home/martin/programming/c++/puzzles-api/puzzles-clean/hat.c",
   "file": "/home/martin/programming/c++/puzzles-api/puzzles-clean/hat.c",
   "output": "CMakeFiles/common.dir/hat.c.o"
 },
 {
   "directory": "/home/martin/programming/c++/puzzles-api/puzzles-clean",
-  "command": "/usr/bin/clang -I/usr/lib/clang/16/include   -I/home/martin/programming/c++/puzzles-api/puzzles-clean  -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/puzzles -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/build -o CMakeFiles/common.dir/spectre.c.o -c /home/martin/programming/c++/puzzles-api/puzzles-clean/spectre.c",
+  "command": "/usr/bin/clang  -I/home/martin/programming/c++/puzzles-api/puzzles-clean  -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/puzzles -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/build -o CMakeFiles/common.dir/spectre.c.o -c /home/martin/programming/c++/puzzles-api/puzzles-clean/spectre.c",
   "file": "/home/martin/programming/c++/puzzles-api/puzzles-clean/spectre.c",
   "output": "CMakeFiles/common.dir/spectre.c.o"
 },
 {
   "directory": "/home/martin/programming/c++/puzzles-api/puzzles-clean",
-  "command": "/usr/bin/clang -I/usr/lib/clang/16/include  -DSTANDALONE_GENERATOR -I/home/martin/programming/c++/puzzles-api/puzzles-clean  -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/puzzles -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/build -o CMakeFiles/loopygenerator.dir/nullfe.c.o -c /home/martin/programming/c++/puzzles-api/puzzles-clean/nullfe.c",
+  "command": "/usr/bin/clang -DSTANDALONE_GENERATOR -I/home/martin/programming/c++/puzzles-api/puzzles-clean  -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/puzzles -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/build -o CMakeFiles/loopygenerator.dir/nullfe.c.o -c /home/martin/programming/c++/puzzles-api/puzzles-clean/nullfe.c",
   "file": "/home/martin/programming/c++/puzzles-api/puzzles-clean/nullfe.c",
   "output": "CMakeFiles/loopygenerator.dir/nullfe.c.o"
 },
 {
   "directory": "/home/martin/programming/c++/puzzles-api/puzzles-clean",
-  "command": "/usr/bin/clang -I/usr/lib/clang/16/include  -DSTANDALONE_GENERATOR -I/home/martin/programming/c++/puzzles-api/puzzles-clean  -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/puzzles -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/build -o CMakeFiles/loopygenerator.dir/loopy.c.o -c /home/martin/programming/c++/puzzles-api/puzzles-clean/loopy.c",
+  "command": "/usr/bin/clang -DSTANDALONE_GENERATOR -I/home/martin/programming/c++/puzzles-api/puzzles-clean  -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/puzzles -fmacro-prefix-map=/home/martin/programming/c++/puzzles-api/puzzles-clean=/build -o CMakeFiles/loopygenerator.dir/loopy.c.o -c /home/martin/programming/c++/puzzles-api/puzzles-clean/loopy.c",
   "file": "/home/martin/programming/c++/puzzles-api/puzzles-clean/loopy.c",
   "output": "CMakeFiles/loopygenerator.dir/loopy.c.o"
 }

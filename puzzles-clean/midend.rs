@@ -11,22 +11,11 @@ extern "C" {
     pub type document;
     fn sprintf(_: *mut libc::c_char, _: *const libc::c_char, _: ...) -> libc::c_int;
     fn sscanf(_: *const libc::c_char, _: *const libc::c_char, _: ...) -> libc::c_int;
-    fn memcpy(
-        _: *mut libc::c_void,
-        _: *const libc::c_void,
-        _: libc::c_ulong,
-    ) -> *mut libc::c_void;
-    fn memcmp(
-        _: *const libc::c_void,
-        _: *const libc::c_void,
-        _: libc::c_ulong,
-    ) -> libc::c_int;
+    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> *mut libc::c_void;
+    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> libc::c_int;
     fn strcpy(_: *mut libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
-    fn strncpy(
-        _: *mut libc::c_char,
-        _: *const libc::c_char,
-        _: libc::c_ulong,
-    ) -> *mut libc::c_char;
+    fn strncpy(_: *mut libc::c_char, _: *const libc::c_char, _: libc::c_ulong)
+        -> *mut libc::c_char;
     fn strcat(_: *mut libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
     fn strcmp(_: *const libc::c_char, _: *const libc::c_char) -> libc::c_int;
     fn strchr(_: *const libc::c_char, _: libc::c_int) -> *mut libc::c_char;
@@ -212,9 +201,7 @@ pub struct midend {
     pub tilesize: libc::c_int,
     pub winwidth: libc::c_int,
     pub winheight: libc::c_int,
-    pub game_id_change_notify_function: Option::<
-        unsafe extern "C" fn(*mut libc::c_void) -> (),
-    >,
+    pub game_id_change_notify_function: Option<unsafe extern "C" fn(*mut libc::c_void) -> ()>,
     pub game_id_change_notify_ctx: *mut libc::c_void,
     pub one_key_shortcuts: bool,
 }
@@ -257,36 +244,21 @@ pub struct game {
     pub name: *const libc::c_char,
     pub winhelp_topic: *const libc::c_char,
     pub htmlhelp_topic: *const libc::c_char,
-    pub default_params: Option::<unsafe extern "C" fn() -> *mut game_params>,
-    pub fetch_preset: Option::<
-        unsafe extern "C" fn(
-            libc::c_int,
-            *mut *mut libc::c_char,
-            *mut *mut game_params,
-        ) -> bool,
+    pub default_params: Option<unsafe extern "C" fn() -> *mut game_params>,
+    pub fetch_preset: Option<
+        unsafe extern "C" fn(libc::c_int, *mut *mut libc::c_char, *mut *mut game_params) -> bool,
     >,
-    pub preset_menu: Option::<unsafe extern "C" fn() -> *mut preset_menu>,
-    pub decode_params: Option::<
-        unsafe extern "C" fn(*mut game_params, *const libc::c_char) -> (),
-    >,
-    pub encode_params: Option::<
-        unsafe extern "C" fn(*const game_params, bool) -> *mut libc::c_char,
-    >,
-    pub free_params: Option::<unsafe extern "C" fn(*mut game_params) -> ()>,
-    pub dup_params: Option::<
-        unsafe extern "C" fn(*const game_params) -> *mut game_params,
-    >,
+    pub preset_menu: Option<unsafe extern "C" fn() -> *mut preset_menu>,
+    pub decode_params: Option<unsafe extern "C" fn(*mut game_params, *const libc::c_char) -> ()>,
+    pub encode_params: Option<unsafe extern "C" fn(*const game_params, bool) -> *mut libc::c_char>,
+    pub free_params: Option<unsafe extern "C" fn(*mut game_params) -> ()>,
+    pub dup_params: Option<unsafe extern "C" fn(*const game_params) -> *mut game_params>,
     pub can_configure: bool,
-    pub configure: Option::<
-        unsafe extern "C" fn(*const game_params) -> *mut config_item,
-    >,
-    pub custom_params: Option::<
-        unsafe extern "C" fn(*const config_item) -> *mut game_params,
-    >,
-    pub validate_params: Option::<
-        unsafe extern "C" fn(*const game_params, bool) -> *const libc::c_char,
-    >,
-    pub new_desc: Option::<
+    pub configure: Option<unsafe extern "C" fn(*const game_params) -> *mut config_item>,
+    pub custom_params: Option<unsafe extern "C" fn(*const config_item) -> *mut game_params>,
+    pub validate_params:
+        Option<unsafe extern "C" fn(*const game_params, bool) -> *const libc::c_char>,
+    pub new_desc: Option<
         unsafe extern "C" fn(
             *const game_params,
             *mut random_state,
@@ -294,23 +266,20 @@ pub struct game {
             bool,
         ) -> *mut libc::c_char,
     >,
-    pub validate_desc: Option::<
-        unsafe extern "C" fn(
-            *const game_params,
-            *const libc::c_char,
-        ) -> *const libc::c_char,
+    pub validate_desc: Option<
+        unsafe extern "C" fn(*const game_params, *const libc::c_char) -> *const libc::c_char,
     >,
-    pub new_game: Option::<
+    pub new_game: Option<
         unsafe extern "C" fn(
             *mut midend,
             *const game_params,
             *const libc::c_char,
         ) -> *mut game_state,
     >,
-    pub dup_game: Option::<unsafe extern "C" fn(*const game_state) -> *mut game_state>,
-    pub free_game: Option::<unsafe extern "C" fn(*mut game_state) -> ()>,
+    pub dup_game: Option<unsafe extern "C" fn(*const game_state) -> *mut game_state>,
+    pub free_game: Option<unsafe extern "C" fn(*mut game_state) -> ()>,
     pub can_solve: bool,
-    pub solve: Option::<
+    pub solve: Option<
         unsafe extern "C" fn(
             *const game_state,
             *const game_state,
@@ -319,36 +288,23 @@ pub struct game {
         ) -> *mut libc::c_char,
     >,
     pub can_format_as_text_ever: bool,
-    pub can_format_as_text_now: Option::<
-        unsafe extern "C" fn(*const game_params) -> bool,
+    pub can_format_as_text_now: Option<unsafe extern "C" fn(*const game_params) -> bool>,
+    pub text_format: Option<unsafe extern "C" fn(*const game_state) -> *mut libc::c_char>,
+    pub get_prefs: Option<unsafe extern "C" fn(*mut game_ui) -> *mut config_item>,
+    pub set_prefs: Option<unsafe extern "C" fn(*mut game_ui, *const config_item) -> ()>,
+    pub new_ui: Option<unsafe extern "C" fn(*const game_state) -> *mut game_ui>,
+    pub free_ui: Option<unsafe extern "C" fn(*mut game_ui) -> ()>,
+    pub encode_ui: Option<unsafe extern "C" fn(*const game_ui) -> *mut libc::c_char>,
+    pub decode_ui:
+        Option<unsafe extern "C" fn(*mut game_ui, *const libc::c_char, *const game_state) -> ()>,
+    pub request_keys:
+        Option<unsafe extern "C" fn(*const game_params, *mut libc::c_int) -> *mut key_label>,
+    pub changed_state:
+        Option<unsafe extern "C" fn(*mut game_ui, *const game_state, *const game_state) -> ()>,
+    pub current_key_label: Option<
+        unsafe extern "C" fn(*const game_ui, *const game_state, libc::c_int) -> *const libc::c_char,
     >,
-    pub text_format: Option::<
-        unsafe extern "C" fn(*const game_state) -> *mut libc::c_char,
-    >,
-    pub get_prefs: Option::<unsafe extern "C" fn(*mut game_ui) -> *mut config_item>,
-    pub set_prefs: Option::<
-        unsafe extern "C" fn(*mut game_ui, *const config_item) -> (),
-    >,
-    pub new_ui: Option::<unsafe extern "C" fn(*const game_state) -> *mut game_ui>,
-    pub free_ui: Option::<unsafe extern "C" fn(*mut game_ui) -> ()>,
-    pub encode_ui: Option::<unsafe extern "C" fn(*const game_ui) -> *mut libc::c_char>,
-    pub decode_ui: Option::<
-        unsafe extern "C" fn(*mut game_ui, *const libc::c_char, *const game_state) -> (),
-    >,
-    pub request_keys: Option::<
-        unsafe extern "C" fn(*const game_params, *mut libc::c_int) -> *mut key_label,
-    >,
-    pub changed_state: Option::<
-        unsafe extern "C" fn(*mut game_ui, *const game_state, *const game_state) -> (),
-    >,
-    pub current_key_label: Option::<
-        unsafe extern "C" fn(
-            *const game_ui,
-            *const game_state,
-            libc::c_int,
-        ) -> *const libc::c_char,
-    >,
-    pub interpret_move: Option::<
+    pub interpret_move: Option<
         unsafe extern "C" fn(
             *const game_state,
             *mut game_ui,
@@ -358,11 +314,10 @@ pub struct game {
             libc::c_int,
         ) -> *mut libc::c_char,
     >,
-    pub execute_move: Option::<
-        unsafe extern "C" fn(*const game_state, *const libc::c_char) -> *mut game_state,
-    >,
+    pub execute_move:
+        Option<unsafe extern "C" fn(*const game_state, *const libc::c_char) -> *mut game_state>,
     pub preferred_tilesize: libc::c_int,
-    pub compute_size: Option::<
+    pub compute_size: Option<
         unsafe extern "C" fn(
             *const game_params,
             libc::c_int,
@@ -371,7 +326,7 @@ pub struct game {
             *mut libc::c_int,
         ) -> (),
     >,
-    pub set_size: Option::<
+    pub set_size: Option<
         unsafe extern "C" fn(
             *mut drawing,
             *mut game_drawstate,
@@ -379,16 +334,12 @@ pub struct game {
             libc::c_int,
         ) -> (),
     >,
-    pub colours: Option::<
-        unsafe extern "C" fn(*mut frontend, *mut libc::c_int) -> *mut libc::c_float,
-    >,
-    pub new_drawstate: Option::<
-        unsafe extern "C" fn(*mut drawing, *const game_state) -> *mut game_drawstate,
-    >,
-    pub free_drawstate: Option::<
-        unsafe extern "C" fn(*mut drawing, *mut game_drawstate) -> (),
-    >,
-    pub redraw: Option::<
+    pub colours:
+        Option<unsafe extern "C" fn(*mut frontend, *mut libc::c_int) -> *mut libc::c_float>,
+    pub new_drawstate:
+        Option<unsafe extern "C" fn(*mut drawing, *const game_state) -> *mut game_drawstate>,
+    pub free_drawstate: Option<unsafe extern "C" fn(*mut drawing, *mut game_drawstate) -> ()>,
+    pub redraw: Option<
         unsafe extern "C" fn(
             *mut drawing,
             *mut game_drawstate,
@@ -400,7 +351,7 @@ pub struct game {
             libc::c_float,
         ) -> (),
     >,
-    pub anim_length: Option::<
+    pub anim_length: Option<
         unsafe extern "C" fn(
             *const game_state,
             *const game_state,
@@ -408,7 +359,7 @@ pub struct game {
             *mut game_ui,
         ) -> libc::c_float,
     >,
-    pub flash_length: Option::<
+    pub flash_length: Option<
         unsafe extern "C" fn(
             *const game_state,
             *const game_state,
@@ -416,7 +367,7 @@ pub struct game {
             *mut game_ui,
         ) -> libc::c_float,
     >,
-    pub get_cursor_location: Option::<
+    pub get_cursor_location: Option<
         unsafe extern "C" fn(
             *const game_ui,
             *const game_drawstate,
@@ -428,10 +379,10 @@ pub struct game {
             *mut libc::c_int,
         ) -> (),
     >,
-    pub status: Option::<unsafe extern "C" fn(*const game_state) -> libc::c_int>,
+    pub status: Option<unsafe extern "C" fn(*const game_state) -> libc::c_int>,
     pub can_print: bool,
     pub can_print_in_colour: bool,
-    pub print_size: Option::<
+    pub print_size: Option<
         unsafe extern "C" fn(
             *const game_params,
             *const game_ui,
@@ -439,19 +390,12 @@ pub struct game {
             *mut libc::c_float,
         ) -> (),
     >,
-    pub print: Option::<
-        unsafe extern "C" fn(
-            *mut drawing,
-            *const game_state,
-            *const game_ui,
-            libc::c_int,
-        ) -> (),
+    pub print: Option<
+        unsafe extern "C" fn(*mut drawing, *const game_state, *const game_ui, libc::c_int) -> (),
     >,
     pub wants_statusbar: bool,
     pub is_timed: bool,
-    pub timing_state: Option::<
-        unsafe extern "C" fn(*const game_state, *mut game_ui) -> bool,
-    >,
+    pub timing_state: Option<unsafe extern "C" fn(*const game_state, *mut game_ui) -> bool>,
     pub flags: libc::c_int,
 }
 #[derive(Copy, Clone)]
@@ -463,7 +407,7 @@ pub struct key_label {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct drawing_api {
-    pub draw_text: Option::<
+    pub draw_text: Option<
         unsafe extern "C" fn(
             *mut libc::c_void,
             libc::c_int,
@@ -475,7 +419,7 @@ pub struct drawing_api {
             *const libc::c_char,
         ) -> (),
     >,
-    pub draw_rect: Option::<
+    pub draw_rect: Option<
         unsafe extern "C" fn(
             *mut libc::c_void,
             libc::c_int,
@@ -485,7 +429,7 @@ pub struct drawing_api {
             libc::c_int,
         ) -> (),
     >,
-    pub draw_line: Option::<
+    pub draw_line: Option<
         unsafe extern "C" fn(
             *mut libc::c_void,
             libc::c_int,
@@ -495,7 +439,7 @@ pub struct drawing_api {
             libc::c_int,
         ) -> (),
     >,
-    pub draw_polygon: Option::<
+    pub draw_polygon: Option<
         unsafe extern "C" fn(
             *mut libc::c_void,
             *const libc::c_int,
@@ -504,7 +448,7 @@ pub struct drawing_api {
             libc::c_int,
         ) -> (),
     >,
-    pub draw_circle: Option::<
+    pub draw_circle: Option<
         unsafe extern "C" fn(
             *mut libc::c_void,
             libc::c_int,
@@ -514,7 +458,7 @@ pub struct drawing_api {
             libc::c_int,
         ) -> (),
     >,
-    pub draw_update: Option::<
+    pub draw_update: Option<
         unsafe extern "C" fn(
             *mut libc::c_void,
             libc::c_int,
@@ -523,7 +467,7 @@ pub struct drawing_api {
             libc::c_int,
         ) -> (),
     >,
-    pub clip: Option::<
+    pub clip: Option<
         unsafe extern "C" fn(
             *mut libc::c_void,
             libc::c_int,
@@ -532,37 +476,22 @@ pub struct drawing_api {
             libc::c_int,
         ) -> (),
     >,
-    pub unclip: Option::<unsafe extern "C" fn(*mut libc::c_void) -> ()>,
-    pub start_draw: Option::<unsafe extern "C" fn(*mut libc::c_void) -> ()>,
-    pub end_draw: Option::<unsafe extern "C" fn(*mut libc::c_void) -> ()>,
-    pub status_bar: Option::<
-        unsafe extern "C" fn(*mut libc::c_void, *const libc::c_char) -> (),
+    pub unclip: Option<unsafe extern "C" fn(*mut libc::c_void) -> ()>,
+    pub start_draw: Option<unsafe extern "C" fn(*mut libc::c_void) -> ()>,
+    pub end_draw: Option<unsafe extern "C" fn(*mut libc::c_void) -> ()>,
+    pub status_bar: Option<unsafe extern "C" fn(*mut libc::c_void, *const libc::c_char) -> ()>,
+    pub blitter_new:
+        Option<unsafe extern "C" fn(*mut libc::c_void, libc::c_int, libc::c_int) -> *mut blitter>,
+    pub blitter_free: Option<unsafe extern "C" fn(*mut libc::c_void, *mut blitter) -> ()>,
+    pub blitter_save: Option<
+        unsafe extern "C" fn(*mut libc::c_void, *mut blitter, libc::c_int, libc::c_int) -> (),
     >,
-    pub blitter_new: Option::<
-        unsafe extern "C" fn(*mut libc::c_void, libc::c_int, libc::c_int) -> *mut blitter,
+    pub blitter_load: Option<
+        unsafe extern "C" fn(*mut libc::c_void, *mut blitter, libc::c_int, libc::c_int) -> (),
     >,
-    pub blitter_free: Option::<
-        unsafe extern "C" fn(*mut libc::c_void, *mut blitter) -> (),
-    >,
-    pub blitter_save: Option::<
-        unsafe extern "C" fn(
-            *mut libc::c_void,
-            *mut blitter,
-            libc::c_int,
-            libc::c_int,
-        ) -> (),
-    >,
-    pub blitter_load: Option::<
-        unsafe extern "C" fn(
-            *mut libc::c_void,
-            *mut blitter,
-            libc::c_int,
-            libc::c_int,
-        ) -> (),
-    >,
-    pub begin_doc: Option::<unsafe extern "C" fn(*mut libc::c_void, libc::c_int) -> ()>,
-    pub begin_page: Option::<unsafe extern "C" fn(*mut libc::c_void, libc::c_int) -> ()>,
-    pub begin_puzzle: Option::<
+    pub begin_doc: Option<unsafe extern "C" fn(*mut libc::c_void, libc::c_int) -> ()>,
+    pub begin_page: Option<unsafe extern "C" fn(*mut libc::c_void, libc::c_int) -> ()>,
+    pub begin_puzzle: Option<
         unsafe extern "C" fn(
             *mut libc::c_void,
             libc::c_float,
@@ -574,21 +503,19 @@ pub struct drawing_api {
             libc::c_float,
         ) -> (),
     >,
-    pub end_puzzle: Option::<unsafe extern "C" fn(*mut libc::c_void) -> ()>,
-    pub end_page: Option::<unsafe extern "C" fn(*mut libc::c_void, libc::c_int) -> ()>,
-    pub end_doc: Option::<unsafe extern "C" fn(*mut libc::c_void) -> ()>,
-    pub line_width: Option::<
-        unsafe extern "C" fn(*mut libc::c_void, libc::c_float) -> (),
-    >,
-    pub line_dotted: Option::<unsafe extern "C" fn(*mut libc::c_void, bool) -> ()>,
-    pub text_fallback: Option::<
+    pub end_puzzle: Option<unsafe extern "C" fn(*mut libc::c_void) -> ()>,
+    pub end_page: Option<unsafe extern "C" fn(*mut libc::c_void, libc::c_int) -> ()>,
+    pub end_doc: Option<unsafe extern "C" fn(*mut libc::c_void) -> ()>,
+    pub line_width: Option<unsafe extern "C" fn(*mut libc::c_void, libc::c_float) -> ()>,
+    pub line_dotted: Option<unsafe extern "C" fn(*mut libc::c_void, bool) -> ()>,
+    pub text_fallback: Option<
         unsafe extern "C" fn(
             *mut libc::c_void,
             *const *const libc::c_char,
             libc::c_int,
         ) -> *mut libc::c_char,
     >,
-    pub draw_thick_line: Option::<
+    pub draw_thick_line: Option<
         unsafe extern "C" fn(
             *mut libc::c_void,
             libc::c_float,
@@ -679,16 +606,15 @@ pub unsafe extern "C" fn midend_reset_tilesize(mut me: *mut midend) {
     k = 0 as libc::c_int;
     j = k;
     while buf[j as usize] != 0 {
-        if *(*__ctype_b_loc())
-            .offset(buf[j as usize] as libc::c_uchar as libc::c_int as isize)
-            as libc::c_int & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+        if *(*__ctype_b_loc()).offset(buf[j as usize] as libc::c_uchar as libc::c_int as isize)
+            as libc::c_int
+            & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
             == 0
         {
             let fresh0 = k;
             k = k + 1;
-            buf[fresh0
-                as usize] = toupper(buf[j as usize] as libc::c_uchar as libc::c_int)
-                as libc::c_char;
+            buf[fresh0 as usize] =
+                toupper(buf[j as usize] as libc::c_uchar as libc::c_int) as libc::c_char;
         }
         j += 1;
         j;
@@ -700,7 +626,8 @@ pub unsafe extern "C" fn midend_reset_tilesize(mut me: *mut midend) {
             e,
             b"%d\0" as *const u8 as *const libc::c_char,
             &mut ts as *mut libc::c_int,
-        ) == 1 as libc::c_int && ts > 0 as libc::c_int
+        ) == 1 as libc::c_int
+        && ts > 0 as libc::c_int
     {
         (*me).preferred_tilesize = ts;
     }
@@ -712,8 +639,8 @@ pub unsafe extern "C" fn midend_new(
     mut drapi: *const drawing_api,
     mut drhandle: *mut libc::c_void,
 ) -> *mut midend {
-    let mut me: *mut midend = smalloc(::core::mem::size_of::<midend>() as libc::c_ulong)
-        as *mut midend;
+    let mut me: *mut midend =
+        smalloc(::core::mem::size_of::<midend>() as libc::c_ulong) as *mut midend;
     let mut randseed: *mut libc::c_void = 0 as *mut libc::c_void;
     let mut randseedsize: libc::c_int = 0;
     get_random_seed(&mut randseed, &mut randseedsize);
@@ -748,16 +675,15 @@ pub unsafe extern "C" fn midend_new(
     k = 0 as libc::c_int;
     j = k;
     while buf[j as usize] != 0 {
-        if *(*__ctype_b_loc())
-            .offset(buf[j as usize] as libc::c_uchar as libc::c_int as isize)
-            as libc::c_int & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+        if *(*__ctype_b_loc()).offset(buf[j as usize] as libc::c_uchar as libc::c_int as isize)
+            as libc::c_int
+            & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
             == 0
         {
             let fresh1 = k;
             k = k + 1;
-            buf[fresh1
-                as usize] = toupper(buf[j as usize] as libc::c_uchar as libc::c_int)
-                as libc::c_char;
+            buf[fresh1 as usize] =
+                toupper(buf[j as usize] as libc::c_uchar as libc::c_int) as libc::c_char;
         }
         j += 1;
         j;
@@ -765,8 +691,7 @@ pub unsafe extern "C" fn midend_new(
     buf[k as usize] = '\0' as i32 as libc::c_char;
     e = getenv(buf.as_mut_ptr());
     if !e.is_null() {
-        ((*(*me).ourgame).decode_params)
-            .expect("non-null function pointer")((*me).params, e);
+        ((*(*me).ourgame).decode_params).expect("non-null function pointer")((*me).params, e);
     }
     (*me).curparams = 0 as *mut game_params;
     (*me).privdesc = 0 as *mut libc::c_char;
@@ -811,15 +736,11 @@ pub unsafe extern "C" fn midend_which_game(mut me: *mut midend) -> *const game {
 unsafe extern "C" fn midend_purge_states(mut me: *mut midend) {
     while (*me).nstates > (*me).statepos {
         (*me).nstates -= 1;
-        ((*(*me).ourgame).free_game)
-            .expect(
-                "non-null function pointer",
-            )((*((*me).states).offset((*me).nstates as isize)).state);
+        ((*(*me).ourgame).free_game).expect("non-null function pointer")(
+            (*((*me).states).offset((*me).nstates as isize)).state,
+        );
         if !((*((*me).states).offset((*me).nstates as isize)).movestr).is_null() {
-            sfree(
-                (*((*me).states).offset((*me).nstates as isize)).movestr
-                    as *mut libc::c_void,
-            );
+            sfree((*((*me).states).offset((*me).nstates as isize)).movestr as *mut libc::c_void);
         }
     }
     (*me).newgame_redo.len = 0 as libc::c_int;
@@ -828,33 +749,28 @@ unsafe extern "C" fn midend_free_game(mut me: *mut midend) {
     while (*me).nstates > 0 as libc::c_int {
         (*me).nstates -= 1;
         (*me).nstates;
-        ((*(*me).ourgame).free_game)
-            .expect(
-                "non-null function pointer",
-            )((*((*me).states).offset((*me).nstates as isize)).state);
-        sfree(
-            (*((*me).states).offset((*me).nstates as isize)).movestr as *mut libc::c_void,
+        ((*(*me).ourgame).free_game).expect("non-null function pointer")(
+            (*((*me).states).offset((*me).nstates as isize)).state,
         );
+        sfree((*((*me).states).offset((*me).nstates as isize)).movestr as *mut libc::c_void);
     }
     if !((*me).drawstate).is_null() {
-        ((*(*me).ourgame).free_drawstate)
-            .expect("non-null function pointer")((*me).drawing, (*me).drawstate);
+        ((*(*me).ourgame).free_drawstate).expect("non-null function pointer")(
+            (*me).drawing,
+            (*me).drawstate,
+        );
     }
 }
-unsafe extern "C" fn midend_free_preset_menu(
-    mut me: *mut midend,
-    mut menu: *mut preset_menu,
-) {
+unsafe extern "C" fn midend_free_preset_menu(mut me: *mut midend, mut menu: *mut preset_menu) {
     if !menu.is_null() {
         let mut i: libc::c_int = 0;
         i = 0 as libc::c_int;
         while i < (*menu).n_entries {
             sfree((*((*menu).entries).offset(i as isize)).title as *mut libc::c_void);
             if !((*((*menu).entries).offset(i as isize)).params).is_null() {
-                ((*(*me).ourgame).free_params)
-                    .expect(
-                        "non-null function pointer",
-                    )((*((*menu).entries).offset(i as isize)).params);
+                ((*(*me).ourgame).free_params).expect("non-null function pointer")(
+                    (*((*menu).entries).offset(i as isize)).params,
+                );
             }
             midend_free_preset_menu(me, (*((*menu).entries).offset(i as isize)).submenu);
             i += 1;
@@ -893,28 +809,26 @@ pub unsafe extern "C" fn midend_free(mut me: *mut midend) {
         ((*(*me).ourgame).free_ui).expect("non-null function pointer")((*me).ui);
     }
     if !((*me).curparams).is_null() {
-        ((*(*me).ourgame).free_params)
-            .expect("non-null function pointer")((*me).curparams);
+        ((*(*me).ourgame).free_params).expect("non-null function pointer")((*me).curparams);
     }
     sfree((*me).laststatus as *mut libc::c_void);
     sfree(me as *mut libc::c_void);
 }
 unsafe extern "C" fn midend_size_new_drawstate(mut me: *mut midend) {
     if (*me).tilesize > 0 as libc::c_int {
-        ((*(*me).ourgame).compute_size)
-            .expect(
-                "non-null function pointer",
-            )(
+        ((*(*me).ourgame).compute_size).expect("non-null function pointer")(
             (*me).params,
             (*me).tilesize,
             (*me).ui,
             &mut (*me).winwidth,
             &mut (*me).winheight,
         );
-        ((*(*me).ourgame).set_size)
-            .expect(
-                "non-null function pointer",
-            )((*me).drawing, (*me).drawstate, (*me).params, (*me).tilesize);
+        ((*(*me).ourgame).set_size).expect("non-null function pointer")(
+            (*me).drawing,
+            (*me).drawstate,
+            (*me).params,
+            (*me).tilesize,
+        );
     }
 }
 unsafe extern "C" fn convert_tilesize(
@@ -934,30 +848,39 @@ unsafe extern "C" fn convert_tilesize(
         return old_tilesize;
     }
     defaults = ((*(*me).ourgame).default_params).expect("non-null function pointer")();
-    ((*(*me).ourgame).compute_size)
-        .expect(
-            "non-null function pointer",
-        )(defaults, old_tilesize, (*me).ui, &mut x, &mut y);
+    ((*(*me).ourgame).compute_size).expect("non-null function pointer")(
+        defaults,
+        old_tilesize,
+        (*me).ui,
+        &mut x,
+        &mut y,
+    );
     x = (x as libc::c_double * (new_dpr / old_dpr)) as libc::c_int;
     y = (y as libc::c_double * (new_dpr / old_dpr)) as libc::c_int;
     max = 1 as libc::c_int;
     min = max;
     loop {
         max *= 2 as libc::c_int;
-        ((*(*me).ourgame).compute_size)
-            .expect(
-                "non-null function pointer",
-            )(defaults, max, (*me).ui, &mut rx, &mut ry);
+        ((*(*me).ourgame).compute_size).expect("non-null function pointer")(
+            defaults,
+            max,
+            (*me).ui,
+            &mut rx,
+            &mut ry,
+        );
         if !(rx <= x && ry <= y) {
             break;
         }
     }
     while max - min > 1 as libc::c_int {
         let mut mid: libc::c_int = (max + min) / 2 as libc::c_int;
-        ((*(*me).ourgame).compute_size)
-            .expect(
-                "non-null function pointer",
-            )(defaults, mid, (*me).ui, &mut rx, &mut ry);
+        ((*(*me).ourgame).compute_size).expect("non-null function pointer")(
+            defaults,
+            mid,
+            (*me).ui,
+            &mut rx,
+            &mut ry,
+        );
         if rx <= x && ry <= y {
             min = mid;
         } else {
@@ -980,23 +903,27 @@ pub unsafe extern "C" fn midend_size(
     let mut rx: libc::c_int = 0;
     let mut ry: libc::c_int = 0;
     if !((*me).drawstate).is_null() && (*me).tilesize > 0 as libc::c_int {
-        ((*(*me).ourgame).free_drawstate)
-            .expect("non-null function pointer")((*me).drawing, (*me).drawstate);
-        (*me)
-            .drawstate = ((*(*me).ourgame).new_drawstate)
-            .expect(
-                "non-null function pointer",
-            )((*me).drawing, (*((*me).states).offset(0 as libc::c_int as isize)).state);
+        ((*(*me).ourgame).free_drawstate).expect("non-null function pointer")(
+            (*me).drawing,
+            (*me).drawstate,
+        );
+        (*me).drawstate = ((*(*me).ourgame).new_drawstate).expect("non-null function pointer")(
+            (*me).drawing,
+            (*((*me).states).offset(0 as libc::c_int as isize)).state,
+        );
         (*me).first_draw = 1 as libc::c_int != 0;
     }
     if user_size {
         max = 1 as libc::c_int;
         loop {
             max *= 2 as libc::c_int;
-            ((*(*me).ourgame).compute_size)
-                .expect(
-                    "non-null function pointer",
-                )((*me).params, max, (*me).ui, &mut rx, &mut ry);
+            ((*(*me).ourgame).compute_size).expect("non-null function pointer")(
+                (*me).params,
+                max,
+                (*me).ui,
+                &mut rx,
+                &mut ry,
+            );
             if !(rx <= *x && ry <= *y) {
                 break;
             }
@@ -1012,10 +939,13 @@ pub unsafe extern "C" fn midend_size(
     min = 1 as libc::c_int;
     while max - min > 1 as libc::c_int {
         let mut mid: libc::c_int = (max + min) / 2 as libc::c_int;
-        ((*(*me).ourgame).compute_size)
-            .expect(
-                "non-null function pointer",
-            )((*me).params, mid, (*me).ui, &mut rx, &mut ry);
+        ((*(*me).ourgame).compute_size).expect("non-null function pointer")(
+            (*me).params,
+            mid,
+            (*me).ui,
+            &mut rx,
+            &mut ry,
+        );
         if rx <= *x && ry <= *y {
             min = mid;
         } else {
@@ -1036,27 +966,21 @@ pub unsafe extern "C" fn midend_tilesize(mut me: *mut midend) -> libc::c_int {
     return (*me).tilesize;
 }
 #[no_mangle]
-pub unsafe extern "C" fn midend_set_params(
-    mut me: *mut midend,
-    mut params: *mut game_params,
-) {
+pub unsafe extern "C" fn midend_set_params(mut me: *mut midend, mut params: *mut game_params) {
     ((*(*me).ourgame).free_params).expect("non-null function pointer")((*me).params);
-    (*me)
-        .params = ((*(*me).ourgame).dup_params)
-        .expect("non-null function pointer")(params);
+    (*me).params = ((*(*me).ourgame).dup_params).expect("non-null function pointer")(params);
 }
 #[no_mangle]
 pub unsafe extern "C" fn midend_get_params(mut me: *mut midend) -> *mut game_params {
-    return ((*(*me).ourgame).dup_params)
-        .expect("non-null function pointer")((*me).params);
+    return ((*(*me).ourgame).dup_params).expect("non-null function pointer")((*me).params);
 }
 unsafe extern "C" fn encode_params(
     mut me: *mut midend,
     mut params: *const game_params,
     mut full: bool,
 ) -> *mut libc::c_char {
-    let mut encoded: *mut libc::c_char = ((*(*me).ourgame).encode_params)
-        .expect("non-null function pointer")(params, full);
+    let mut encoded: *mut libc::c_char =
+        ((*(*me).ourgame).encode_params).expect("non-null function pointer")(params, full);
     let mut i: libc::c_int = 0;
     i = 0 as libc::c_int;
     while *encoded.offset(i as isize) != 0 {
@@ -1064,17 +988,17 @@ unsafe extern "C" fn encode_params(
             && (*encoded.offset(i as isize) as libc::c_int) < 127 as libc::c_int
             && *encoded.offset(i as isize) as libc::c_int != '#' as i32
             && *encoded.offset(i as isize) as libc::c_int != ':' as i32
-        {} else {
+        {
+        } else {
             __assert_fail(
                 b"encoded[i] >= 32 && encoded[i] < 127 && encoded[i] != '#' && encoded[i] != ':'\0"
                     as *const u8 as *const libc::c_char,
                 b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
                 469 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 58],
-                    &[libc::c_char; 58],
-                >(b"char *encode_params(midend *, const game_params *, _Bool)\0"))
-                    .as_ptr(),
+                (*::core::mem::transmute::<&[u8; 58], &[libc::c_char; 58]>(
+                    b"char *encode_params(midend *, const game_params *, _Bool)\0",
+                ))
+                .as_ptr(),
             );
         }
         'c_9790: {
@@ -1082,7 +1006,8 @@ unsafe extern "C" fn encode_params(
                 && (*encoded.offset(i as isize) as libc::c_int) < 127 as libc::c_int
                 && *encoded.offset(i as isize) as libc::c_int != '#' as i32
                 && *encoded.offset(i as isize) as libc::c_int != ':' as i32
-            {} else {
+            {
+            } else {
                 __assert_fail(
                     b"encoded[i] >= 32 && encoded[i] < 127 && encoded[i] != '#' && encoded[i] != ':'\0"
                         as *const u8 as *const libc::c_char,
@@ -1107,31 +1032,31 @@ unsafe extern "C" fn assert_printable_ascii(mut s: *const libc::c_char) {
     while *s.offset(i as isize) != 0 {
         if *s.offset(i as isize) as libc::c_int >= 32 as libc::c_int
             && (*s.offset(i as isize) as libc::c_int) < 127 as libc::c_int
-        {} else {
+        {
+        } else {
             __assert_fail(
                 b"s[i] >= 32 && s[i] < 127\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
                 479 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 42],
-                    &[libc::c_char; 42],
-                >(b"void assert_printable_ascii(const char *)\0"))
-                    .as_ptr(),
+                (*::core::mem::transmute::<&[u8; 42], &[libc::c_char; 42]>(
+                    b"void assert_printable_ascii(const char *)\0",
+                ))
+                .as_ptr(),
             );
         }
         'c_7195: {
             if *s.offset(i as isize) as libc::c_int >= 32 as libc::c_int
                 && (*s.offset(i as isize) as libc::c_int) < 127 as libc::c_int
-            {} else {
+            {
+            } else {
                 __assert_fail(
                     b"s[i] >= 32 && s[i] < 127\0" as *const u8 as *const libc::c_char,
                     b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
                     479 as libc::c_int as libc::c_uint,
-                    (*::core::mem::transmute::<
-                        &[u8; 42],
-                        &[libc::c_char; 42],
-                    >(b"void assert_printable_ascii(const char *)\0"))
-                        .as_ptr(),
+                    (*::core::mem::transmute::<&[u8; 42], &[libc::c_char; 42]>(
+                        b"void assert_printable_ascii(const char *)\0",
+                    ))
+                    .as_ptr(),
                 );
             }
         };
@@ -1140,18 +1065,13 @@ unsafe extern "C" fn assert_printable_ascii(mut s: *const libc::c_char) {
     }
 }
 unsafe extern "C" fn midend_set_timer(mut me: *mut midend) {
-    (*me)
-        .timing = (*(*me).ourgame).is_timed as libc::c_int != 0
-        && ((*(*me).ourgame).timing_state)
-            .expect(
-                "non-null function pointer",
-            )(
+    (*me).timing = (*(*me).ourgame).is_timed as libc::c_int != 0
+        && ((*(*me).ourgame).timing_state).expect("non-null function pointer")(
             (*((*me).states).offset(((*me).statepos - 1 as libc::c_int) as isize)).state,
             (*me).ui,
-        ) as libc::c_int != 0;
-    if (*me).timing as libc::c_int != 0 || (*me).flash_time != 0.
-        || (*me).anim_time != 0.
-    {
+        ) as libc::c_int
+            != 0;
+    if (*me).timing as libc::c_int != 0 || (*me).flash_time != 0. || (*me).anim_time != 0. {
         activate_timer((*me).frontend);
     } else {
         deactivate_timer((*me).frontend);
@@ -1160,14 +1080,15 @@ unsafe extern "C" fn midend_set_timer(mut me: *mut midend) {
 #[no_mangle]
 pub unsafe extern "C" fn midend_force_redraw(mut me: *mut midend) {
     if !((*me).drawstate).is_null() {
-        ((*(*me).ourgame).free_drawstate)
-            .expect("non-null function pointer")((*me).drawing, (*me).drawstate);
+        ((*(*me).ourgame).free_drawstate).expect("non-null function pointer")(
+            (*me).drawing,
+            (*me).drawstate,
+        );
     }
-    (*me)
-        .drawstate = ((*(*me).ourgame).new_drawstate)
-        .expect(
-            "non-null function pointer",
-        )((*me).drawing, (*((*me).states).offset(0 as libc::c_int as isize)).state);
+    (*me).drawstate = ((*(*me).ourgame).new_drawstate).expect("non-null function pointer")(
+        (*me).drawing,
+        (*((*me).states).offset(0 as libc::c_int as isize)).state,
+    );
     (*me).first_draw = 1 as libc::c_int != 0;
     midend_size_new_drawstate(me);
     midend_redraw(me);
@@ -1179,37 +1100,36 @@ unsafe extern "C" fn midend_serialise_buf_write(
 ) {
     let mut ser: *mut midend_serialise_buf = ctx as *mut midend_serialise_buf;
     let mut new_len: libc::c_int = 0;
-    if len < 2147483647 as libc::c_int - (*ser).len {} else {
+    if len < 2147483647 as libc::c_int - (*ser).len {
+    } else {
         __assert_fail(
             b"len < INT_MAX - ser->len\0" as *const u8 as *const libc::c_char,
             b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
             509 as libc::c_int as libc::c_uint,
-            (*::core::mem::transmute::<
-                &[u8; 59],
-                &[libc::c_char; 59],
-            >(b"void midend_serialise_buf_write(void *, const void *, int)\0"))
-                .as_ptr(),
+            (*::core::mem::transmute::<&[u8; 59], &[libc::c_char; 59]>(
+                b"void midend_serialise_buf_write(void *, const void *, int)\0",
+            ))
+            .as_ptr(),
         );
     }
     'c_5133: {
-        if len < 2147483647 as libc::c_int - (*ser).len {} else {
+        if len < 2147483647 as libc::c_int - (*ser).len {
+        } else {
             __assert_fail(
                 b"len < INT_MAX - ser->len\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
                 509 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 59],
-                    &[libc::c_char; 59],
-                >(b"void midend_serialise_buf_write(void *, const void *, int)\0"))
-                    .as_ptr(),
+                (*::core::mem::transmute::<&[u8; 59], &[libc::c_char; 59]>(
+                    b"void midend_serialise_buf_write(void *, const void *, int)\0",
+                ))
+                .as_ptr(),
             );
         }
     };
     new_len = (*ser).len + len;
     if new_len > (*ser).size {
         (*ser).size = new_len + new_len / 4 as libc::c_int + 1024 as libc::c_int;
-        (*ser)
-            .buf = srealloc(
+        (*ser).buf = srealloc(
             (*ser).buf as *mut libc::c_void,
             ((*ser).size as libc::c_ulong)
                 .wrapping_mul(::core::mem::size_of::<libc::c_char>() as libc::c_ulong),
@@ -1227,8 +1147,7 @@ unsafe extern "C" fn midend_serialise_buf_read(
     mut buf: *mut libc::c_void,
     mut len: libc::c_int,
 ) -> bool {
-    let rctx: *mut midend_serialise_buf_read_ctx = ctx
-        as *mut midend_serialise_buf_read_ctx;
+    let rctx: *mut midend_serialise_buf_read_ctx = ctx as *mut midend_serialise_buf_read_ctx;
     if len > (*rctx).len - (*rctx).pos {
         return 0 as libc::c_int != 0;
     }
@@ -1260,29 +1179,29 @@ pub unsafe extern "C" fn midend_new_game(mut me: *mut midend) {
     }
     midend_stop_anim(me);
     midend_free_game(me);
-    if (*me).nstates == 0 as libc::c_int {} else {
+    if (*me).nstates == 0 as libc::c_int {
+    } else {
         __assert_fail(
             b"me->nstates == 0\0" as *const u8 as *const libc::c_char,
             b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
             556 as libc::c_int as libc::c_uint,
-            (*::core::mem::transmute::<
-                &[u8; 31],
-                &[libc::c_char; 31],
-            >(b"void midend_new_game(midend *)\0"))
-                .as_ptr(),
+            (*::core::mem::transmute::<&[u8; 31], &[libc::c_char; 31]>(
+                b"void midend_new_game(midend *)\0",
+            ))
+            .as_ptr(),
         );
     }
     'c_7512: {
-        if (*me).nstates == 0 as libc::c_int {} else {
+        if (*me).nstates == 0 as libc::c_int {
+        } else {
             __assert_fail(
                 b"me->nstates == 0\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
                 556 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 31],
-                    &[libc::c_char; 31],
-                >(b"void midend_new_game(midend *)\0"))
-                    .as_ptr(),
+                (*::core::mem::transmute::<&[u8; 31], &[libc::c_char; 31]>(
+                    b"void midend_new_game(midend *)\0",
+                ))
+                .as_ptr(),
             );
         }
     };
@@ -1296,124 +1215,119 @@ pub unsafe extern "C" fn midend_new_game(mut me: *mut midend) {
             let mut newseed: [libc::c_char; 16] = [0; 16];
             let mut i: libc::c_int = 0;
             newseed[15 as libc::c_int as usize] = '\0' as i32 as libc::c_char;
-            newseed[0 as libc::c_int
-                as usize] = ('1' as i32
-                + random_upto((*me).random, 9 as libc::c_int as libc::c_ulong)
-                    as libc::c_char as libc::c_int) as libc::c_char;
+            newseed[0 as libc::c_int as usize] = ('1' as i32
+                + random_upto((*me).random, 9 as libc::c_int as libc::c_ulong) as libc::c_char
+                    as libc::c_int)
+                as libc::c_char;
             i = 1 as libc::c_int;
             while i < 15 as libc::c_int {
-                newseed[i
-                    as usize] = ('0' as i32
-                    + random_upto((*me).random, 10 as libc::c_int as libc::c_ulong)
-                        as libc::c_char as libc::c_int) as libc::c_char;
+                newseed[i as usize] = ('0' as i32
+                    + random_upto((*me).random, 10 as libc::c_int as libc::c_ulong) as libc::c_char
+                        as libc::c_int) as libc::c_char;
                 i += 1;
                 i;
             }
             sfree((*me).seedstr as *mut libc::c_void);
             (*me).seedstr = dupstr(newseed.as_mut_ptr());
             if !((*me).curparams).is_null() {
-                ((*(*me).ourgame).free_params)
-                    .expect("non-null function pointer")((*me).curparams);
+                ((*(*me).ourgame).free_params).expect("non-null function pointer")((*me).curparams);
             }
-            (*me)
-                .curparams = ((*(*me).ourgame).dup_params)
-                .expect("non-null function pointer")((*me).params);
+            (*me).curparams =
+                ((*(*me).ourgame).dup_params).expect("non-null function pointer")((*me).params);
         }
         sfree((*me).desc as *mut libc::c_void);
         sfree((*me).privdesc as *mut libc::c_void);
         sfree((*me).aux_info as *mut libc::c_void);
         (*me).aux_info = 0 as *mut libc::c_char;
         rs = random_new((*me).seedstr, strlen((*me).seedstr) as libc::c_int);
-        (*me)
-            .desc = ((*(*me).ourgame).new_desc)
-            .expect(
-                "non-null function pointer",
-            )((*me).curparams, rs, &mut (*me).aux_info, !((*me).drawing).is_null());
+        (*me).desc = ((*(*me).ourgame).new_desc).expect("non-null function pointer")(
+            (*me).curparams,
+            rs,
+            &mut (*me).aux_info,
+            !((*me).drawing).is_null(),
+        );
         assert_printable_ascii((*me).desc);
         (*me).privdesc = 0 as *mut libc::c_char;
         random_free(rs);
     }
     if (*me).nstates >= (*me).statesize {
         (*me).statesize = (*me).nstates + 128 as libc::c_int;
-        (*me)
-            .states = srealloc(
+        (*me).states = srealloc(
             (*me).states as *mut libc::c_void,
             ((*me).statesize as libc::c_ulong)
-                .wrapping_mul(
-                    ::core::mem::size_of::<midend_state_entry>() as libc::c_ulong,
-                ),
+                .wrapping_mul(::core::mem::size_of::<midend_state_entry>() as libc::c_ulong),
         ) as *mut midend_state_entry;
     }
     let ref mut fresh2 = (*((*me).states).offset((*me).nstates as isize)).state;
-    *fresh2 = ((*(*me).ourgame).new_game)
-        .expect("non-null function pointer")(me, (*me).params, (*me).desc);
+    *fresh2 = ((*(*me).ourgame).new_game).expect("non-null function pointer")(
+        me,
+        (*me).params,
+        (*me).desc,
+    );
     if (*(*me).ourgame).can_solve as libc::c_int != 0 && !((*me).aux_info).is_null() {
         let mut s: *mut game_state = 0 as *mut game_state;
         let mut msg: *const libc::c_char = 0 as *const libc::c_char;
         let mut movestr: *mut libc::c_char = 0 as *mut libc::c_char;
         msg = 0 as *const libc::c_char;
-        movestr = ((*(*me).ourgame).solve)
-            .expect(
-                "non-null function pointer",
-            )(
+        movestr = ((*(*me).ourgame).solve).expect("non-null function pointer")(
             (*((*me).states).offset(0 as libc::c_int as isize)).state,
             (*((*me).states).offset(0 as libc::c_int as isize)).state,
             (*me).aux_info,
             &mut msg,
         );
-        if !movestr.is_null() && msg.is_null() {} else {
+        if !movestr.is_null() && msg.is_null() {
+        } else {
             __assert_fail(
                 b"movestr && !msg\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
                 639 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 31],
-                    &[libc::c_char; 31],
-                >(b"void midend_new_game(midend *)\0"))
-                    .as_ptr(),
+                (*::core::mem::transmute::<&[u8; 31], &[libc::c_char; 31]>(
+                    b"void midend_new_game(midend *)\0",
+                ))
+                .as_ptr(),
             );
         }
         'c_6971: {
-            if !movestr.is_null() && msg.is_null() {} else {
+            if !movestr.is_null() && msg.is_null() {
+            } else {
                 __assert_fail(
                     b"movestr && !msg\0" as *const u8 as *const libc::c_char,
                     b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
                     639 as libc::c_int as libc::c_uint,
-                    (*::core::mem::transmute::<
-                        &[u8; 31],
-                        &[libc::c_char; 31],
-                    >(b"void midend_new_game(midend *)\0"))
-                        .as_ptr(),
+                    (*::core::mem::transmute::<&[u8; 31], &[libc::c_char; 31]>(
+                        b"void midend_new_game(midend *)\0",
+                    ))
+                    .as_ptr(),
                 );
             }
         };
-        s = ((*(*me).ourgame).execute_move)
-            .expect(
-                "non-null function pointer",
-            )((*((*me).states).offset(0 as libc::c_int as isize)).state, movestr);
-        if !s.is_null() {} else {
+        s = ((*(*me).ourgame).execute_move).expect("non-null function pointer")(
+            (*((*me).states).offset(0 as libc::c_int as isize)).state,
+            movestr,
+        );
+        if !s.is_null() {
+        } else {
             __assert_fail(
                 b"s\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
                 641 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 31],
-                    &[libc::c_char; 31],
-                >(b"void midend_new_game(midend *)\0"))
-                    .as_ptr(),
+                (*::core::mem::transmute::<&[u8; 31], &[libc::c_char; 31]>(
+                    b"void midend_new_game(midend *)\0",
+                ))
+                .as_ptr(),
             );
         }
         'c_6917: {
-            if !s.is_null() {} else {
+            if !s.is_null() {
+            } else {
                 __assert_fail(
                     b"s\0" as *const u8 as *const libc::c_char,
                     b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
                     641 as libc::c_int as libc::c_uint,
-                    (*::core::mem::transmute::<
-                        &[u8; 31],
-                        &[libc::c_char; 31],
-                    >(b"void midend_new_game(midend *)\0"))
-                        .as_ptr(),
+                    (*::core::mem::transmute::<&[u8; 31], &[libc::c_char; 31]>(
+                        b"void midend_new_game(midend *)\0",
+                    ))
+                    .as_ptr(),
                 );
             }
         };
@@ -1426,11 +1340,10 @@ pub unsafe extern "C" fn midend_new_game(mut me: *mut midend) {
     (*me).nstates += 1;
     (*me).nstates;
     (*me).statepos = 1 as libc::c_int;
-    (*me)
-        .drawstate = ((*(*me).ourgame).new_drawstate)
-        .expect(
-            "non-null function pointer",
-        )((*me).drawing, (*((*me).states).offset(0 as libc::c_int as isize)).state);
+    (*me).drawstate = ((*(*me).ourgame).new_drawstate).expect("non-null function pointer")(
+        (*me).drawing,
+        (*((*me).states).offset(0 as libc::c_int as isize)).state,
+    );
     (*me).first_draw = 1 as libc::c_int != 0;
     midend_size_new_drawstate(me);
     (*me).elapsed = 0.0f32;
@@ -1441,40 +1354,34 @@ pub unsafe extern "C" fn midend_new_game(mut me: *mut midend) {
     if !((*me).ui).is_null() {
         ((*(*me).ourgame).free_ui).expect("non-null function pointer")((*me).ui);
     }
-    (*me)
-        .ui = ((*(*me).ourgame).new_ui)
-        .expect(
-            "non-null function pointer",
-        )((*((*me).states).offset(0 as libc::c_int as isize)).state);
+    (*me).ui = ((*(*me).ourgame).new_ui).expect("non-null function pointer")(
+        (*((*me).states).offset(0 as libc::c_int as isize)).state,
+    );
     midend_apply_prefs(me, (*me).ui);
     midend_set_timer(me);
     (*me).pressed_mouse_button = 0 as libc::c_int;
     if ((*me).game_id_change_notify_function).is_some() {
-        ((*me).game_id_change_notify_function)
-            .expect("non-null function pointer")((*me).game_id_change_notify_ctx);
+        ((*me).game_id_change_notify_function).expect("non-null function pointer")(
+            (*me).game_id_change_notify_ctx,
+        );
     }
     (*me).newgame_can_store_undo = 1 as libc::c_int != 0;
 }
 #[no_mangle]
 pub unsafe extern "C" fn midend_load_prefs(
     mut me: *mut midend,
-    mut read: Option::<
+    mut read: Option<
         unsafe extern "C" fn(*mut libc::c_void, *mut libc::c_void, libc::c_int) -> bool,
     >,
     mut rctx: *mut libc::c_void,
 ) -> *const libc::c_char {
-    let mut err: *const libc::c_char = midend_deserialise_prefs(
-        me,
-        0 as *mut game_ui,
-        read,
-        rctx,
-    );
+    let mut err: *const libc::c_char = midend_deserialise_prefs(me, 0 as *mut game_ui, read, rctx);
     return err;
 }
 #[no_mangle]
 pub unsafe extern "C" fn midend_save_prefs(
     mut me: *mut midend,
-    mut write: Option::<
+    mut write: Option<
         unsafe extern "C" fn(*mut libc::c_void, *const libc::c_void, libc::c_int) -> (),
     >,
     mut wctx: *mut libc::c_void,
@@ -1494,8 +1401,8 @@ unsafe extern "C" fn newgame_undo_deserialise_check(
     mut me: *mut midend,
     mut data: *const deserialise_data,
 ) -> *const libc::c_char {
-    let mut ctx: *mut newgame_undo_deserialise_check_ctx = vctx
-        as *mut newgame_undo_deserialise_check_ctx;
+    let mut ctx: *mut newgame_undo_deserialise_check_ctx =
+        vctx as *mut newgame_undo_deserialise_check_ctx;
     let mut old: *mut libc::c_char = 0 as *mut libc::c_char;
     let mut new: *mut libc::c_char = 0 as *mut libc::c_char;
     old = encode_params(me, (*me).params, 1 as libc::c_int != 0);
@@ -1518,15 +1425,10 @@ unsafe extern "C" fn midend_undo(mut me: *mut midend) -> bool {
     let mut deserialise_error: *const libc::c_char = 0 as *const libc::c_char;
     if (*me).statepos > 1 as libc::c_int {
         if !((*me).ui).is_null() {
-            ((*(*me).ourgame).changed_state)
-                .expect(
-                    "non-null function pointer",
-                )(
+            ((*(*me).ourgame).changed_state).expect("non-null function pointer")(
                 (*me).ui,
-                (*((*me).states).offset(((*me).statepos - 1 as libc::c_int) as isize))
-                    .state,
-                (*((*me).states).offset(((*me).statepos - 2 as libc::c_int) as isize))
-                    .state,
+                (*((*me).states).offset(((*me).statepos - 1 as libc::c_int) as isize)).state,
+                (*((*me).states).offset(((*me).statepos - 2 as libc::c_int) as isize)).state,
             );
         }
         (*me).statepos -= 1;
@@ -1539,9 +1441,8 @@ unsafe extern "C" fn midend_undo(mut me: *mut midend) -> bool {
             len: 0,
             pos: 0,
         };
-        let mut cctx: newgame_undo_deserialise_check_ctx = newgame_undo_deserialise_check_ctx {
-            refused: false,
-        };
+        let mut cctx: newgame_undo_deserialise_check_ctx =
+            newgame_undo_deserialise_check_ctx { refused: false };
         let mut serbuf: midend_serialise_buf = midend_serialise_buf {
             buf: 0 as *mut libc::c_char,
             len: 0,
@@ -1591,37 +1492,36 @@ unsafe extern "C" fn midend_undo(mut me: *mut midend) -> bool {
             sfree(serbuf.buf as *mut libc::c_void);
             return 0 as libc::c_int != 0;
         } else {
-            if deserialise_error.is_null() {} else {
+            if deserialise_error.is_null() {
+            } else {
                 __assert_fail(
                     b"!deserialise_error\0" as *const u8 as *const libc::c_char,
                     b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
                     800 as libc::c_int as libc::c_uint,
-                    (*::core::mem::transmute::<
-                        &[u8; 28],
-                        &[libc::c_char; 28],
-                    >(b"_Bool midend_undo(midend *)\0"))
-                        .as_ptr(),
+                    (*::core::mem::transmute::<&[u8; 28], &[libc::c_char; 28]>(
+                        b"_Bool midend_undo(midend *)\0",
+                    ))
+                    .as_ptr(),
                 );
             }
             'c_14984: {
-                if deserialise_error.is_null() {} else {
+                if deserialise_error.is_null() {
+                } else {
                     __assert_fail(
                         b"!deserialise_error\0" as *const u8 as *const libc::c_char,
                         b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
                         800 as libc::c_int as libc::c_uint,
-                        (*::core::mem::transmute::<
-                            &[u8; 28],
-                            &[libc::c_char; 28],
-                        >(b"_Bool midend_undo(midend *)\0"))
-                            .as_ptr(),
+                        (*::core::mem::transmute::<&[u8; 28], &[libc::c_char; 28]>(
+                            b"_Bool midend_undo(midend *)\0",
+                        ))
+                        .as_ptr(),
                     );
                 }
             };
             (*me).newgame_undo.len = 0 as libc::c_int;
             (*me).newgame_redo.len = 0 as libc::c_int;
             midend_serialise_buf_write(
-                &mut (*me).newgame_redo as *mut midend_serialise_buf
-                    as *mut libc::c_void,
+                &mut (*me).newgame_redo as *mut midend_serialise_buf as *mut libc::c_void,
                 serbuf.buf as *const libc::c_void,
                 serbuf.len,
             );
@@ -1629,20 +1529,16 @@ unsafe extern "C" fn midend_undo(mut me: *mut midend) -> bool {
             return 1 as libc::c_int != 0;
         }
     } else {
-        return 0 as libc::c_int != 0
+        return 0 as libc::c_int != 0;
     };
 }
 unsafe extern "C" fn midend_redo(mut me: *mut midend) -> bool {
     let mut deserialise_error: *const libc::c_char = 0 as *const libc::c_char;
     if (*me).statepos < (*me).nstates {
         if !((*me).ui).is_null() {
-            ((*(*me).ourgame).changed_state)
-                .expect(
-                    "non-null function pointer",
-                )(
+            ((*(*me).ourgame).changed_state).expect("non-null function pointer")(
                 (*me).ui,
-                (*((*me).states).offset(((*me).statepos - 1 as libc::c_int) as isize))
-                    .state,
+                (*((*me).states).offset(((*me).statepos - 1 as libc::c_int) as isize)).state,
                 (*((*me).states).offset((*me).statepos as isize)).state,
             );
         }
@@ -1656,9 +1552,8 @@ unsafe extern "C" fn midend_redo(mut me: *mut midend) -> bool {
             len: 0,
             pos: 0,
         };
-        let mut cctx: newgame_undo_deserialise_check_ctx = newgame_undo_deserialise_check_ctx {
-            refused: false,
-        };
+        let mut cctx: newgame_undo_deserialise_check_ctx =
+            newgame_undo_deserialise_check_ctx { refused: false };
         let mut serbuf: midend_serialise_buf = midend_serialise_buf {
             buf: 0 as *mut libc::c_char,
             len: 0,
@@ -1708,37 +1603,36 @@ unsafe extern "C" fn midend_redo(mut me: *mut midend) -> bool {
             sfree(serbuf.buf as *mut libc::c_void);
             return 0 as libc::c_int != 0;
         } else {
-            if deserialise_error.is_null() {} else {
+            if deserialise_error.is_null() {
+            } else {
                 __assert_fail(
                     b"!deserialise_error\0" as *const u8 as *const libc::c_char,
                     b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
                     874 as libc::c_int as libc::c_uint,
-                    (*::core::mem::transmute::<
-                        &[u8; 28],
-                        &[libc::c_char; 28],
-                    >(b"_Bool midend_redo(midend *)\0"))
-                        .as_ptr(),
+                    (*::core::mem::transmute::<&[u8; 28], &[libc::c_char; 28]>(
+                        b"_Bool midend_redo(midend *)\0",
+                    ))
+                    .as_ptr(),
                 );
             }
             'c_12145: {
-                if deserialise_error.is_null() {} else {
+                if deserialise_error.is_null() {
+                } else {
                     __assert_fail(
                         b"!deserialise_error\0" as *const u8 as *const libc::c_char,
                         b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
                         874 as libc::c_int as libc::c_uint,
-                        (*::core::mem::transmute::<
-                            &[u8; 28],
-                            &[libc::c_char; 28],
-                        >(b"_Bool midend_redo(midend *)\0"))
-                            .as_ptr(),
+                        (*::core::mem::transmute::<&[u8; 28], &[libc::c_char; 28]>(
+                            b"_Bool midend_redo(midend *)\0",
+                        ))
+                        .as_ptr(),
                     );
                 }
             };
             (*me).newgame_redo.len = 0 as libc::c_int;
             (*me).newgame_undo.len = 0 as libc::c_int;
             midend_serialise_buf_write(
-                &mut (*me).newgame_undo as *mut midend_serialise_buf
-                    as *mut libc::c_void,
+                &mut (*me).newgame_undo as *mut midend_serialise_buf as *mut libc::c_void,
                 serbuf.buf as *const libc::c_void,
                 serbuf.len,
             );
@@ -1746,31 +1640,32 @@ unsafe extern "C" fn midend_redo(mut me: *mut midend) -> bool {
             return 1 as libc::c_int != 0;
         }
     } else {
-        return 0 as libc::c_int != 0
+        return 0 as libc::c_int != 0;
     };
 }
 unsafe extern "C" fn midend_finish_move(mut me: *mut midend) {
     let mut flashtime: libc::c_float = 0.;
     if (!((*me).oldstate).is_null() || (*me).statepos > 1 as libc::c_int)
         && ((*me).dir > 0 as libc::c_int
-            && !((*((*me).states).offset(((*me).statepos - 1 as libc::c_int) as isize))
-                .movetype != MOVE as libc::c_int)
-            || (*me).dir < 0 as libc::c_int && (*me).statepos < (*me).nstates
+            && !((*((*me).states).offset(((*me).statepos - 1 as libc::c_int) as isize)).movetype
+                != MOVE as libc::c_int)
+            || (*me).dir < 0 as libc::c_int
+                && (*me).statepos < (*me).nstates
                 && !((*((*me).states).offset((*me).statepos as isize)).movetype
                     != MOVE as libc::c_int))
     {
-        flashtime = ((*(*me).ourgame).flash_length)
-            .expect(
-                "non-null function pointer",
-            )(
+        flashtime = ((*(*me).ourgame).flash_length).expect("non-null function pointer")(
             if !((*me).oldstate).is_null() {
                 (*me).oldstate
             } else {
-                (*((*me).states).offset(((*me).statepos - 2 as libc::c_int) as isize))
-                    .state
+                (*((*me).states).offset(((*me).statepos - 2 as libc::c_int) as isize)).state
             },
             (*((*me).states).offset(((*me).statepos - 1 as libc::c_int) as isize)).state,
-            if !((*me).oldstate).is_null() { (*me).dir } else { 1 as libc::c_int },
+            if !((*me).oldstate).is_null() {
+                (*me).dir
+            } else {
+                1 as libc::c_int
+            },
             (*me).ui,
         );
         if flashtime > 0 as libc::c_int as libc::c_float {
@@ -1789,9 +1684,7 @@ unsafe extern "C" fn midend_finish_move(mut me: *mut midend) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn midend_stop_anim(mut me: *mut midend) {
-    if !((*me).oldstate).is_null()
-        || (*me).anim_time != 0 as libc::c_int as libc::c_float
-    {
+    if !((*me).oldstate).is_null() || (*me).anim_time != 0 as libc::c_int as libc::c_float {
         midend_finish_move(me);
         midend_redraw(me);
     }
@@ -1799,48 +1692,48 @@ pub unsafe extern "C" fn midend_stop_anim(mut me: *mut midend) {
 #[no_mangle]
 pub unsafe extern "C" fn midend_restart_game(mut me: *mut midend) {
     let mut s: *mut game_state = 0 as *mut game_state;
-    if (*me).statepos >= 1 as libc::c_int {} else {
+    if (*me).statepos >= 1 as libc::c_int {
+    } else {
         __assert_fail(
             b"me->statepos >= 1\0" as *const u8 as *const libc::c_char,
             b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
             943 as libc::c_int as libc::c_uint,
-            (*::core::mem::transmute::<
-                &[u8; 35],
-                &[libc::c_char; 35],
-            >(b"void midend_restart_game(midend *)\0"))
-                .as_ptr(),
+            (*::core::mem::transmute::<&[u8; 35], &[libc::c_char; 35]>(
+                b"void midend_restart_game(midend *)\0",
+            ))
+            .as_ptr(),
         );
     }
     'c_10736: {
-        if (*me).statepos >= 1 as libc::c_int {} else {
+        if (*me).statepos >= 1 as libc::c_int {
+        } else {
             __assert_fail(
                 b"me->statepos >= 1\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
                 943 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 35],
-                    &[libc::c_char; 35],
-                >(b"void midend_restart_game(midend *)\0"))
-                    .as_ptr(),
+                (*::core::mem::transmute::<&[u8; 35], &[libc::c_char; 35]>(
+                    b"void midend_restart_game(midend *)\0",
+                ))
+                .as_ptr(),
             );
         }
     };
     if (*me).statepos == 1 as libc::c_int {
         return;
     }
-    s = ((*(*me).ourgame).new_game)
-        .expect("non-null function pointer")(me, (*me).params, (*me).desc);
+    s = ((*(*me).ourgame).new_game).expect("non-null function pointer")(
+        me,
+        (*me).params,
+        (*me).desc,
+    );
     midend_stop_anim(me);
     midend_purge_states(me);
     if (*me).nstates >= (*me).statesize {
         (*me).statesize = (*me).nstates + 128 as libc::c_int;
-        (*me)
-            .states = srealloc(
+        (*me).states = srealloc(
             (*me).states as *mut libc::c_void,
             ((*me).statesize as libc::c_ulong)
-                .wrapping_mul(
-                    ::core::mem::size_of::<midend_state_entry>() as libc::c_ulong,
-                ),
+                .wrapping_mul(::core::mem::size_of::<midend_state_entry>() as libc::c_ulong),
         ) as *mut midend_state_entry;
     }
     let ref mut fresh4 = (*((*me).states).offset((*me).nstates as isize)).state;
@@ -1851,10 +1744,7 @@ pub unsafe extern "C" fn midend_restart_game(mut me: *mut midend) {
     (*me).nstates += 1;
     (*me).statepos = (*me).nstates;
     if !((*me).ui).is_null() {
-        ((*(*me).ourgame).changed_state)
-            .expect(
-                "non-null function pointer",
-            )(
+        ((*(*me).ourgame).changed_state).expect("non-null function pointer")(
             (*me).ui,
             (*((*me).states).offset(((*me).statepos - 2 as libc::c_int) as isize)).state,
             (*((*me).states).offset(((*me).statepos - 1 as libc::c_int) as isize)).state,
@@ -1874,22 +1764,17 @@ unsafe extern "C" fn midend_really_process_key(
 ) -> libc::c_int {
     let mut current_block: u64;
     let mut oldstate: *mut game_state = ((*(*me).ourgame).dup_game)
-        .expect(
-            "non-null function pointer",
-        )((*((*me).states).offset(((*me).statepos - 1 as libc::c_int) as isize)).state);
+        .expect("non-null function pointer")(
+        (*((*me).states).offset(((*me).statepos - 1 as libc::c_int) as isize)).state,
+    );
     let mut type_0: libc::c_int = MOVE as libc::c_int;
     let mut gottype: bool = 0 as libc::c_int != 0;
     let mut ret: libc::c_int = PKR_NO_EFFECT as libc::c_int;
     let mut anim_time: libc::c_float = 0.;
     let mut s: *mut game_state = 0 as *mut game_state;
     let mut movestr: *mut libc::c_char = 0 as *mut libc::c_char;
-    if !(button > UI_LOWER_BOUND as libc::c_int
-        && button < UI_UPPER_BOUND as libc::c_int)
-    {
-        movestr = ((*(*me).ourgame).interpret_move)
-            .expect(
-                "non-null function pointer",
-            )(
+    if !(button > UI_LOWER_BOUND as libc::c_int && button < UI_UPPER_BOUND as libc::c_int) {
+        movestr = ((*(*me).ourgame).interpret_move).expect("non-null function pointer")(
             (*((*me).states).offset(((*me).statepos - 1 as libc::c_int) as isize)).state,
             (*me).ui,
             (*me).drawstate,
@@ -1900,7 +1785,8 @@ unsafe extern "C" fn midend_really_process_key(
     }
     if movestr.is_null() || movestr == MOVE_UNUSED.as_mut_ptr() {
         if (*me).one_key_shortcuts as libc::c_int != 0
-            && (button == 'n' as i32 || button == 'N' as i32) || button == '\u{e}' as i32
+            && (button == 'n' as i32 || button == 'N' as i32)
+            || button == '\u{e}' as i32
             || button == UI_NEWGAME as libc::c_int
         {
             midend_new_game(me);
@@ -1908,14 +1794,15 @@ unsafe extern "C" fn midend_really_process_key(
             ret = PKR_SOME_EFFECT as libc::c_int;
             current_block = 7514209646974688516;
         } else if (*me).one_key_shortcuts as libc::c_int != 0
-            && (button == 'u' as i32 || button == 'U' as i32) || button == '*' as i32
-            || button == '\u{1a}' as i32 || button == '\u{1f}' as i32
+            && (button == 'u' as i32 || button == 'U' as i32)
+            || button == '*' as i32
+            || button == '\u{1a}' as i32
+            || button == '\u{1f}' as i32
             || button == UI_UNDO as libc::c_int
         {
             midend_stop_anim(me);
-            type_0 = (*((*me).states)
-                .offset(((*me).statepos - 1 as libc::c_int) as isize))
-                .movetype;
+            type_0 =
+                (*((*me).states).offset(((*me).statepos - 1 as libc::c_int) as isize)).movetype;
             gottype = 1 as libc::c_int != 0;
             if !midend_undo(me) {
                 current_block = 7514209646974688516;
@@ -1924,8 +1811,10 @@ unsafe extern "C" fn midend_really_process_key(
                 current_block = 3689906465960840878;
             }
         } else if (*me).one_key_shortcuts as libc::c_int != 0
-            && (button == 'r' as i32 || button == 'R' as i32) || button == '#' as i32
-            || button == '\u{12}' as i32 || button == '\u{19}' as i32
+            && (button == 'r' as i32 || button == 'R' as i32)
+            || button == '#' as i32
+            || button == '\u{12}' as i32
+            || button == '\u{19}' as i32
             || button == UI_REDO as libc::c_int
         {
             midend_stop_anim(me);
@@ -1947,7 +1836,8 @@ unsafe extern "C" fn midend_really_process_key(
         } else {
             if (*me).one_key_shortcuts as libc::c_int != 0
                 && (button == 'q' as i32 || button == 'Q' as i32)
-                || button == '\u{11}' as i32 || button == UI_QUIT as libc::c_int
+                || button == '\u{11}' as i32
+                || button == UI_QUIT as libc::c_int
             {
                 ret = PKR_QUIT as libc::c_int;
             } else {
@@ -1961,49 +1851,41 @@ unsafe extern "C" fn midend_really_process_key(
     } else {
         ret = PKR_SOME_EFFECT as libc::c_int;
         if movestr == MOVE_UI_UPDATE.as_mut_ptr() {
-            s = (*((*me).states).offset(((*me).statepos - 1 as libc::c_int) as isize))
-                .state;
+            s = (*((*me).states).offset(((*me).statepos - 1 as libc::c_int) as isize)).state;
         } else {
             assert_printable_ascii(movestr);
-            s = ((*(*me).ourgame).execute_move)
-                .expect(
-                    "non-null function pointer",
-                )(
-                (*((*me).states).offset(((*me).statepos - 1 as libc::c_int) as isize))
-                    .state,
+            s = ((*(*me).ourgame).execute_move).expect("non-null function pointer")(
+                (*((*me).states).offset(((*me).statepos - 1 as libc::c_int) as isize)).state,
                 movestr,
             );
-            if !s.is_null() {} else {
+            if !s.is_null() {
+            } else {
                 __assert_fail(
                     b"s != NULL\0" as *const u8 as *const libc::c_char,
                     b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
                     1040 as libc::c_int as libc::c_uint,
-                    (*::core::mem::transmute::<
-                        &[u8; 55],
-                        &[libc::c_char; 55],
-                    >(b"int midend_really_process_key(midend *, int, int, int)\0"))
-                        .as_ptr(),
+                    (*::core::mem::transmute::<&[u8; 55], &[libc::c_char; 55]>(
+                        b"int midend_really_process_key(midend *, int, int, int)\0",
+                    ))
+                    .as_ptr(),
                 );
             }
             'c_11367: {
-                if !s.is_null() {} else {
+                if !s.is_null() {
+                } else {
                     __assert_fail(
                         b"s != NULL\0" as *const u8 as *const libc::c_char,
                         b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
                         1040 as libc::c_int as libc::c_uint,
-                        (*::core::mem::transmute::<
-                            &[u8; 55],
-                            &[libc::c_char; 55],
-                        >(b"int midend_really_process_key(midend *, int, int, int)\0"))
-                            .as_ptr(),
+                        (*::core::mem::transmute::<&[u8; 55], &[libc::c_char; 55]>(
+                            b"int midend_really_process_key(midend *, int, int, int)\0",
+                        ))
+                        .as_ptr(),
                     );
                 }
             };
         }
-        if s
-            == (*((*me).states).offset(((*me).statepos - 1 as libc::c_int) as isize))
-                .state
-        {
+        if s == (*((*me).states).offset(((*me).statepos - 1 as libc::c_int) as isize)).state {
             midend_redraw(me);
             midend_set_timer(me);
             current_block = 7514209646974688516;
@@ -2012,63 +1894,54 @@ unsafe extern "C" fn midend_really_process_key(
             midend_purge_states(me);
             if (*me).nstates >= (*me).statesize {
                 (*me).statesize = (*me).nstates + 128 as libc::c_int;
-                (*me)
-                    .states = srealloc(
-                    (*me).states as *mut libc::c_void,
-                    ((*me).statesize as libc::c_ulong)
-                        .wrapping_mul(
-                            ::core::mem::size_of::<midend_state_entry>() as libc::c_ulong,
-                        ),
-                ) as *mut midend_state_entry;
+                (*me).states =
+                    srealloc(
+                        (*me).states as *mut libc::c_void,
+                        ((*me).statesize as libc::c_ulong)
+                            .wrapping_mul(
+                                ::core::mem::size_of::<midend_state_entry>() as libc::c_ulong
+                            ),
+                    ) as *mut midend_state_entry;
             }
-            if !movestr.is_null() {} else {
+            if !movestr.is_null() {
+            } else {
                 __assert_fail(
                     b"movestr != NULL\0" as *const u8 as *const libc::c_char,
                     b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
                     1056 as libc::c_int as libc::c_uint,
-                    (*::core::mem::transmute::<
-                        &[u8; 55],
-                        &[libc::c_char; 55],
-                    >(b"int midend_really_process_key(midend *, int, int, int)\0"))
-                        .as_ptr(),
+                    (*::core::mem::transmute::<&[u8; 55], &[libc::c_char; 55]>(
+                        b"int midend_really_process_key(midend *, int, int, int)\0",
+                    ))
+                    .as_ptr(),
                 );
             }
             'c_11224: {
-                if !movestr.is_null() {} else {
+                if !movestr.is_null() {
+                } else {
                     __assert_fail(
                         b"movestr != NULL\0" as *const u8 as *const libc::c_char,
                         b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
                         1056 as libc::c_int as libc::c_uint,
-                        (*::core::mem::transmute::<
-                            &[u8; 55],
-                            &[libc::c_char; 55],
-                        >(b"int midend_really_process_key(midend *, int, int, int)\0"))
-                            .as_ptr(),
+                        (*::core::mem::transmute::<&[u8; 55], &[libc::c_char; 55]>(
+                            b"int midend_really_process_key(midend *, int, int, int)\0",
+                        ))
+                        .as_ptr(),
                     );
                 }
             };
             let ref mut fresh6 = (*((*me).states).offset((*me).nstates as isize)).state;
             *fresh6 = s;
-            let ref mut fresh7 = (*((*me).states).offset((*me).nstates as isize))
-                .movestr;
+            let ref mut fresh7 = (*((*me).states).offset((*me).nstates as isize)).movestr;
             *fresh7 = movestr;
-            (*((*me).states).offset((*me).nstates as isize))
-                .movetype = MOVE as libc::c_int;
+            (*((*me).states).offset((*me).nstates as isize)).movetype = MOVE as libc::c_int;
             (*me).nstates += 1;
             (*me).statepos = (*me).nstates;
             (*me).dir = 1 as libc::c_int;
             if !((*me).ui).is_null() {
-                ((*(*me).ourgame).changed_state)
-                    .expect(
-                        "non-null function pointer",
-                    )(
+                ((*(*me).ourgame).changed_state).expect("non-null function pointer")(
                     (*me).ui,
-                    (*((*me).states)
-                        .offset(((*me).statepos - 2 as libc::c_int) as isize))
-                        .state,
-                    (*((*me).states)
-                        .offset(((*me).statepos - 1 as libc::c_int) as isize))
-                        .state,
+                    (*((*me).states).offset(((*me).statepos - 2 as libc::c_int) as isize)).state,
+                    (*((*me).states).offset(((*me).statepos - 1 as libc::c_int) as isize)).state,
                 );
             }
             current_block = 3689906465960840878;
@@ -2079,25 +1952,18 @@ unsafe extern "C" fn midend_really_process_key(
     match current_block {
         3689906465960840878 => {
             if !gottype {
-                type_0 = (*((*me).states)
-                    .offset(((*me).statepos - 1 as libc::c_int) as isize))
-                    .movetype;
+                type_0 =
+                    (*((*me).states).offset(((*me).statepos - 1 as libc::c_int) as isize)).movetype;
             }
             if type_0 != MOVE as libc::c_int
                 && !(type_0 == SOLVE as libc::c_int
-                    && (*(*me).ourgame).flags & (1 as libc::c_int) << 9 as libc::c_int
-                        != 0)
+                    && (*(*me).ourgame).flags & (1 as libc::c_int) << 9 as libc::c_int != 0)
             {
                 anim_time = 0 as libc::c_int as libc::c_float;
             } else {
-                anim_time = ((*(*me).ourgame).anim_length)
-                    .expect(
-                        "non-null function pointer",
-                    )(
+                anim_time = ((*(*me).ourgame).anim_length).expect("non-null function pointer")(
                     oldstate,
-                    (*((*me).states)
-                        .offset(((*me).statepos - 1 as libc::c_int) as isize))
-                        .state,
+                    (*((*me).states).offset(((*me).statepos - 1 as libc::c_int) as isize)).state,
                     (*me).dir,
                     (*me).ui,
                 );
@@ -2133,8 +1999,7 @@ pub unsafe extern "C" fn midend_process_key(
     if (button - LEFT_DRAG as libc::c_int) as libc::c_uint
         <= (RIGHT_DRAG as libc::c_int - LEFT_DRAG as libc::c_int) as libc::c_uint
         || (button - LEFT_RELEASE as libc::c_int) as libc::c_uint
-            <= (RIGHT_RELEASE as libc::c_int - LEFT_RELEASE as libc::c_int)
-                as libc::c_uint
+            <= (RIGHT_RELEASE as libc::c_int - LEFT_RELEASE as libc::c_int) as libc::c_uint
     {
         if (*me).pressed_mouse_button != 0 {
             if (button - LEFT_DRAG as libc::c_int) as libc::c_uint
@@ -2147,7 +2012,7 @@ pub unsafe extern "C" fn midend_process_key(
                     + (LEFT_RELEASE as libc::c_int - LEFT_BUTTON as libc::c_int);
             }
         } else {
-            return ret
+            return ret;
         }
     } else if (button - LEFT_BUTTON as libc::c_int) as libc::c_uint
         <= (RIGHT_BUTTON as libc::c_int - LEFT_BUTTON as libc::c_int) as libc::c_uint
@@ -2155,8 +2020,10 @@ pub unsafe extern "C" fn midend_process_key(
     {
         if (*(*me).ourgame).flags
             & (1 as libc::c_int)
-                << ((*me).pressed_mouse_button - LEFT_BUTTON as libc::c_int)
-                    * 3 as libc::c_int + button - LEFT_BUTTON as libc::c_int != 0
+                << ((*me).pressed_mouse_button - LEFT_BUTTON as libc::c_int) * 3 as libc::c_int
+                    + button
+                    - LEFT_BUTTON as libc::c_int
+            != 0
         {
             return ret;
         }
@@ -2164,8 +2031,7 @@ pub unsafe extern "C" fn midend_process_key(
             me,
             x,
             y,
-            (*me).pressed_mouse_button
-                + (LEFT_RELEASE as libc::c_int - LEFT_BUTTON as libc::c_int),
+            (*me).pressed_mouse_button + (LEFT_RELEASE as libc::c_int - LEFT_BUTTON as libc::c_int),
         );
         ret = if ret < ret2 { ret } else { ret2 };
     }
@@ -2173,9 +2039,8 @@ pub unsafe extern "C" fn midend_process_key(
         && button & !(MOD_MASK as libc::c_int) >= 0x40 as libc::c_int
         && button & !(MOD_MASK as libc::c_int) < 0x80 as libc::c_int
     {
-        button = button
-            & (0x1f as libc::c_int
-                | MOD_MASK as libc::c_int & !(MOD_CTRL as libc::c_int));
+        button =
+            button & (0x1f as libc::c_int | MOD_MASK as libc::c_int & !(MOD_CTRL as libc::c_int));
     }
     if button & (!(MOD_MASK as libc::c_int) | MOD_SHFT as libc::c_int)
         == MOD_SHFT as libc::c_int | '\u{1a}' as i32
@@ -2230,8 +2095,10 @@ pub unsafe extern "C" fn midend_request_keys(
     let mut nkeys: libc::c_int = 0 as libc::c_int;
     let mut i: libc::c_int = 0;
     if ((*(*me).ourgame).request_keys).is_some() {
-        keys = ((*(*me).ourgame).request_keys)
-            .expect("non-null function pointer")(midend_get_params(me), &mut nkeys);
+        keys = ((*(*me).ourgame).request_keys).expect("non-null function pointer")(
+            midend_get_params(me),
+            &mut nkeys,
+        );
         i = 0 as libc::c_int;
         while i < nkeys {
             if ((*keys.offset(i as isize)).label).is_null() {
@@ -2252,42 +2119,36 @@ pub unsafe extern "C" fn midend_current_key_label(
     mut me: *mut midend,
     mut button: libc::c_int,
 ) -> *const libc::c_char {
-    if button == CURSOR_SELECT as libc::c_int || button == CURSOR_SELECT2 as libc::c_int
-    {} else {
+    if button == CURSOR_SELECT as libc::c_int || button == CURSOR_SELECT2 as libc::c_int {
+    } else {
         __assert_fail(
             b"IS_CURSOR_SELECT(button)\0" as *const u8 as *const libc::c_char,
             b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
             1291 as libc::c_int as libc::c_uint,
-            (*::core::mem::transmute::<
-                &[u8; 52],
-                &[libc::c_char; 52],
-            >(b"const char *midend_current_key_label(midend *, int)\0"))
-                .as_ptr(),
+            (*::core::mem::transmute::<&[u8; 52], &[libc::c_char; 52]>(
+                b"const char *midend_current_key_label(midend *, int)\0",
+            ))
+            .as_ptr(),
         );
     }
     'c_15827: {
-        if button == CURSOR_SELECT as libc::c_int
-            || button == CURSOR_SELECT2 as libc::c_int
-        {} else {
+        if button == CURSOR_SELECT as libc::c_int || button == CURSOR_SELECT2 as libc::c_int {
+        } else {
             __assert_fail(
                 b"IS_CURSOR_SELECT(button)\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
                 1291 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 52],
-                    &[libc::c_char; 52],
-                >(b"const char *midend_current_key_label(midend *, int)\0"))
-                    .as_ptr(),
+                (*::core::mem::transmute::<&[u8; 52], &[libc::c_char; 52]>(
+                    b"const char *midend_current_key_label(midend *, int)\0",
+                ))
+                .as_ptr(),
             );
         }
     };
     if ((*(*me).ourgame).current_key_label).is_none() {
         return b"\0" as *const u8 as *const libc::c_char;
     }
-    return ((*(*me).ourgame).current_key_label)
-        .expect(
-            "non-null function pointer",
-        )(
+    return ((*(*me).ourgame).current_key_label).expect("non-null function pointer")(
         (*me).ui,
         (*((*me).states).offset(((*me).statepos - 1 as libc::c_int) as isize)).state,
         button,
@@ -2295,29 +2156,29 @@ pub unsafe extern "C" fn midend_current_key_label(
 }
 #[no_mangle]
 pub unsafe extern "C" fn midend_redraw(mut me: *mut midend) {
-    if !((*me).drawing).is_null() {} else {
+    if !((*me).drawing).is_null() {
+    } else {
         __assert_fail(
             b"me->drawing\0" as *const u8 as *const libc::c_char,
             b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
             1299 as libc::c_int as libc::c_uint,
-            (*::core::mem::transmute::<
-                &[u8; 29],
-                &[libc::c_char; 29],
-            >(b"void midend_redraw(midend *)\0"))
-                .as_ptr(),
+            (*::core::mem::transmute::<&[u8; 29], &[libc::c_char; 29]>(
+                b"void midend_redraw(midend *)\0",
+            ))
+            .as_ptr(),
         );
     }
     'c_7835: {
-        if !((*me).drawing).is_null() {} else {
+        if !((*me).drawing).is_null() {
+        } else {
             __assert_fail(
                 b"me->drawing\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
                 1299 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 29],
-                    &[libc::c_char; 29],
-                >(b"void midend_redraw(midend *)\0"))
-                    .as_ptr(),
+                (*::core::mem::transmute::<&[u8; 29], &[libc::c_char; 29]>(
+                    b"void midend_redraw(midend *)\0",
+                ))
+                .as_ptr(),
             );
         }
     };
@@ -2339,56 +2200,48 @@ pub unsafe extern "C" fn midend_redraw(mut me: *mut midend) {
             && (*me).anim_time > 0 as libc::c_int as libc::c_float
             && (*me).anim_pos < (*me).anim_time
         {
-            if (*me).dir != 0 as libc::c_int {} else {
+            if (*me).dir != 0 as libc::c_int {
+            } else {
                 __assert_fail(
                     b"me->dir != 0\0" as *const u8 as *const libc::c_char,
                     b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
                     1322 as libc::c_int as libc::c_uint,
-                    (*::core::mem::transmute::<
-                        &[u8; 29],
-                        &[libc::c_char; 29],
-                    >(b"void midend_redraw(midend *)\0"))
-                        .as_ptr(),
+                    (*::core::mem::transmute::<&[u8; 29], &[libc::c_char; 29]>(
+                        b"void midend_redraw(midend *)\0",
+                    ))
+                    .as_ptr(),
                 );
             }
             'c_7726: {
-                if (*me).dir != 0 as libc::c_int {} else {
+                if (*me).dir != 0 as libc::c_int {
+                } else {
                     __assert_fail(
                         b"me->dir != 0\0" as *const u8 as *const libc::c_char,
                         b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
                         1322 as libc::c_int as libc::c_uint,
-                        (*::core::mem::transmute::<
-                            &[u8; 29],
-                            &[libc::c_char; 29],
-                        >(b"void midend_redraw(midend *)\0"))
-                            .as_ptr(),
+                        (*::core::mem::transmute::<&[u8; 29], &[libc::c_char; 29]>(
+                            b"void midend_redraw(midend *)\0",
+                        ))
+                        .as_ptr(),
                     );
                 }
             };
-            ((*(*me).ourgame).redraw)
-                .expect(
-                    "non-null function pointer",
-                )(
+            ((*(*me).ourgame).redraw).expect("non-null function pointer")(
                 (*me).drawing,
                 (*me).drawstate,
                 (*me).oldstate,
-                (*((*me).states).offset(((*me).statepos - 1 as libc::c_int) as isize))
-                    .state,
+                (*((*me).states).offset(((*me).statepos - 1 as libc::c_int) as isize)).state,
                 (*me).dir,
                 (*me).ui,
                 (*me).anim_pos,
                 (*me).flash_pos,
             );
         } else {
-            ((*(*me).ourgame).redraw)
-                .expect(
-                    "non-null function pointer",
-                )(
+            ((*(*me).ourgame).redraw).expect("non-null function pointer")(
                 (*me).drawing,
                 (*me).drawstate,
                 0 as *const game_state,
-                (*((*me).states).offset(((*me).statepos - 1 as libc::c_int) as isize))
-                    .state,
+                (*((*me).states).offset(((*me).statepos - 1 as libc::c_int) as isize)).state,
                 1 as libc::c_int,
                 (*me).ui,
                 0.0f64 as libc::c_float,
@@ -2408,10 +2261,7 @@ pub unsafe extern "C" fn midend_redraw(mut me: *mut midend) {
     }
 }
 #[no_mangle]
-pub unsafe extern "C" fn midend_freeze_timer(
-    mut me: *mut midend,
-    mut tprop: libc::c_float,
-) {
+pub unsafe extern "C" fn midend_freeze_timer(mut me: *mut midend, mut tprop: libc::c_float) {
     (*me).anim_pos = (*me).anim_time * tprop;
     midend_redraw(me);
     deactivate_timer((*me).frontend);
@@ -2430,8 +2280,7 @@ pub unsafe extern "C" fn midend_timer(mut me: *mut midend, mut tplus: libc::c_fl
         }
     }
     (*me).flash_pos += tplus;
-    if (*me).flash_pos >= (*me).flash_time
-        || (*me).flash_time == 0 as libc::c_int as libc::c_float
+    if (*me).flash_pos >= (*me).flash_time || (*me).flash_time == 0 as libc::c_int as libc::c_float
     {
         (*me).flash_time = 0 as libc::c_int as libc::c_float;
         (*me).flash_pos = (*me).flash_time;
@@ -2461,31 +2310,30 @@ pub unsafe extern "C" fn midend_colours(
     mut ncolours: *mut libc::c_int,
 ) -> *mut libc::c_float {
     let mut ret: *mut libc::c_float = 0 as *mut libc::c_float;
-    ret = ((*(*me).ourgame).colours)
-        .expect("non-null function pointer")((*me).frontend, ncolours);
-    if *ncolours >= 1 as libc::c_int {} else {
+    ret = ((*(*me).ourgame).colours).expect("non-null function pointer")((*me).frontend, ncolours);
+    if *ncolours >= 1 as libc::c_int {
+    } else {
         __assert_fail(
             b"*ncolours >= 1\0" as *const u8 as *const libc::c_char,
             b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
             1389 as libc::c_int as libc::c_uint,
-            (*::core::mem::transmute::<
-                &[u8; 39],
-                &[libc::c_char; 39],
-            >(b"float *midend_colours(midend *, int *)\0"))
-                .as_ptr(),
+            (*::core::mem::transmute::<&[u8; 39], &[libc::c_char; 39]>(
+                b"float *midend_colours(midend *, int *)\0",
+            ))
+            .as_ptr(),
         );
     }
     'c_16390: {
-        if *ncolours >= 1 as libc::c_int {} else {
+        if *ncolours >= 1 as libc::c_int {
+        } else {
             __assert_fail(
                 b"*ncolours >= 1\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
                 1389 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 39],
-                    &[libc::c_char; 39],
-                >(b"float *midend_colours(midend *, int *)\0"))
-                    .as_ptr(),
+                (*::core::mem::transmute::<&[u8; 39], &[libc::c_char; 39]>(
+                    b"float *midend_colours(midend *, int *)\0",
+                ))
+                .as_ptr(),
             );
         }
     };
@@ -2508,16 +2356,15 @@ pub unsafe extern "C" fn midend_colours(
         k = 0 as libc::c_int;
         j = k;
         while buf[j as usize] != 0 {
-            if *(*__ctype_b_loc())
-                .offset(buf[j as usize] as libc::c_uchar as libc::c_int as isize)
-                as libc::c_int & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+            if *(*__ctype_b_loc()).offset(buf[j as usize] as libc::c_uchar as libc::c_int as isize)
+                as libc::c_int
+                & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
                 == 0
             {
                 let fresh9 = k;
                 k = k + 1;
-                buf[fresh9
-                    as usize] = toupper(buf[j as usize] as libc::c_uchar as libc::c_int)
-                    as libc::c_char;
+                buf[fresh9 as usize] =
+                    toupper(buf[j as usize] as libc::c_uchar as libc::c_int) as libc::c_char;
             }
             j += 1;
             j;
@@ -2533,115 +2380,106 @@ pub unsafe extern "C" fn midend_colours(
                 &mut b as *mut libc::c_uint,
             ) == 3 as libc::c_int
         {
-            *ret
-                .offset(
-                    (i * 3 as libc::c_int + 0 as libc::c_int) as isize,
-                ) = r as libc::c_float / 255.0f32;
-            *ret
-                .offset(
-                    (i * 3 as libc::c_int + 1 as libc::c_int) as isize,
-                ) = g as libc::c_float / 255.0f32;
-            *ret
-                .offset(
-                    (i * 3 as libc::c_int + 2 as libc::c_int) as isize,
-                ) = b as libc::c_float / 255.0f32;
+            *ret.offset((i * 3 as libc::c_int + 0 as libc::c_int) as isize) =
+                r as libc::c_float / 255.0f32;
+            *ret.offset((i * 3 as libc::c_int + 1 as libc::c_int) as isize) =
+                g as libc::c_float / 255.0f32;
+            *ret.offset((i * 3 as libc::c_int + 2 as libc::c_int) as isize) =
+                b as libc::c_float / 255.0f32;
         }
         if 0.0f32 <= *ret.offset((i * 3 as libc::c_int + 0 as libc::c_int) as isize)
             && *ret.offset((i * 3 as libc::c_int + 0 as libc::c_int) as isize) <= 1.0f32
-        {} else {
+        {
+        } else {
             __assert_fail(
                 b"0.0F <= ret[i*3 + 0] && ret[i*3 + 0] <= 1.0F\0" as *const u8
                     as *const libc::c_char,
                 b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
                 1416 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 39],
-                    &[libc::c_char; 39],
-                >(b"float *midend_colours(midend *, int *)\0"))
-                    .as_ptr(),
+                (*::core::mem::transmute::<&[u8; 39], &[libc::c_char; 39]>(
+                    b"float *midend_colours(midend *, int *)\0",
+                ))
+                .as_ptr(),
             );
         }
         'c_16133: {
             if 0.0f32 <= *ret.offset((i * 3 as libc::c_int + 0 as libc::c_int) as isize)
-                && *ret.offset((i * 3 as libc::c_int + 0 as libc::c_int) as isize)
-                    <= 1.0f32
-            {} else {
+                && *ret.offset((i * 3 as libc::c_int + 0 as libc::c_int) as isize) <= 1.0f32
+            {
+            } else {
                 __assert_fail(
                     b"0.0F <= ret[i*3 + 0] && ret[i*3 + 0] <= 1.0F\0" as *const u8
                         as *const libc::c_char,
                     b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
                     1416 as libc::c_int as libc::c_uint,
-                    (*::core::mem::transmute::<
-                        &[u8; 39],
-                        &[libc::c_char; 39],
-                    >(b"float *midend_colours(midend *, int *)\0"))
-                        .as_ptr(),
+                    (*::core::mem::transmute::<&[u8; 39], &[libc::c_char; 39]>(
+                        b"float *midend_colours(midend *, int *)\0",
+                    ))
+                    .as_ptr(),
                 );
             }
         };
         if 0.0f32 <= *ret.offset((i * 3 as libc::c_int + 1 as libc::c_int) as isize)
             && *ret.offset((i * 3 as libc::c_int + 1 as libc::c_int) as isize) <= 1.0f32
-        {} else {
+        {
+        } else {
             __assert_fail(
                 b"0.0F <= ret[i*3 + 1] && ret[i*3 + 1] <= 1.0F\0" as *const u8
                     as *const libc::c_char,
                 b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
                 1417 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 39],
-                    &[libc::c_char; 39],
-                >(b"float *midend_colours(midend *, int *)\0"))
-                    .as_ptr(),
+                (*::core::mem::transmute::<&[u8; 39], &[libc::c_char; 39]>(
+                    b"float *midend_colours(midend *, int *)\0",
+                ))
+                .as_ptr(),
             );
         }
         'c_16055: {
             if 0.0f32 <= *ret.offset((i * 3 as libc::c_int + 1 as libc::c_int) as isize)
-                && *ret.offset((i * 3 as libc::c_int + 1 as libc::c_int) as isize)
-                    <= 1.0f32
-            {} else {
+                && *ret.offset((i * 3 as libc::c_int + 1 as libc::c_int) as isize) <= 1.0f32
+            {
+            } else {
                 __assert_fail(
                     b"0.0F <= ret[i*3 + 1] && ret[i*3 + 1] <= 1.0F\0" as *const u8
                         as *const libc::c_char,
                     b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
                     1417 as libc::c_int as libc::c_uint,
-                    (*::core::mem::transmute::<
-                        &[u8; 39],
-                        &[libc::c_char; 39],
-                    >(b"float *midend_colours(midend *, int *)\0"))
-                        .as_ptr(),
+                    (*::core::mem::transmute::<&[u8; 39], &[libc::c_char; 39]>(
+                        b"float *midend_colours(midend *, int *)\0",
+                    ))
+                    .as_ptr(),
                 );
             }
         };
         if 0.0f32 <= *ret.offset((i * 3 as libc::c_int + 2 as libc::c_int) as isize)
             && *ret.offset((i * 3 as libc::c_int + 2 as libc::c_int) as isize) <= 1.0f32
-        {} else {
+        {
+        } else {
             __assert_fail(
                 b"0.0F <= ret[i*3 + 2] && ret[i*3 + 2] <= 1.0F\0" as *const u8
                     as *const libc::c_char,
                 b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
                 1418 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 39],
-                    &[libc::c_char; 39],
-                >(b"float *midend_colours(midend *, int *)\0"))
-                    .as_ptr(),
+                (*::core::mem::transmute::<&[u8; 39], &[libc::c_char; 39]>(
+                    b"float *midend_colours(midend *, int *)\0",
+                ))
+                .as_ptr(),
             );
         }
         'c_15976: {
             if 0.0f32 <= *ret.offset((i * 3 as libc::c_int + 2 as libc::c_int) as isize)
-                && *ret.offset((i * 3 as libc::c_int + 2 as libc::c_int) as isize)
-                    <= 1.0f32
-            {} else {
+                && *ret.offset((i * 3 as libc::c_int + 2 as libc::c_int) as isize) <= 1.0f32
+            {
+            } else {
                 __assert_fail(
                     b"0.0F <= ret[i*3 + 2] && ret[i*3 + 2] <= 1.0F\0" as *const u8
                         as *const libc::c_char,
                     b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
                     1418 as libc::c_int as libc::c_uint,
-                    (*::core::mem::transmute::<
-                        &[u8; 39],
-                        &[libc::c_char; 39],
-                    >(b"float *midend_colours(midend *, int *)\0"))
-                        .as_ptr(),
+                    (*::core::mem::transmute::<&[u8; 39], &[libc::c_char; 39]>(
+                        b"float *midend_colours(midend *, int *)\0",
+                    ))
+                    .as_ptr(),
                 );
             }
         };
@@ -2652,9 +2490,8 @@ pub unsafe extern "C" fn midend_colours(
 }
 #[no_mangle]
 pub unsafe extern "C" fn preset_menu_new() -> *mut preset_menu {
-    let mut menu: *mut preset_menu = smalloc(
-        ::core::mem::size_of::<preset_menu>() as libc::c_ulong,
-    ) as *mut preset_menu;
+    let mut menu: *mut preset_menu =
+        smalloc(::core::mem::size_of::<preset_menu>() as libc::c_ulong) as *mut preset_menu;
     (*menu).n_entries = 0 as libc::c_int;
     (*menu).entries_size = 0 as libc::c_int;
     (*menu).entries = 0 as *mut preset_menu_entry;
@@ -2666,16 +2503,12 @@ unsafe extern "C" fn preset_menu_add(
 ) -> *mut preset_menu_entry {
     let mut toret: *mut preset_menu_entry = 0 as *mut preset_menu_entry;
     if (*menu).n_entries >= (*menu).entries_size {
-        (*menu)
-            .entries_size = (*menu).n_entries * 5 as libc::c_int / 4 as libc::c_int
-            + 10 as libc::c_int;
-        (*menu)
-            .entries = srealloc(
+        (*menu).entries_size =
+            (*menu).n_entries * 5 as libc::c_int / 4 as libc::c_int + 10 as libc::c_int;
+        (*menu).entries = srealloc(
             (*menu).entries as *mut libc::c_void,
             ((*menu).entries_size as libc::c_ulong)
-                .wrapping_mul(
-                    ::core::mem::size_of::<preset_menu_entry>() as libc::c_ulong,
-                ),
+                .wrapping_mul(::core::mem::size_of::<preset_menu_entry>() as libc::c_ulong),
         ) as *mut preset_menu_entry;
     }
     let fresh10 = (*menu).n_entries;
@@ -2716,15 +2549,10 @@ pub unsafe extern "C" fn preset_menu_lookup_by_id(
         if id == (*((*menu).entries).offset(i as isize)).id {
             return (*((*menu).entries).offset(i as isize)).params;
         }
-        if !((*((*menu).entries).offset(i as isize)).submenu).is_null()
-            && {
-                retd = preset_menu_lookup_by_id(
-                    (*((*menu).entries).offset(i as isize)).submenu,
-                    id,
-                );
-                !retd.is_null()
-            }
-        {
+        if !((*((*menu).entries).offset(i as isize)).submenu).is_null() && {
+            retd = preset_menu_lookup_by_id((*((*menu).entries).offset(i as isize)).submenu, id);
+            !retd.is_null()
+        } {
             return retd;
         }
         i += 1;
@@ -2764,25 +2592,21 @@ unsafe extern "C" fn preset_menu_add_from_user_env(
         }
         if strcmp(val, b"#\0" as *const u8 as *const libc::c_char) == 0 {
             if *name != 0 {
-                let mut submenu: *mut preset_menu = preset_menu_add_submenu(
-                    menu,
-                    dupstr(name),
-                );
+                let mut submenu: *mut preset_menu = preset_menu_add_submenu(menu, dupstr(name));
                 p = preset_menu_add_from_user_env(me, submenu, p, 0 as libc::c_int != 0);
             } else if !top_level {
-                return p
+                return p;
             }
         } else {
-            preset = ((*(*me).ourgame).default_params)
-                .expect("non-null function pointer")();
-            ((*(*me).ourgame).decode_params)
-                .expect("non-null function pointer")(preset, val);
-            if !(((*(*me).ourgame).validate_params)
-                .expect("non-null function pointer")(preset, 1 as libc::c_int != 0))
-                .is_null()
+            preset = ((*(*me).ourgame).default_params).expect("non-null function pointer")();
+            ((*(*me).ourgame).decode_params).expect("non-null function pointer")(preset, val);
+            if !(((*(*me).ourgame).validate_params).expect("non-null function pointer")(
+                preset,
+                1 as libc::c_int != 0,
+            ))
+            .is_null()
             {
-                ((*(*me).ourgame).free_params)
-                    .expect("non-null function pointer")(preset);
+                ((*(*me).ourgame).free_params).expect("non-null function pointer")(preset);
             } else {
                 preset_menu_add_preset(menu, dupstr(name), preset);
             }
@@ -2790,10 +2614,7 @@ unsafe extern "C" fn preset_menu_add_from_user_env(
     }
     return p;
 }
-unsafe extern "C" fn preset_menu_alloc_ids(
-    mut me: *mut midend,
-    mut menu: *mut preset_menu,
-) {
+unsafe extern "C" fn preset_menu_alloc_ids(mut me: *mut midend, mut menu: *mut preset_menu) {
     let mut i: libc::c_int = 0;
     i = 0 as libc::c_int;
     while i < (*menu).n_entries {
@@ -2812,10 +2633,7 @@ unsafe extern "C" fn preset_menu_alloc_ids(
         i;
     }
 }
-unsafe extern "C" fn preset_menu_encode_params(
-    mut me: *mut midend,
-    mut menu: *mut preset_menu,
-) {
+unsafe extern "C" fn preset_menu_encode_params(mut me: *mut midend, mut menu: *mut preset_menu) {
     let mut i: libc::c_int = 0;
     i = 0 as libc::c_int;
     while i < (*menu).n_entries {
@@ -2828,10 +2646,7 @@ unsafe extern "C" fn preset_menu_encode_params(
                 1 as libc::c_int != 0,
             );
         } else {
-            preset_menu_encode_params(
-                me,
-                (*((*menu).entries).offset(i as isize)).submenu,
-            );
+            preset_menu_encode_params(me, (*((*menu).entries).offset(i as isize)).submenu);
         }
         i += 1;
         i;
@@ -2849,45 +2664,45 @@ pub unsafe extern "C" fn midend_get_presets(
     if ((*(*me).ourgame).fetch_preset).is_some() {
         let mut name: *mut libc::c_char = 0 as *mut libc::c_char;
         let mut preset: *mut game_params = 0 as *mut game_params;
-        if ((*(*me).ourgame).preset_menu).is_none() {} else {
+        if ((*(*me).ourgame).preset_menu).is_none() {
+        } else {
             __assert_fail(
                 b"!me->ourgame->preset_menu\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
                 1576 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 56],
-                    &[libc::c_char; 56],
-                >(b"struct preset_menu *midend_get_presets(midend *, int *)\0"))
-                    .as_ptr(),
+                (*::core::mem::transmute::<&[u8; 56], &[libc::c_char; 56]>(
+                    b"struct preset_menu *midend_get_presets(midend *, int *)\0",
+                ))
+                .as_ptr(),
             );
         }
         'c_17302: {
-            if ((*(*me).ourgame).preset_menu).is_none() {} else {
+            if ((*(*me).ourgame).preset_menu).is_none() {
+            } else {
                 __assert_fail(
                     b"!me->ourgame->preset_menu\0" as *const u8 as *const libc::c_char,
                     b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
                     1576 as libc::c_int as libc::c_uint,
-                    (*::core::mem::transmute::<
-                        &[u8; 56],
-                        &[libc::c_char; 56],
-                    >(b"struct preset_menu *midend_get_presets(midend *, int *)\0"))
-                        .as_ptr(),
+                    (*::core::mem::transmute::<&[u8; 56], &[libc::c_char; 56]>(
+                        b"struct preset_menu *midend_get_presets(midend *, int *)\0",
+                    ))
+                    .as_ptr(),
                 );
             }
         };
         (*me).preset_menu = preset_menu_new();
         i = 0 as libc::c_int;
-        while ((*(*me).ourgame).fetch_preset)
-            .expect("non-null function pointer")(i, &mut name, &mut preset)
-        {
+        while ((*(*me).ourgame).fetch_preset).expect("non-null function pointer")(
+            i,
+            &mut name,
+            &mut preset,
+        ) {
             preset_menu_add_preset((*me).preset_menu, name, preset);
             i += 1;
             i;
         }
     } else {
-        (*me)
-            .preset_menu = ((*(*me).ourgame).preset_menu)
-            .expect("non-null function pointer")();
+        (*me).preset_menu = ((*(*me).ourgame).preset_menu).expect("non-null function pointer")();
     }
     let mut buf: [libc::c_char; 80] = [0; 80];
     let mut e: *mut libc::c_char = 0 as *mut libc::c_char;
@@ -2901,16 +2716,15 @@ pub unsafe extern "C" fn midend_get_presets(
     k = 0 as libc::c_int;
     j = k;
     while buf[j as usize] != 0 {
-        if *(*__ctype_b_loc())
-            .offset(buf[j as usize] as libc::c_uchar as libc::c_int as isize)
-            as libc::c_int & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+        if *(*__ctype_b_loc()).offset(buf[j as usize] as libc::c_uchar as libc::c_int as isize)
+            as libc::c_int
+            & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
             == 0
         {
             let fresh15 = k;
             k = k + 1;
-            buf[fresh15
-                as usize] = toupper(buf[j as usize] as libc::c_uchar as libc::c_int)
-                as libc::c_char;
+            buf[fresh15 as usize] =
+                toupper(buf[j as usize] as libc::c_uchar as libc::c_int) as libc::c_char;
         }
         j += 1;
         j;
@@ -2924,8 +2738,7 @@ pub unsafe extern "C" fn midend_get_presets(
     }
     (*me).n_encoded_presets = 0 as libc::c_int;
     preset_menu_alloc_ids(me, (*me).preset_menu);
-    (*me)
-        .encoded_presets = smalloc(
+    (*me).encoded_presets = smalloc(
         ((*me).n_encoded_presets as libc::c_ulong)
             .wrapping_mul(::core::mem::size_of::<*mut libc::c_char>() as libc::c_ulong),
     ) as *mut *mut libc::c_char;
@@ -2944,11 +2757,7 @@ pub unsafe extern "C" fn midend_get_presets(
 }
 #[no_mangle]
 pub unsafe extern "C" fn midend_which_preset(mut me: *mut midend) -> libc::c_int {
-    let mut encoding: *mut libc::c_char = encode_params(
-        me,
-        (*me).params,
-        1 as libc::c_int != 0,
-    );
+    let mut encoding: *mut libc::c_char = encode_params(me, (*me).params, 1 as libc::c_int != 0);
     let mut i: libc::c_int = 0;
     let mut ret: libc::c_int = 0;
     ret = -(1 as libc::c_int);
@@ -2974,7 +2783,7 @@ pub unsafe extern "C" fn midend_wants_statusbar(mut me: *mut midend) -> bool {
 #[no_mangle]
 pub unsafe extern "C" fn midend_request_id_changes(
     mut me: *mut midend,
-    mut notify: Option::<unsafe extern "C" fn(*mut libc::c_void) -> ()>,
+    mut notify: Option<unsafe extern "C" fn(*mut libc::c_void) -> ()>,
     mut ctx: *mut libc::c_void,
 ) {
     (*me).game_id_change_notify_function = notify;
@@ -2997,10 +2806,7 @@ pub unsafe extern "C" fn midend_get_cursor_location(
     h = 1 as libc::c_int;
     w = h;
     if ((*(*me).ourgame).get_cursor_location).is_some() {
-        ((*(*me).ourgame).get_cursor_location)
-            .expect(
-                "non-null function pointer",
-            )(
+        ((*(*me).ourgame).get_cursor_location).expect("non-null function pointer")(
             (*me).ui,
             (*me).drawstate,
             (*((*me).states).offset(((*me).statepos - 1 as libc::c_int) as isize)).state,
@@ -3041,15 +2847,15 @@ pub unsafe extern "C" fn midend_supersede_game_desc(
     sfree((*me).desc as *mut libc::c_void);
     sfree((*me).privdesc as *mut libc::c_void);
     (*me).desc = dupstr(desc);
-    (*me)
-        .privdesc = if !privdesc.is_null() {
+    (*me).privdesc = if !privdesc.is_null() {
         dupstr(privdesc)
     } else {
         0 as *mut libc::c_char
     };
     if ((*me).game_id_change_notify_function).is_some() {
-        ((*me).game_id_change_notify_function)
-            .expect("non-null function pointer")((*me).game_id_change_notify_ctx);
+        ((*me).game_id_change_notify_function).expect("non-null function pointer")(
+            (*me).game_id_change_notify_ctx,
+        );
     }
 }
 #[no_mangle]
@@ -3063,29 +2869,29 @@ pub unsafe extern "C" fn midend_get_config(
     let mut rest: *const libc::c_char = 0 as *const libc::c_char;
     let mut ret: *mut config_item = 0 as *mut config_item;
     let mut sep: libc::c_char = 0;
-    if !wintitle.is_null() {} else {
+    if !wintitle.is_null() {
+    } else {
         __assert_fail(
             b"wintitle\0" as *const u8 as *const libc::c_char,
             b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
             1707 as libc::c_int as libc::c_uint,
-            (*::core::mem::transmute::<
-                &[u8; 55],
-                &[libc::c_char; 55],
-            >(b"config_item *midend_get_config(midend *, int, char **)\0"))
-                .as_ptr(),
+            (*::core::mem::transmute::<&[u8; 55], &[libc::c_char; 55]>(
+                b"config_item *midend_get_config(midend *, int, char **)\0",
+            ))
+            .as_ptr(),
         );
     }
     'c_17891: {
-        if !wintitle.is_null() {} else {
+        if !wintitle.is_null() {
+        } else {
             __assert_fail(
                 b"wintitle\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
                 1707 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 55],
-                    &[libc::c_char; 55],
-                >(b"config_item *midend_get_config(midend *, int, char **)\0"))
-                    .as_ptr(),
+                (*::core::mem::transmute::<&[u8; 55], &[libc::c_char; 55]>(
+                    b"config_item *midend_get_config(midend *, int, char **)\0",
+                ))
+                .as_ptr(),
             );
         }
     };
@@ -3102,8 +2908,7 @@ pub unsafe extern "C" fn midend_get_config(
                 (*(*me).ourgame).name,
             );
             *wintitle = titlebuf;
-            return ((*(*me).ourgame).configure)
-                .expect("non-null function pointer")((*me).params);
+            return ((*(*me).ourgame).configure).expect("non-null function pointer")((*me).params);
         }
         1 | 2 => {
             if ((*me).curparams).is_null() {
@@ -3133,34 +2938,30 @@ pub unsafe extern "C" fn midend_get_config(
                 let ref mut fresh18 = (*ret.offset(0 as libc::c_int as isize)).name;
                 *fresh18 = b"Game ID\0" as *const u8 as *const libc::c_char;
             }
-            parstr = encode_params(
-                me,
-                (*me).curparams,
-                which == CFG_SEED as libc::c_int,
-            );
-            if !parstr.is_null() {} else {
+            parstr = encode_params(me, (*me).curparams, which == CFG_SEED as libc::c_int);
+            if !parstr.is_null() {
+            } else {
                 __assert_fail(
                     b"parstr\0" as *const u8 as *const libc::c_char,
                     b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
                     1742 as libc::c_int as libc::c_uint,
-                    (*::core::mem::transmute::<
-                        &[u8; 55],
-                        &[libc::c_char; 55],
-                    >(b"config_item *midend_get_config(midend *, int, char **)\0"))
-                        .as_ptr(),
+                    (*::core::mem::transmute::<&[u8; 55], &[libc::c_char; 55]>(
+                        b"config_item *midend_get_config(midend *, int, char **)\0",
+                    ))
+                    .as_ptr(),
                 );
             }
             'c_17692: {
-                if !parstr.is_null() {} else {
+                if !parstr.is_null() {
+                } else {
                     __assert_fail(
                         b"parstr\0" as *const u8 as *const libc::c_char,
                         b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
                         1742 as libc::c_int as libc::c_uint,
-                        (*::core::mem::transmute::<
-                            &[u8; 55],
-                            &[libc::c_char; 55],
-                        >(b"config_item *midend_get_config(midend *, int, char **)\0"))
-                            .as_ptr(),
+                        (*::core::mem::transmute::<&[u8; 55], &[libc::c_char; 55]>(
+                            b"config_item *midend_get_config(midend *, int, char **)\0",
+                        ))
+                        .as_ptr(),
                     );
                 }
             };
@@ -3184,9 +2985,7 @@ pub unsafe extern "C" fn midend_get_config(
                 (strlen(parstr))
                     .wrapping_add(strlen(rest))
                     .wrapping_add(2 as libc::c_int as libc::c_ulong)
-                    .wrapping_mul(
-                        ::core::mem::size_of::<libc::c_char>() as libc::c_ulong,
-                    ),
+                    .wrapping_mul(::core::mem::size_of::<libc::c_char>() as libc::c_ulong),
             ) as *mut libc::c_char;
             sprintf(
                 (*ret.offset(0 as libc::c_int as isize)).u.string.sval,
@@ -3212,31 +3011,29 @@ pub unsafe extern "C" fn midend_get_config(
         }
         _ => {}
     }
-    if (b"We shouldn't be here\0" as *const u8 as *const libc::c_char).is_null()
-    {} else {
+    if (b"We shouldn't be here\0" as *const u8 as *const libc::c_char).is_null() {
+    } else {
         __assert_fail(
             b"!\"We shouldn't be here\"\0" as *const u8 as *const libc::c_char,
             b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
             1764 as libc::c_int as libc::c_uint,
-            (*::core::mem::transmute::<
-                &[u8; 55],
-                &[libc::c_char; 55],
-            >(b"config_item *midend_get_config(midend *, int, char **)\0"))
-                .as_ptr(),
+            (*::core::mem::transmute::<&[u8; 55], &[libc::c_char; 55]>(
+                b"config_item *midend_get_config(midend *, int, char **)\0",
+            ))
+            .as_ptr(),
         );
     }
     'c_17477: {
-        if (b"We shouldn't be here\0" as *const u8 as *const libc::c_char).is_null()
-        {} else {
+        if (b"We shouldn't be here\0" as *const u8 as *const libc::c_char).is_null() {
+        } else {
             __assert_fail(
                 b"!\"We shouldn't be here\"\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
                 1764 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 55],
-                    &[libc::c_char; 55],
-                >(b"config_item *midend_get_config(midend *, int, char **)\0"))
-                    .as_ptr(),
+                (*::core::mem::transmute::<&[u8; 55], &[libc::c_char; 55]>(
+                    b"config_item *midend_get_config(midend *, int, char **)\0",
+                ))
+                .as_ptr(),
             );
         }
     };
@@ -3264,11 +3061,12 @@ unsafe extern "C" fn midend_game_id_int(
                 as libc::c_ulong)
                 .wrapping_mul(::core::mem::size_of::<libc::c_char>() as libc::c_ulong),
         ) as *mut libc::c_char;
-        strncpy(par, id, desc.offset_from(id) as libc::c_long as libc::c_ulong);
-        *par
-            .offset(
-                desc.offset_from(id) as libc::c_long as isize,
-            ) = '\0' as i32 as libc::c_char;
+        strncpy(
+            par,
+            id,
+            desc.offset_from(id) as libc::c_long as libc::c_ulong,
+        );
+        *par.offset(desc.offset_from(id) as libc::c_long as isize) = '\0' as i32 as libc::c_char;
         desc = desc.offset(1);
         desc;
         seed = 0 as *const libc::c_char;
@@ -3278,11 +3076,12 @@ unsafe extern "C" fn midend_game_id_int(
                 as libc::c_ulong)
                 .wrapping_mul(::core::mem::size_of::<libc::c_char>() as libc::c_ulong),
         ) as *mut libc::c_char;
-        strncpy(par, id, seed.offset_from(id) as libc::c_long as libc::c_ulong);
-        *par
-            .offset(
-                seed.offset_from(id) as libc::c_long as isize,
-            ) = '\0' as i32 as libc::c_char;
+        strncpy(
+            par,
+            id,
+            seed.offset_from(id) as libc::c_long as libc::c_ulong,
+        );
+        *par.offset(seed.offset_from(id) as libc::c_long as isize) = '\0' as i32 as libc::c_char;
         seed = seed.offset(1);
         seed;
         desc = 0 as *const libc::c_char;
@@ -3305,35 +3104,33 @@ unsafe extern "C" fn midend_game_id_int(
     newcurparams = newparams;
     if !par.is_null() {
         if !desc.is_null() {
-            newcurparams = ((*(*me).ourgame).dup_params)
-                .expect("non-null function pointer")((*me).params);
+            newcurparams =
+                ((*(*me).ourgame).dup_params).expect("non-null function pointer")((*me).params);
         } else {
-            newcurparams = ((*(*me).ourgame).default_params)
-                .expect("non-null function pointer")();
+            newcurparams = ((*(*me).ourgame).default_params).expect("non-null function pointer")();
         }
-        ((*(*me).ourgame).decode_params)
-            .expect("non-null function pointer")(newcurparams, par);
+        ((*(*me).ourgame).decode_params).expect("non-null function pointer")(newcurparams, par);
         sfree(par as *mut libc::c_void);
-        error = ((*(*me).ourgame).validate_params)
-            .expect("non-null function pointer")(newcurparams, desc.is_null());
+        error = ((*(*me).ourgame).validate_params).expect("non-null function pointer")(
+            newcurparams,
+            desc.is_null(),
+        );
         if !error.is_null() {
-            ((*(*me).ourgame).free_params)
-                .expect("non-null function pointer")(newcurparams);
+            ((*(*me).ourgame).free_params).expect("non-null function pointer")(newcurparams);
             return error;
         }
         oldparams1 = (*me).curparams;
         oldparams2 = (*me).params;
         if !seed.is_null() || !desc.is_null() {
             let mut tmpstr: *mut libc::c_char = 0 as *mut libc::c_char;
-            newparams = ((*(*me).ourgame).dup_params)
-                .expect("non-null function pointer")((*me).params);
+            newparams =
+                ((*(*me).ourgame).dup_params).expect("non-null function pointer")((*me).params);
             tmpstr = encode_params(me, newcurparams, 0 as libc::c_int != 0);
-            ((*(*me).ourgame).decode_params)
-                .expect("non-null function pointer")(newparams, tmpstr);
+            ((*(*me).ourgame).decode_params).expect("non-null function pointer")(newparams, tmpstr);
             sfree(tmpstr as *mut libc::c_void);
         } else {
-            newparams = ((*(*me).ourgame).dup_params)
-                .expect("non-null function pointer")(newcurparams);
+            newparams =
+                ((*(*me).ourgame).dup_params).expect("non-null function pointer")(newcurparams);
         }
         free_params = 1 as libc::c_int != 0;
     } else {
@@ -3342,17 +3139,17 @@ unsafe extern "C" fn midend_game_id_int(
         free_params = 0 as libc::c_int != 0;
     }
     if !desc.is_null() {
-        error = ((*(*me).ourgame).validate_desc)
-            .expect("non-null function pointer")(newparams, desc);
+        error =
+            ((*(*me).ourgame).validate_desc).expect("non-null function pointer")(newparams, desc);
         if !error.is_null() {
             if free_params {
                 if !newcurparams.is_null() {
-                    ((*(*me).ourgame).free_params)
-                        .expect("non-null function pointer")(newcurparams);
+                    ((*(*me).ourgame).free_params).expect("non-null function pointer")(
+                        newcurparams,
+                    );
                 }
                 if !newparams.is_null() {
-                    ((*(*me).ourgame).free_params)
-                        .expect("non-null function pointer")(newparams);
+                    ((*(*me).ourgame).free_params).expect("non-null function pointer")(newparams);
                 }
             }
             return error;
@@ -3397,55 +3194,55 @@ pub unsafe extern "C" fn midend_get_game_id(mut me: *mut midend) -> *mut libc::c
     let mut parstr: *mut libc::c_char = 0 as *mut libc::c_char;
     let mut ret: *mut libc::c_char = 0 as *mut libc::c_char;
     parstr = encode_params(me, (*me).curparams, 0 as libc::c_int != 0);
-    if !parstr.is_null() {} else {
+    if !parstr.is_null() {
+    } else {
         __assert_fail(
             b"parstr\0" as *const u8 as *const libc::c_char,
             b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
             1961 as libc::c_int as libc::c_uint,
-            (*::core::mem::transmute::<
-                &[u8; 35],
-                &[libc::c_char; 35],
-            >(b"char *midend_get_game_id(midend *)\0"))
-                .as_ptr(),
+            (*::core::mem::transmute::<&[u8; 35], &[libc::c_char; 35]>(
+                b"char *midend_get_game_id(midend *)\0",
+            ))
+            .as_ptr(),
         );
     }
     'c_18869: {
-        if !parstr.is_null() {} else {
+        if !parstr.is_null() {
+        } else {
             __assert_fail(
                 b"parstr\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
                 1961 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 35],
-                    &[libc::c_char; 35],
-                >(b"char *midend_get_game_id(midend *)\0"))
-                    .as_ptr(),
+                (*::core::mem::transmute::<&[u8; 35], &[libc::c_char; 35]>(
+                    b"char *midend_get_game_id(midend *)\0",
+                ))
+                .as_ptr(),
             );
         }
     };
-    if !((*me).desc).is_null() {} else {
+    if !((*me).desc).is_null() {
+    } else {
         __assert_fail(
             b"me->desc\0" as *const u8 as *const libc::c_char,
             b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
             1962 as libc::c_int as libc::c_uint,
-            (*::core::mem::transmute::<
-                &[u8; 35],
-                &[libc::c_char; 35],
-            >(b"char *midend_get_game_id(midend *)\0"))
-                .as_ptr(),
+            (*::core::mem::transmute::<&[u8; 35], &[libc::c_char; 35]>(
+                b"char *midend_get_game_id(midend *)\0",
+            ))
+            .as_ptr(),
         );
     }
     'c_18833: {
-        if !((*me).desc).is_null() {} else {
+        if !((*me).desc).is_null() {
+        } else {
             __assert_fail(
                 b"me->desc\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
                 1962 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 35],
-                    &[libc::c_char; 35],
-                >(b"char *midend_get_game_id(midend *)\0"))
-                    .as_ptr(),
+                (*::core::mem::transmute::<&[u8; 35], &[libc::c_char; 35]>(
+                    b"char *midend_get_game_id(midend *)\0",
+                ))
+                .as_ptr(),
             );
         }
     };
@@ -3455,43 +3252,46 @@ pub unsafe extern "C" fn midend_get_game_id(mut me: *mut midend) -> *mut libc::c
             .wrapping_add(2 as libc::c_int as libc::c_ulong)
             .wrapping_mul(::core::mem::size_of::<libc::c_char>() as libc::c_ulong),
     ) as *mut libc::c_char;
-    sprintf(ret, b"%s:%s\0" as *const u8 as *const libc::c_char, parstr, (*me).desc);
+    sprintf(
+        ret,
+        b"%s:%s\0" as *const u8 as *const libc::c_char,
+        parstr,
+        (*me).desc,
+    );
     sfree(parstr as *mut libc::c_void);
     return ret;
 }
 #[no_mangle]
-pub unsafe extern "C" fn midend_get_random_seed(
-    mut me: *mut midend,
-) -> *mut libc::c_char {
+pub unsafe extern "C" fn midend_get_random_seed(mut me: *mut midend) -> *mut libc::c_char {
     let mut parstr: *mut libc::c_char = 0 as *mut libc::c_char;
     let mut ret: *mut libc::c_char = 0 as *mut libc::c_char;
     if ((*me).seedstr).is_null() {
         return 0 as *mut libc::c_char;
     }
     parstr = encode_params(me, (*me).curparams, 1 as libc::c_int != 0);
-    if !parstr.is_null() {} else {
+    if !parstr.is_null() {
+    } else {
         __assert_fail(
             b"parstr\0" as *const u8 as *const libc::c_char,
             b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
             1977 as libc::c_int as libc::c_uint,
-            (*::core::mem::transmute::<
-                &[u8; 39],
-                &[libc::c_char; 39],
-            >(b"char *midend_get_random_seed(midend *)\0"))
-                .as_ptr(),
+            (*::core::mem::transmute::<&[u8; 39], &[libc::c_char; 39]>(
+                b"char *midend_get_random_seed(midend *)\0",
+            ))
+            .as_ptr(),
         );
     }
     'c_18977: {
-        if !parstr.is_null() {} else {
+        if !parstr.is_null() {
+        } else {
             __assert_fail(
                 b"parstr\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
                 1977 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 39],
-                    &[libc::c_char; 39],
-                >(b"char *midend_get_random_seed(midend *)\0"))
-                    .as_ptr(),
+                (*::core::mem::transmute::<&[u8; 39], &[libc::c_char; 39]>(
+                    b"char *midend_get_random_seed(midend *)\0",
+                ))
+                .as_ptr(),
             );
         }
     };
@@ -3501,7 +3301,12 @@ pub unsafe extern "C" fn midend_get_random_seed(
             .wrapping_add(2 as libc::c_int as libc::c_ulong)
             .wrapping_mul(::core::mem::size_of::<libc::c_char>() as libc::c_ulong),
     ) as *mut libc::c_char;
-    sprintf(ret, b"%s#%s\0" as *const u8 as *const libc::c_char, parstr, (*me).seedstr);
+    sprintf(
+        ret,
+        b"%s#%s\0" as *const u8 as *const libc::c_char,
+        parstr,
+        (*me).seedstr,
+    );
     sfree(parstr as *mut libc::c_void);
     return ret;
 }
@@ -3515,17 +3320,16 @@ pub unsafe extern "C" fn midend_set_config(
     let mut params: *mut game_params = 0 as *mut game_params;
     match which {
         0 => {
-            params = ((*(*me).ourgame).custom_params)
-                .expect("non-null function pointer")(cfg);
-            error = ((*(*me).ourgame).validate_params)
-                .expect("non-null function pointer")(params, 1 as libc::c_int != 0);
+            params = ((*(*me).ourgame).custom_params).expect("non-null function pointer")(cfg);
+            error = ((*(*me).ourgame).validate_params).expect("non-null function pointer")(
+                params,
+                1 as libc::c_int != 0,
+            );
             if !error.is_null() {
-                ((*(*me).ourgame).free_params)
-                    .expect("non-null function pointer")(params);
+                ((*(*me).ourgame).free_params).expect("non-null function pointer")(params);
                 return error;
             }
-            ((*(*me).ourgame).free_params)
-                .expect("non-null function pointer")((*me).params);
+            ((*(*me).ourgame).free_params).expect("non-null function pointer")((*me).params);
             (*me).params = params;
         }
         1 | 2 => {
@@ -3552,27 +3356,27 @@ pub unsafe extern "C" fn midend_set_config(
 #[no_mangle]
 pub unsafe extern "C" fn midend_can_format_as_text_now(mut me: *mut midend) -> bool {
     if (*(*me).ourgame).can_format_as_text_ever {
-        return ((*(*me).ourgame).can_format_as_text_now)
-            .expect("non-null function pointer")((*me).params)
+        return ((*(*me).ourgame).can_format_as_text_now).expect("non-null function pointer")(
+            (*me).params,
+        );
     } else {
-        return 0 as libc::c_int != 0
+        return 0 as libc::c_int != 0;
     };
 }
 #[no_mangle]
 pub unsafe extern "C" fn midend_text_format(mut me: *mut midend) -> *mut libc::c_char {
     if (*(*me).ourgame).can_format_as_text_ever as libc::c_int != 0
         && (*me).statepos > 0 as libc::c_int
-        && ((*(*me).ourgame).can_format_as_text_now)
-            .expect("non-null function pointer")((*me).params) as libc::c_int != 0
+        && ((*(*me).ourgame).can_format_as_text_now).expect("non-null function pointer")(
+            (*me).params,
+        ) as libc::c_int
+            != 0
     {
-        return ((*(*me).ourgame).text_format)
-            .expect(
-                "non-null function pointer",
-            )(
+        return ((*(*me).ourgame).text_format).expect("non-null function pointer")(
             (*((*me).states).offset(((*me).statepos - 1 as libc::c_int) as isize)).state,
-        )
+        );
     } else {
-        return 0 as *mut libc::c_char
+        return 0 as *mut libc::c_char;
     };
 }
 #[no_mangle]
@@ -3588,38 +3392,35 @@ pub unsafe extern "C" fn midend_solve(mut me: *mut midend) -> *const libc::c_cha
         return b"No game set up to solve\0" as *const u8 as *const libc::c_char;
     }
     msg = 0 as *const libc::c_char;
-    movestr = ((*(*me).ourgame).solve)
-        .expect(
-            "non-null function pointer",
-        )(
+    movestr = ((*(*me).ourgame).solve).expect("non-null function pointer")(
         (*((*me).states).offset(0 as libc::c_int as isize)).state,
         (*((*me).states).offset(((*me).statepos - 1 as libc::c_int) as isize)).state,
         (*me).aux_info,
         &mut msg,
     );
-    if movestr != MOVE_UI_UPDATE.as_mut_ptr() {} else {
+    if movestr != MOVE_UI_UPDATE.as_mut_ptr() {
+    } else {
         __assert_fail(
             b"movestr != MOVE_UI_UPDATE\0" as *const u8 as *const libc::c_char,
             b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
             2052 as libc::c_int as libc::c_uint,
-            (*::core::mem::transmute::<
-                &[u8; 35],
-                &[libc::c_char; 35],
-            >(b"const char *midend_solve(midend *)\0"))
-                .as_ptr(),
+            (*::core::mem::transmute::<&[u8; 35], &[libc::c_char; 35]>(
+                b"const char *midend_solve(midend *)\0",
+            ))
+            .as_ptr(),
         );
     }
     'c_11935: {
-        if movestr != MOVE_UI_UPDATE.as_mut_ptr() {} else {
+        if movestr != MOVE_UI_UPDATE.as_mut_ptr() {
+        } else {
             __assert_fail(
                 b"movestr != MOVE_UI_UPDATE\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
                 2052 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 35],
-                    &[libc::c_char; 35],
-                >(b"const char *midend_solve(midend *)\0"))
-                    .as_ptr(),
+                (*::core::mem::transmute::<&[u8; 35], &[libc::c_char; 35]>(
+                    b"const char *midend_solve(midend *)\0",
+                ))
+                .as_ptr(),
             );
         }
     };
@@ -3630,36 +3431,33 @@ pub unsafe extern "C" fn midend_solve(mut me: *mut midend) -> *const libc::c_cha
         return msg;
     }
     assert_printable_ascii(movestr);
-    s = ((*(*me).ourgame).execute_move)
-        .expect(
-            "non-null function pointer",
-        )(
+    s = ((*(*me).ourgame).execute_move).expect("non-null function pointer")(
         (*((*me).states).offset(((*me).statepos - 1 as libc::c_int) as isize)).state,
         movestr,
     );
-    if !s.is_null() {} else {
+    if !s.is_null() {
+    } else {
         __assert_fail(
             b"s\0" as *const u8 as *const libc::c_char,
             b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
             2060 as libc::c_int as libc::c_uint,
-            (*::core::mem::transmute::<
-                &[u8; 35],
-                &[libc::c_char; 35],
-            >(b"const char *midend_solve(midend *)\0"))
-                .as_ptr(),
+            (*::core::mem::transmute::<&[u8; 35], &[libc::c_char; 35]>(
+                b"const char *midend_solve(midend *)\0",
+            ))
+            .as_ptr(),
         );
     }
     'c_11853: {
-        if !s.is_null() {} else {
+        if !s.is_null() {
+        } else {
             __assert_fail(
                 b"s\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
                 2060 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 35],
-                    &[libc::c_char; 35],
-                >(b"const char *midend_solve(midend *)\0"))
-                    .as_ptr(),
+                (*::core::mem::transmute::<&[u8; 35], &[libc::c_char; 35]>(
+                    b"const char *midend_solve(midend *)\0",
+                ))
+                .as_ptr(),
             );
         }
     };
@@ -3667,13 +3465,10 @@ pub unsafe extern "C" fn midend_solve(mut me: *mut midend) -> *const libc::c_cha
     midend_purge_states(me);
     if (*me).nstates >= (*me).statesize {
         (*me).statesize = (*me).nstates + 128 as libc::c_int;
-        (*me)
-            .states = srealloc(
+        (*me).states = srealloc(
             (*me).states as *mut libc::c_void,
             ((*me).statesize as libc::c_ulong)
-                .wrapping_mul(
-                    ::core::mem::size_of::<midend_state_entry>() as libc::c_ulong,
-                ),
+                .wrapping_mul(::core::mem::size_of::<midend_state_entry>() as libc::c_ulong),
         ) as *mut midend_state_entry;
     }
     let ref mut fresh21 = (*((*me).states).offset((*me).nstates as isize)).state;
@@ -3684,10 +3479,7 @@ pub unsafe extern "C" fn midend_solve(mut me: *mut midend) -> *const libc::c_cha
     (*me).nstates += 1;
     (*me).statepos = (*me).nstates;
     if !((*me).ui).is_null() {
-        ((*(*me).ourgame).changed_state)
-            .expect(
-                "non-null function pointer",
-            )(
+        ((*(*me).ourgame).changed_state).expect("non-null function pointer")(
             (*me).ui,
             (*((*me).states).offset(((*me).statepos - 2 as libc::c_int) as isize)).state,
             (*((*me).states).offset(((*me).statepos - 1 as libc::c_int) as isize)).state,
@@ -3695,18 +3487,10 @@ pub unsafe extern "C" fn midend_solve(mut me: *mut midend) -> *const libc::c_cha
     }
     (*me).dir = 1 as libc::c_int;
     if (*(*me).ourgame).flags & (1 as libc::c_int) << 9 as libc::c_int != 0 {
-        (*me)
-            .oldstate = ((*(*me).ourgame).dup_game)
-            .expect(
-                "non-null function pointer",
-            )(
+        (*me).oldstate = ((*(*me).ourgame).dup_game).expect("non-null function pointer")(
             (*((*me).states).offset(((*me).statepos - 2 as libc::c_int) as isize)).state,
         );
-        (*me)
-            .anim_time = ((*(*me).ourgame).anim_length)
-            .expect(
-                "non-null function pointer",
-            )(
+        (*me).anim_time = ((*(*me).ourgame).anim_length).expect("non-null function pointer")(
             (*((*me).states).offset(((*me).statepos - 2 as libc::c_int) as isize)).state,
             (*((*me).states).offset(((*me).statepos - 1 as libc::c_int) as isize)).state,
             1 as libc::c_int,
@@ -3728,10 +3512,9 @@ pub unsafe extern "C" fn midend_status(mut me: *mut midend) -> libc::c_int {
     if (*me).statepos == 0 as libc::c_int {
         return 1 as libc::c_int;
     }
-    return ((*(*me).ourgame).status)
-        .expect(
-            "non-null function pointer",
-        )((*((*me).states).offset(((*me).statepos - 1 as libc::c_int) as isize)).state);
+    return ((*(*me).ourgame).status).expect("non-null function pointer")(
+        (*((*me).states).offset(((*me).statepos - 1 as libc::c_int) as isize)).state,
+    );
 }
 #[no_mangle]
 pub unsafe extern "C" fn midend_rewrite_statusbar(
@@ -3766,21 +3549,21 @@ pub unsafe extern "C" fn midend_rewrite_statusbar(
         strcat(ret, text);
         return ret;
     } else {
-        return dupstr(text)
+        return dupstr(text);
     };
 }
 #[no_mangle]
 pub unsafe extern "C" fn midend_serialise(
     mut me: *mut midend,
-    mut write: Option::<
+    mut write: Option<
         unsafe extern "C" fn(*mut libc::c_void, *const libc::c_void, libc::c_int) -> (),
     >,
     mut wctx: *mut libc::c_void,
 ) {
     let mut i: libc::c_int = 0;
     let mut hbuf: [libc::c_char; 80] = [0; 80];
-    let mut str: *const libc::c_char = b"Simon Tatham's Portable Puzzle Collection\0"
-        as *const u8 as *const libc::c_char;
+    let mut str: *const libc::c_char =
+        b"Simon Tatham's Portable Puzzle Collection\0" as *const u8 as *const libc::c_char;
     let mut lbuf: [libc::c_char; 9] = [0; 9];
     copy_left_justified(
         lbuf.as_mut_ptr(),
@@ -3794,23 +3577,18 @@ pub unsafe extern "C" fn midend_serialise(
         strlen(str) as libc::c_int,
     );
     assert_printable_ascii(hbuf.as_mut_ptr());
-    write
-        .expect(
-            "non-null function pointer",
-        )(
+    write.expect("non-null function pointer")(
         wctx,
         hbuf.as_mut_ptr() as *const libc::c_void,
         strlen(hbuf.as_mut_ptr()) as libc::c_int,
     );
     assert_printable_ascii(str);
-    write
-        .expect(
-            "non-null function pointer",
-        )(wctx, str as *const libc::c_void, strlen(str) as libc::c_int);
-    write
-        .expect(
-            "non-null function pointer",
-        )(
+    write.expect("non-null function pointer")(
+        wctx,
+        str as *const libc::c_void,
+        strlen(str) as libc::c_int,
+    );
+    write.expect("non-null function pointer")(
         wctx,
         b"\n\0" as *const u8 as *const libc::c_char as *const libc::c_void,
         1 as libc::c_int,
@@ -3830,23 +3608,18 @@ pub unsafe extern "C" fn midend_serialise(
         strlen(str_0) as libc::c_int,
     );
     assert_printable_ascii(hbuf_0.as_mut_ptr());
-    write
-        .expect(
-            "non-null function pointer",
-        )(
+    write.expect("non-null function pointer")(
         wctx,
         hbuf_0.as_mut_ptr() as *const libc::c_void,
         strlen(hbuf_0.as_mut_ptr()) as libc::c_int,
     );
     assert_printable_ascii(str_0);
-    write
-        .expect(
-            "non-null function pointer",
-        )(wctx, str_0 as *const libc::c_void, strlen(str_0) as libc::c_int);
-    write
-        .expect(
-            "non-null function pointer",
-        )(
+    write.expect("non-null function pointer")(
+        wctx,
+        str_0 as *const libc::c_void,
+        strlen(str_0) as libc::c_int,
+    );
+    write.expect("non-null function pointer")(
         wctx,
         b"\n\0" as *const u8 as *const libc::c_char as *const libc::c_void,
         1 as libc::c_int,
@@ -3867,34 +3640,25 @@ pub unsafe extern "C" fn midend_serialise(
         strlen(str_1) as libc::c_int,
     );
     assert_printable_ascii(hbuf_1.as_mut_ptr());
-    write
-        .expect(
-            "non-null function pointer",
-        )(
+    write.expect("non-null function pointer")(
         wctx,
         hbuf_1.as_mut_ptr() as *const libc::c_void,
         strlen(hbuf_1.as_mut_ptr()) as libc::c_int,
     );
     assert_printable_ascii(str_1);
-    write
-        .expect(
-            "non-null function pointer",
-        )(wctx, str_1 as *const libc::c_void, strlen(str_1) as libc::c_int);
-    write
-        .expect(
-            "non-null function pointer",
-        )(
+    write.expect("non-null function pointer")(
+        wctx,
+        str_1 as *const libc::c_void,
+        strlen(str_1) as libc::c_int,
+    );
+    write.expect("non-null function pointer")(
         wctx,
         b"\n\0" as *const u8 as *const libc::c_char as *const libc::c_void,
         1 as libc::c_int,
     );
     sfree(s as *mut libc::c_void);
     if !((*me).params).is_null() {
-        let mut s_0: *mut libc::c_char = encode_params(
-            me,
-            (*me).params,
-            1 as libc::c_int != 0,
-        );
+        let mut s_0: *mut libc::c_char = encode_params(me, (*me).params, 1 as libc::c_int != 0);
         let mut hbuf_2: [libc::c_char; 80] = [0; 80];
         let mut str_2: *const libc::c_char = s_0;
         let mut lbuf_2: [libc::c_char; 9] = [0; 9];
@@ -3910,23 +3674,18 @@ pub unsafe extern "C" fn midend_serialise(
             strlen(str_2) as libc::c_int,
         );
         assert_printable_ascii(hbuf_2.as_mut_ptr());
-        write
-            .expect(
-                "non-null function pointer",
-            )(
+        write.expect("non-null function pointer")(
             wctx,
             hbuf_2.as_mut_ptr() as *const libc::c_void,
             strlen(hbuf_2.as_mut_ptr()) as libc::c_int,
         );
         assert_printable_ascii(str_2);
-        write
-            .expect(
-                "non-null function pointer",
-            )(wctx, str_2 as *const libc::c_void, strlen(str_2) as libc::c_int);
-        write
-            .expect(
-                "non-null function pointer",
-            )(
+        write.expect("non-null function pointer")(
+            wctx,
+            str_2 as *const libc::c_void,
+            strlen(str_2) as libc::c_int,
+        );
+        write.expect("non-null function pointer")(
             wctx,
             b"\n\0" as *const u8 as *const libc::c_char as *const libc::c_void,
             1 as libc::c_int,
@@ -3934,11 +3693,7 @@ pub unsafe extern "C" fn midend_serialise(
         sfree(s_0 as *mut libc::c_void);
     }
     if !((*me).curparams).is_null() {
-        let mut s_1: *mut libc::c_char = encode_params(
-            me,
-            (*me).curparams,
-            1 as libc::c_int != 0,
-        );
+        let mut s_1: *mut libc::c_char = encode_params(me, (*me).curparams, 1 as libc::c_int != 0);
         let mut hbuf_3: [libc::c_char; 80] = [0; 80];
         let mut str_3: *const libc::c_char = s_1;
         let mut lbuf_3: [libc::c_char; 9] = [0; 9];
@@ -3954,23 +3709,18 @@ pub unsafe extern "C" fn midend_serialise(
             strlen(str_3) as libc::c_int,
         );
         assert_printable_ascii(hbuf_3.as_mut_ptr());
-        write
-            .expect(
-                "non-null function pointer",
-            )(
+        write.expect("non-null function pointer")(
             wctx,
             hbuf_3.as_mut_ptr() as *const libc::c_void,
             strlen(hbuf_3.as_mut_ptr()) as libc::c_int,
         );
         assert_printable_ascii(str_3);
-        write
-            .expect(
-                "non-null function pointer",
-            )(wctx, str_3 as *const libc::c_void, strlen(str_3) as libc::c_int);
-        write
-            .expect(
-                "non-null function pointer",
-            )(
+        write.expect("non-null function pointer")(
+            wctx,
+            str_3 as *const libc::c_void,
+            strlen(str_3) as libc::c_int,
+        );
+        write.expect("non-null function pointer")(
             wctx,
             b"\n\0" as *const u8 as *const libc::c_char as *const libc::c_void,
             1 as libc::c_int,
@@ -3982,8 +3732,7 @@ pub unsafe extern "C" fn midend_serialise(
         i_0 = 0 as libc::c_int;
         while *((*me).seedstr).offset(i_0 as isize) != 0 {
             if (*((*me).seedstr).offset(i_0 as isize) as libc::c_int) < 32 as libc::c_int
-                || *((*me).seedstr).offset(i_0 as isize) as libc::c_int
-                    >= 127 as libc::c_int
+                || *((*me).seedstr).offset(i_0 as isize) as libc::c_int >= 127 as libc::c_int
             {
                 break;
             }
@@ -4010,23 +3759,18 @@ pub unsafe extern "C" fn midend_serialise(
                 strlen(str_4) as libc::c_int,
             );
             assert_printable_ascii(hbuf_4.as_mut_ptr());
-            write
-                .expect(
-                    "non-null function pointer",
-                )(
+            write.expect("non-null function pointer")(
                 wctx,
                 hbuf_4.as_mut_ptr() as *const libc::c_void,
                 strlen(hbuf_4.as_mut_ptr()) as libc::c_int,
             );
             assert_printable_ascii(str_4);
-            write
-                .expect(
-                    "non-null function pointer",
-                )(wctx, str_4 as *const libc::c_void, strlen(str_4) as libc::c_int);
-            write
-                .expect(
-                    "non-null function pointer",
-                )(
+            write.expect("non-null function pointer")(
+                wctx,
+                str_4 as *const libc::c_void,
+                strlen(str_4) as libc::c_int,
+            );
+            write.expect("non-null function pointer")(
                 wctx,
                 b"\n\0" as *const u8 as *const libc::c_char as *const libc::c_void,
                 1 as libc::c_int,
@@ -4048,23 +3792,18 @@ pub unsafe extern "C" fn midend_serialise(
                 strlen(str_5) as libc::c_int,
             );
             assert_printable_ascii(hbuf_5.as_mut_ptr());
-            write
-                .expect(
-                    "non-null function pointer",
-                )(
+            write.expect("non-null function pointer")(
                 wctx,
                 hbuf_5.as_mut_ptr() as *const libc::c_void,
                 strlen(hbuf_5.as_mut_ptr()) as libc::c_int,
             );
             assert_printable_ascii(str_5);
-            write
-                .expect(
-                    "non-null function pointer",
-                )(wctx, str_5 as *const libc::c_void, strlen(str_5) as libc::c_int);
-            write
-                .expect(
-                    "non-null function pointer",
-                )(
+            write.expect("non-null function pointer")(
+                wctx,
+                str_5 as *const libc::c_void,
+                strlen(str_5) as libc::c_int,
+            );
+            write.expect("non-null function pointer")(
                 wctx,
                 b"\n\0" as *const u8 as *const libc::c_char as *const libc::c_void,
                 1 as libc::c_int,
@@ -4087,23 +3826,18 @@ pub unsafe extern "C" fn midend_serialise(
             strlen(str_6) as libc::c_int,
         );
         assert_printable_ascii(hbuf_6.as_mut_ptr());
-        write
-            .expect(
-                "non-null function pointer",
-            )(
+        write.expect("non-null function pointer")(
             wctx,
             hbuf_6.as_mut_ptr() as *const libc::c_void,
             strlen(hbuf_6.as_mut_ptr()) as libc::c_int,
         );
         assert_printable_ascii(str_6);
-        write
-            .expect(
-                "non-null function pointer",
-            )(wctx, str_6 as *const libc::c_void, strlen(str_6) as libc::c_int);
-        write
-            .expect(
-                "non-null function pointer",
-            )(
+        write.expect("non-null function pointer")(
+            wctx,
+            str_6 as *const libc::c_void,
+            strlen(str_6) as libc::c_int,
+        );
+        write.expect("non-null function pointer")(
             wctx,
             b"\n\0" as *const u8 as *const libc::c_char as *const libc::c_void,
             1 as libc::c_int,
@@ -4125,23 +3859,18 @@ pub unsafe extern "C" fn midend_serialise(
             strlen(str_7) as libc::c_int,
         );
         assert_printable_ascii(hbuf_7.as_mut_ptr());
-        write
-            .expect(
-                "non-null function pointer",
-            )(
+        write.expect("non-null function pointer")(
             wctx,
             hbuf_7.as_mut_ptr() as *const libc::c_void,
             strlen(hbuf_7.as_mut_ptr()) as libc::c_int,
         );
         assert_printable_ascii(str_7);
-        write
-            .expect(
-                "non-null function pointer",
-            )(wctx, str_7 as *const libc::c_void, strlen(str_7) as libc::c_int);
-        write
-            .expect(
-                "non-null function pointer",
-            )(
+        write.expect("non-null function pointer")(
+            wctx,
+            str_7 as *const libc::c_void,
+            strlen(str_7) as libc::c_int,
+        );
+        write.expect("non-null function pointer")(
             wctx,
             b"\n\0" as *const u8 as *const libc::c_char as *const libc::c_void,
             1 as libc::c_int,
@@ -4178,23 +3907,18 @@ pub unsafe extern "C" fn midend_serialise(
             strlen(str_8) as libc::c_int,
         );
         assert_printable_ascii(hbuf_8.as_mut_ptr());
-        write
-            .expect(
-                "non-null function pointer",
-            )(
+        write.expect("non-null function pointer")(
             wctx,
             hbuf_8.as_mut_ptr() as *const libc::c_void,
             strlen(hbuf_8.as_mut_ptr()) as libc::c_int,
         );
         assert_printable_ascii(str_8);
-        write
-            .expect(
-                "non-null function pointer",
-            )(wctx, str_8 as *const libc::c_void, strlen(str_8) as libc::c_int);
-        write
-            .expect(
-                "non-null function pointer",
-            )(
+        write.expect("non-null function pointer")(
+            wctx,
+            str_8 as *const libc::c_void,
+            strlen(str_8) as libc::c_int,
+        );
+        write.expect("non-null function pointer")(
             wctx,
             b"\n\0" as *const u8 as *const libc::c_char as *const libc::c_void,
             1 as libc::c_int,
@@ -4203,8 +3927,8 @@ pub unsafe extern "C" fn midend_serialise(
         sfree(s1 as *mut libc::c_void);
     }
     if !((*me).ui).is_null() && ((*(*me).ourgame).encode_ui).is_some() {
-        let mut s_2: *mut libc::c_char = ((*(*me).ourgame).encode_ui)
-            .expect("non-null function pointer")((*me).ui);
+        let mut s_2: *mut libc::c_char =
+            ((*(*me).ourgame).encode_ui).expect("non-null function pointer")((*me).ui);
         if !s_2.is_null() {
             let mut hbuf_9: [libc::c_char; 80] = [0; 80];
             let mut str_9: *const libc::c_char = s_2;
@@ -4221,23 +3945,18 @@ pub unsafe extern "C" fn midend_serialise(
                 strlen(str_9) as libc::c_int,
             );
             assert_printable_ascii(hbuf_9.as_mut_ptr());
-            write
-                .expect(
-                    "non-null function pointer",
-                )(
+            write.expect("non-null function pointer")(
                 wctx,
                 hbuf_9.as_mut_ptr() as *const libc::c_void,
                 strlen(hbuf_9.as_mut_ptr()) as libc::c_int,
             );
             assert_printable_ascii(str_9);
-            write
-                .expect(
-                    "non-null function pointer",
-                )(wctx, str_9 as *const libc::c_void, strlen(str_9) as libc::c_int);
-            write
-                .expect(
-                    "non-null function pointer",
-                )(
+            write.expect("non-null function pointer")(
+                wctx,
+                str_9 as *const libc::c_void,
+                strlen(str_9) as libc::c_int,
+            );
+            write.expect("non-null function pointer")(
                 wctx,
                 b"\n\0" as *const u8 as *const libc::c_char as *const libc::c_void,
                 1 as libc::c_int,
@@ -4267,23 +3986,18 @@ pub unsafe extern "C" fn midend_serialise(
             strlen(str_10) as libc::c_int,
         );
         assert_printable_ascii(hbuf_10.as_mut_ptr());
-        write
-            .expect(
-                "non-null function pointer",
-            )(
+        write.expect("non-null function pointer")(
             wctx,
             hbuf_10.as_mut_ptr() as *const libc::c_void,
             strlen(hbuf_10.as_mut_ptr()) as libc::c_int,
         );
         assert_printable_ascii(str_10);
-        write
-            .expect(
-                "non-null function pointer",
-            )(wctx, str_10 as *const libc::c_void, strlen(str_10) as libc::c_int);
-        write
-            .expect(
-                "non-null function pointer",
-            )(
+        write.expect("non-null function pointer")(
+            wctx,
+            str_10 as *const libc::c_void,
+            strlen(str_10) as libc::c_int,
+        );
+        write.expect("non-null function pointer")(
             wctx,
             b"\n\0" as *const u8 as *const libc::c_char as *const libc::c_void,
             1 as libc::c_int,
@@ -4310,45 +4024,38 @@ pub unsafe extern "C" fn midend_serialise(
         strlen(str_11) as libc::c_int,
     );
     assert_printable_ascii(hbuf_11.as_mut_ptr());
-    write
-        .expect(
-            "non-null function pointer",
-        )(
+    write.expect("non-null function pointer")(
         wctx,
         hbuf_11.as_mut_ptr() as *const libc::c_void,
         strlen(hbuf_11.as_mut_ptr()) as libc::c_int,
     );
     assert_printable_ascii(str_11);
-    write
-        .expect(
-            "non-null function pointer",
-        )(wctx, str_11 as *const libc::c_void, strlen(str_11) as libc::c_int);
-    write
-        .expect(
-            "non-null function pointer",
-        )(
+    write.expect("non-null function pointer")(
+        wctx,
+        str_11 as *const libc::c_void,
+        strlen(str_11) as libc::c_int,
+    );
+    write.expect("non-null function pointer")(
         wctx,
         b"\n\0" as *const u8 as *const libc::c_char as *const libc::c_void,
         1 as libc::c_int,
     );
-    if (*me).statepos >= 1 as libc::c_int && (*me).statepos <= (*me).nstates {} else {
+    if (*me).statepos >= 1 as libc::c_int && (*me).statepos <= (*me).nstates {
+    } else {
         __assert_fail(
             b"me->statepos >= 1 && me->statepos <= me->nstates\0" as *const u8
                 as *const libc::c_char,
             b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
             2285 as libc::c_int as libc::c_uint,
-            (*::core::mem::transmute::<
-                &[u8; 77],
-                &[libc::c_char; 77],
-            >(
+            (*::core::mem::transmute::<&[u8; 77], &[libc::c_char; 77]>(
                 b"void midend_serialise(midend *, void (*)(void *, const void *, int), void *)\0",
             ))
-                .as_ptr(),
+            .as_ptr(),
         );
     }
     'c_8656: {
-        if (*me).statepos >= 1 as libc::c_int && (*me).statepos <= (*me).nstates
-        {} else {
+        if (*me).statepos >= 1 as libc::c_int && (*me).statepos <= (*me).nstates {
+        } else {
             __assert_fail(
                 b"me->statepos >= 1 && me->statepos <= me->nstates\0" as *const u8
                     as *const libc::c_char,
@@ -4384,31 +4091,26 @@ pub unsafe extern "C" fn midend_serialise(
         strlen(str_12) as libc::c_int,
     );
     assert_printable_ascii(hbuf_12.as_mut_ptr());
-    write
-        .expect(
-            "non-null function pointer",
-        )(
+    write.expect("non-null function pointer")(
         wctx,
         hbuf_12.as_mut_ptr() as *const libc::c_void,
         strlen(hbuf_12.as_mut_ptr()) as libc::c_int,
     );
     assert_printable_ascii(str_12);
-    write
-        .expect(
-            "non-null function pointer",
-        )(wctx, str_12 as *const libc::c_void, strlen(str_12) as libc::c_int);
-    write
-        .expect(
-            "non-null function pointer",
-        )(
+    write.expect("non-null function pointer")(
+        wctx,
+        str_12 as *const libc::c_void,
+        strlen(str_12) as libc::c_int,
+    );
+    write.expect("non-null function pointer")(
         wctx,
         b"\n\0" as *const u8 as *const libc::c_char as *const libc::c_void,
         1 as libc::c_int,
     );
     i = 1 as libc::c_int;
     while i < (*me).nstates {
-        if (*((*me).states).offset(i as isize)).movetype != NEWGAME as libc::c_int
-        {} else {
+        if (*((*me).states).offset(i as isize)).movetype != NEWGAME as libc::c_int {
+        } else {
             __assert_fail(
                 b"me->states[i].movetype != NEWGAME\0" as *const u8
                     as *const libc::c_char,
@@ -4424,8 +4126,8 @@ pub unsafe extern "C" fn midend_serialise(
             );
         }
         'c_8482: {
-            if (*((*me).states).offset(i as isize)).movetype != NEWGAME as libc::c_int
-            {} else {
+            if (*((*me).states).offset(i as isize)).movetype != NEWGAME as libc::c_int {
+            } else {
                 __assert_fail(
                     b"me->states[i].movetype != NEWGAME\0" as *const u8
                         as *const libc::c_char,
@@ -4444,9 +4146,7 @@ pub unsafe extern "C" fn midend_serialise(
         match (*((*me).states).offset(i as isize)).movetype {
             1 => {
                 let mut hbuf_13: [libc::c_char; 80] = [0; 80];
-                let mut str_13: *const libc::c_char = (*((*me).states)
-                    .offset(i as isize))
-                    .movestr;
+                let mut str_13: *const libc::c_char = (*((*me).states).offset(i as isize)).movestr;
                 let mut lbuf_13: [libc::c_char; 9] = [0; 9];
                 copy_left_justified(
                     lbuf_13.as_mut_ptr(),
@@ -4460,27 +4160,18 @@ pub unsafe extern "C" fn midend_serialise(
                     strlen(str_13) as libc::c_int,
                 );
                 assert_printable_ascii(hbuf_13.as_mut_ptr());
-                write
-                    .expect(
-                        "non-null function pointer",
-                    )(
+                write.expect("non-null function pointer")(
                     wctx,
                     hbuf_13.as_mut_ptr() as *const libc::c_void,
                     strlen(hbuf_13.as_mut_ptr()) as libc::c_int,
                 );
                 assert_printable_ascii(str_13);
-                write
-                    .expect(
-                        "non-null function pointer",
-                    )(
+                write.expect("non-null function pointer")(
                     wctx,
                     str_13 as *const libc::c_void,
                     strlen(str_13) as libc::c_int,
                 );
-                write
-                    .expect(
-                        "non-null function pointer",
-                    )(
+                write.expect("non-null function pointer")(
                     wctx,
                     b"\n\0" as *const u8 as *const libc::c_char as *const libc::c_void,
                     1 as libc::c_int,
@@ -4488,9 +4179,7 @@ pub unsafe extern "C" fn midend_serialise(
             }
             2 => {
                 let mut hbuf_14: [libc::c_char; 80] = [0; 80];
-                let mut str_14: *const libc::c_char = (*((*me).states)
-                    .offset(i as isize))
-                    .movestr;
+                let mut str_14: *const libc::c_char = (*((*me).states).offset(i as isize)).movestr;
                 let mut lbuf_14: [libc::c_char; 9] = [0; 9];
                 copy_left_justified(
                     lbuf_14.as_mut_ptr(),
@@ -4504,27 +4193,18 @@ pub unsafe extern "C" fn midend_serialise(
                     strlen(str_14) as libc::c_int,
                 );
                 assert_printable_ascii(hbuf_14.as_mut_ptr());
-                write
-                    .expect(
-                        "non-null function pointer",
-                    )(
+                write.expect("non-null function pointer")(
                     wctx,
                     hbuf_14.as_mut_ptr() as *const libc::c_void,
                     strlen(hbuf_14.as_mut_ptr()) as libc::c_int,
                 );
                 assert_printable_ascii(str_14);
-                write
-                    .expect(
-                        "non-null function pointer",
-                    )(
+                write.expect("non-null function pointer")(
                     wctx,
                     str_14 as *const libc::c_void,
                     strlen(str_14) as libc::c_int,
                 );
-                write
-                    .expect(
-                        "non-null function pointer",
-                    )(
+                write.expect("non-null function pointer")(
                     wctx,
                     b"\n\0" as *const u8 as *const libc::c_char as *const libc::c_void,
                     1 as libc::c_int,
@@ -4532,9 +4212,7 @@ pub unsafe extern "C" fn midend_serialise(
             }
             3 => {
                 let mut hbuf_15: [libc::c_char; 80] = [0; 80];
-                let mut str_15: *const libc::c_char = (*((*me).states)
-                    .offset(i as isize))
-                    .movestr;
+                let mut str_15: *const libc::c_char = (*((*me).states).offset(i as isize)).movestr;
                 let mut lbuf_15: [libc::c_char; 9] = [0; 9];
                 copy_left_justified(
                     lbuf_15.as_mut_ptr(),
@@ -4548,27 +4226,18 @@ pub unsafe extern "C" fn midend_serialise(
                     strlen(str_15) as libc::c_int,
                 );
                 assert_printable_ascii(hbuf_15.as_mut_ptr());
-                write
-                    .expect(
-                        "non-null function pointer",
-                    )(
+                write.expect("non-null function pointer")(
                     wctx,
                     hbuf_15.as_mut_ptr() as *const libc::c_void,
                     strlen(hbuf_15.as_mut_ptr()) as libc::c_int,
                 );
                 assert_printable_ascii(str_15);
-                write
-                    .expect(
-                        "non-null function pointer",
-                    )(
+                write.expect("non-null function pointer")(
                     wctx,
                     str_15 as *const libc::c_void,
                     strlen(str_15) as libc::c_int,
                 );
-                write
-                    .expect(
-                        "non-null function pointer",
-                    )(
+                write.expect("non-null function pointer")(
                     wctx,
                     b"\n\0" as *const u8 as *const libc::c_char as *const libc::c_void,
                     1 as libc::c_int,
@@ -4582,11 +4251,11 @@ pub unsafe extern "C" fn midend_serialise(
 }
 unsafe extern "C" fn midend_deserialise_internal(
     mut me: *mut midend,
-    mut read: Option::<
+    mut read: Option<
         unsafe extern "C" fn(*mut libc::c_void, *mut libc::c_void, libc::c_int) -> bool,
     >,
     mut rctx: *mut libc::c_void,
-    mut check: Option::<
+    mut check: Option<
         unsafe extern "C" fn(
             *mut libc::c_void,
             *mut midend,
@@ -4616,8 +4285,8 @@ unsafe extern "C" fn midend_deserialise_internal(
     let mut started: bool = 0 as libc::c_int != 0;
     let mut i: libc::c_int = 0;
     let mut val: *mut libc::c_char = 0 as *mut libc::c_char;
-    let mut ret: *const libc::c_char = b"Data does not appear to be a saved game file\0"
-        as *const u8 as *const libc::c_char;
+    let mut ret: *const libc::c_char =
+        b"Data does not appear to be a saved game file\0" as *const u8 as *const libc::c_char;
     data.privdesc = 0 as *mut libc::c_char;
     data.desc = data.privdesc;
     data.parstr = data.desc;
@@ -4633,7 +4302,8 @@ unsafe extern "C" fn midend_deserialise_internal(
     data.nstates = 0 as libc::c_int;
     data.statepos = -(1 as libc::c_int);
     's_37: loop {
-        if !(data.nstates <= 0 as libc::c_int || data.statepos < 0 as libc::c_int
+        if !(data.nstates <= 0 as libc::c_int
+            || data.statepos < 0 as libc::c_int
             || gotstates < data.nstates - 1 as libc::c_int)
         {
             current_block = 10109057886293123569;
@@ -4643,11 +4313,11 @@ unsafe extern "C" fn midend_deserialise_internal(
         let mut c: libc::c_char = 0;
         let mut len: libc::c_int = 0;
         loop {
-            if !read
-                .expect(
-                    "non-null function pointer",
-                )(rctx, key.as_mut_ptr() as *mut libc::c_void, 1 as libc::c_int)
-            {
+            if !read.expect("non-null function pointer")(
+                rctx,
+                key.as_mut_ptr() as *mut libc::c_void,
+                1 as libc::c_int,
+            ) {
                 current_block = 17011192871324626656;
                 break 's_37;
             } else if !(key[0 as libc::c_int as usize] as libc::c_int == '\r' as i32
@@ -4656,28 +4326,27 @@ unsafe extern "C" fn midend_deserialise_internal(
                 break;
             }
         }
-        if !read
-            .expect(
-                "non-null function pointer",
-            )(
+        if !read.expect("non-null function pointer")(
             rctx,
             key.as_mut_ptr().offset(1 as libc::c_int as isize) as *mut libc::c_void,
             8 as libc::c_int,
-        )
-        {
+        ) {
             current_block = 17011192871324626656;
             break;
         } else if key[8 as libc::c_int as usize] as libc::c_int != ':' as i32 {
             if started {
-                ret = b"Data was incorrectly formatted for a saved game file\0"
-                    as *const u8 as *const libc::c_char;
+                ret = b"Data was incorrectly formatted for a saved game file\0" as *const u8
+                    as *const libc::c_char;
             }
             current_block = 17011192871324626656;
             break;
         } else {
-            len = strcspn(key.as_mut_ptr(), b": \0" as *const u8 as *const libc::c_char)
-                as libc::c_int;
-            if len <= 8 as libc::c_int {} else {
+            len = strcspn(
+                key.as_mut_ptr(),
+                b": \0" as *const u8 as *const libc::c_char,
+            ) as libc::c_int;
+            if len <= 8 as libc::c_int {
+            } else {
                 __assert_fail(
                     b"len <= 8\0" as *const u8 as *const libc::c_char,
                     b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
@@ -4692,7 +4361,8 @@ unsafe extern "C" fn midend_deserialise_internal(
                 );
             }
             'c_14544: {
-                if len <= 8 as libc::c_int {} else {
+                if len <= 8 as libc::c_int {
+                } else {
                     __assert_fail(
                         b"len <= 8\0" as *const u8 as *const libc::c_char,
                         b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
@@ -4710,31 +4380,27 @@ unsafe extern "C" fn midend_deserialise_internal(
             key[len as usize] = '\0' as i32 as libc::c_char;
             len = 0 as libc::c_int;
             loop {
-                if !read
-                    .expect(
-                        "non-null function pointer",
-                    )(
+                if !read.expect("non-null function pointer")(
                     rctx,
                     &mut c as *mut libc::c_char as *mut libc::c_void,
                     1 as libc::c_int,
-                )
-                {
+                ) {
                     current_block = 17011192871324626656;
                     break 's_37;
                 } else {
                     if c as libc::c_int == ':' as i32 {
                         break;
                     }
-                    if c as libc::c_int >= '0' as i32 && c as libc::c_int <= '9' as i32
-                        && len
-                            < (2147483647 as libc::c_int - 10 as libc::c_int)
-                                / 10 as libc::c_int
+                    if c as libc::c_int >= '0' as i32
+                        && c as libc::c_int <= '9' as i32
+                        && len < (2147483647 as libc::c_int - 10 as libc::c_int) / 10 as libc::c_int
                     {
                         len = len * 10 as libc::c_int + (c as libc::c_int - '0' as i32);
                     } else {
                         if started {
                             ret = b"Data was incorrectly formatted for a saved game file\0"
-                                as *const u8 as *const libc::c_char;
+                                as *const u8
+                                as *const libc::c_char;
                         }
                         current_block = 17011192871324626656;
                         break 's_37;
@@ -4743,13 +4409,9 @@ unsafe extern "C" fn midend_deserialise_internal(
             }
             val = smalloc(
                 ((len + 1 as libc::c_int) as libc::c_ulong)
-                    .wrapping_mul(
-                        ::core::mem::size_of::<libc::c_char>() as libc::c_ulong,
-                    ),
+                    .wrapping_mul(::core::mem::size_of::<libc::c_char>() as libc::c_ulong),
             ) as *mut libc::c_char;
-            if !read
-                .expect("non-null function pointer")(rctx, val as *mut libc::c_void, len)
-            {
+            if !read.expect("non-null function pointer")(rctx, val as *mut libc::c_void, len) {
                 current_block = 17011192871324626656;
                 break;
             } else {
@@ -4762,11 +4424,10 @@ unsafe extern "C" fn midend_deserialise_internal(
                     i = 0 as libc::c_int;
                     while *val.offset(i as isize) != 0 {
                         if (*val.offset(i as isize) as libc::c_int) < 32 as libc::c_int
-                            || *val.offset(i as isize) as libc::c_int
-                                >= 127 as libc::c_int
+                            || *val.offset(i as isize) as libc::c_int >= 127 as libc::c_int
                         {
-                            ret = b"Forbidden characters in saved game file\0"
-                                as *const u8 as *const libc::c_char;
+                            ret = b"Forbidden characters in saved game file\0" as *const u8
+                                as *const libc::c_char;
                             current_block = 17011192871324626656;
                             break 's_37;
                         } else {
@@ -4789,8 +4450,7 @@ unsafe extern "C" fn midend_deserialise_internal(
                         current_block = 17011192871324626656;
                         break;
                     }
-                    ret = b"Saved data ended unexpectedly\0" as *const u8
-                        as *const libc::c_char;
+                    ret = b"Saved data ended unexpectedly\0" as *const u8 as *const libc::c_char;
                     started = 1 as libc::c_int != 0;
                 } else if strcmp(
                     key.as_mut_ptr(),
@@ -4837,15 +4497,13 @@ unsafe extern "C" fn midend_deserialise_internal(
                 {
                     let mut tmp: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
                     let mut len_0: libc::c_int = (strlen(val))
-                        .wrapping_div(2 as libc::c_int as libc::c_ulong) as libc::c_int;
+                        .wrapping_div(2 as libc::c_int as libc::c_ulong)
+                        as libc::c_int;
                     tmp = hex2bin(val, len_0);
                     sfree(data.seed as *mut libc::c_void);
-                    data
-                        .seed = smalloc(
+                    data.seed = smalloc(
                         ((len_0 + 1 as libc::c_int) as libc::c_ulong)
-                            .wrapping_mul(
-                                ::core::mem::size_of::<libc::c_char>() as libc::c_ulong,
-                            ),
+                            .wrapping_mul(::core::mem::size_of::<libc::c_char>() as libc::c_ulong),
                     ) as *mut libc::c_char;
                     memcpy(
                         data.seed as *mut libc::c_void,
@@ -4885,20 +4543,14 @@ unsafe extern "C" fn midend_deserialise_internal(
                 {
                     let mut tmp_0: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
                     let mut len_1: libc::c_int = (strlen(val))
-                        .wrapping_div(2 as libc::c_int as libc::c_ulong) as libc::c_int;
+                        .wrapping_div(2 as libc::c_int as libc::c_ulong)
+                        as libc::c_int;
                     tmp_0 = hex2bin(val, len_1);
-                    obfuscate_bitmap(
-                        tmp_0,
-                        len_1 * 8 as libc::c_int,
-                        1 as libc::c_int != 0,
-                    );
+                    obfuscate_bitmap(tmp_0, len_1 * 8 as libc::c_int, 1 as libc::c_int != 0);
                     sfree(data.auxinfo as *mut libc::c_void);
-                    data
-                        .auxinfo = smalloc(
+                    data.auxinfo = smalloc(
                         ((len_1 + 1 as libc::c_int) as libc::c_ulong)
-                            .wrapping_mul(
-                                ::core::mem::size_of::<libc::c_char>() as libc::c_ulong,
-                            ),
+                            .wrapping_mul(::core::mem::size_of::<libc::c_char>() as libc::c_ulong),
                     ) as *mut libc::c_char;
                     memcpy(
                         data.auxinfo as *mut libc::c_void,
@@ -4934,29 +4586,22 @@ unsafe extern "C" fn midend_deserialise_internal(
                     } else {
                         data.nstates = atoi(val);
                         if data.nstates <= 0 as libc::c_int {
-                            ret = b"Number of states in save file was negative\0"
-                                as *const u8 as *const libc::c_char;
+                            ret = b"Number of states in save file was negative\0" as *const u8
+                                as *const libc::c_char;
                             current_block = 17011192871324626656;
                             break;
                         } else {
-                            data
-                                .states = smalloc(
-                                (data.nstates as libc::c_ulong)
-                                    .wrapping_mul(
-                                        ::core::mem::size_of::<midend_state_entry>()
-                                            as libc::c_ulong,
-                                    ),
-                            ) as *mut midend_state_entry;
+                            data.states = smalloc((data.nstates as libc::c_ulong).wrapping_mul(
+                                ::core::mem::size_of::<midend_state_entry>() as libc::c_ulong,
+                            )) as *mut midend_state_entry;
                             i = 0 as libc::c_int;
                             while i < data.nstates {
-                                let ref mut fresh23 = (*(data.states).offset(i as isize))
-                                    .state;
+                                let ref mut fresh23 = (*(data.states).offset(i as isize)).state;
                                 *fresh23 = 0 as *mut game_state;
-                                let ref mut fresh24 = (*(data.states).offset(i as isize))
-                                    .movestr;
+                                let ref mut fresh24 = (*(data.states).offset(i as isize)).movestr;
                                 *fresh24 = 0 as *mut libc::c_char;
-                                (*(data.states).offset(i as isize))
-                                    .movetype = NEWGAME as libc::c_int;
+                                (*(data.states).offset(i as isize)).movetype =
+                                    NEWGAME as libc::c_int;
                                 i += 1;
                                 i;
                             }
@@ -4994,7 +4639,8 @@ unsafe extern "C" fn midend_deserialise_internal(
                     } else {
                         gotstates += 1;
                         gotstates;
-                        if gotstates < data.nstates {} else {
+                        if gotstates < data.nstates {
+                        } else {
                             __assert_fail(
                                 b"gotstates < data.nstates\0" as *const u8
                                     as *const libc::c_char,
@@ -5010,7 +4656,8 @@ unsafe extern "C" fn midend_deserialise_internal(
                             );
                         }
                         'c_13673: {
-                            if gotstates < data.nstates {} else {
+                            if gotstates < data.nstates {
+                            } else {
                                 __assert_fail(
                                     b"gotstates < data.nstates\0" as *const u8
                                         as *const libc::c_char,
@@ -5031,21 +4678,20 @@ unsafe extern "C" fn midend_deserialise_internal(
                             b"MOVE\0" as *const u8 as *const libc::c_char,
                         ) == 0
                         {
-                            (*(data.states).offset(gotstates as isize))
-                                .movetype = MOVE as libc::c_int;
+                            (*(data.states).offset(gotstates as isize)).movetype =
+                                MOVE as libc::c_int;
                         } else if strcmp(
                             key.as_mut_ptr(),
                             b"SOLVE\0" as *const u8 as *const libc::c_char,
                         ) == 0
                         {
-                            (*(data.states).offset(gotstates as isize))
-                                .movetype = SOLVE as libc::c_int;
+                            (*(data.states).offset(gotstates as isize)).movetype =
+                                SOLVE as libc::c_int;
                         } else {
-                            (*(data.states).offset(gotstates as isize))
-                                .movetype = RESTART as libc::c_int;
+                            (*(data.states).offset(gotstates as isize)).movetype =
+                                RESTART as libc::c_int;
                         }
-                        let ref mut fresh25 = (*(data.states).offset(gotstates as isize))
-                            .movestr;
+                        let ref mut fresh25 = (*(data.states).offset(gotstates as isize)).movestr;
                         *fresh25 = val;
                         val = 0 as *mut libc::c_char;
                     }
@@ -5057,90 +4703,89 @@ unsafe extern "C" fn midend_deserialise_internal(
     }
     match current_block {
         10109057886293123569 => {
-            data
-                .params = ((*(*me).ourgame).default_params)
-                .expect("non-null function pointer")();
+            data.params = ((*(*me).ourgame).default_params).expect("non-null function pointer")();
             if (data.parstr).is_null() {
                 ret = b"Long-term parameters in save file are missing\0" as *const u8
                     as *const libc::c_char;
             } else {
-                ((*(*me).ourgame).decode_params)
-                    .expect("non-null function pointer")(data.params, data.parstr);
-                if !(((*(*me).ourgame).validate_params)
-                    .expect(
-                        "non-null function pointer",
-                    )(data.params, 1 as libc::c_int != 0))
-                    .is_null()
+                ((*(*me).ourgame).decode_params).expect("non-null function pointer")(
+                    data.params,
+                    data.parstr,
+                );
+                if !(((*(*me).ourgame).validate_params).expect("non-null function pointer")(
+                    data.params,
+                    1 as libc::c_int != 0,
+                ))
+                .is_null()
                 {
                     ret = b"Long-term parameters in save file are invalid\0" as *const u8
                         as *const libc::c_char;
                 } else {
-                    data
-                        .cparams = ((*(*me).ourgame).default_params)
-                        .expect("non-null function pointer")();
+                    data.cparams =
+                        ((*(*me).ourgame).default_params).expect("non-null function pointer")();
                     if (data.cparstr).is_null() {
-                        ret = b"Short-term parameters in save file are missing\0"
-                            as *const u8 as *const libc::c_char;
+                        ret = b"Short-term parameters in save file are missing\0" as *const u8
+                            as *const libc::c_char;
                     } else {
-                        ((*(*me).ourgame).decode_params)
-                            .expect(
-                                "non-null function pointer",
-                            )(data.cparams, data.cparstr);
-                        if !(((*(*me).ourgame).validate_params)
-                            .expect(
-                                "non-null function pointer",
-                            )(data.cparams, 0 as libc::c_int != 0))
-                            .is_null()
+                        ((*(*me).ourgame).decode_params).expect("non-null function pointer")(
+                            data.cparams,
+                            data.cparstr,
+                        );
+                        if !(((*(*me).ourgame).validate_params).expect("non-null function pointer")(
+                            data.cparams,
+                            0 as libc::c_int != 0,
+                        ))
+                        .is_null()
                         {
-                            ret = b"Short-term parameters in save file are invalid\0"
-                                as *const u8 as *const libc::c_char;
+                            ret = b"Short-term parameters in save file are invalid\0" as *const u8
+                                as *const libc::c_char;
                         } else {
                             if !(data.seed).is_null()
                                 && !(((*(*me).ourgame).validate_params)
-                                    .expect(
-                                        "non-null function pointer",
-                                    )(data.cparams, 1 as libc::c_int != 0))
-                                    .is_null()
+                                    .expect("non-null function pointer")(
+                                    data.cparams,
+                                    1 as libc::c_int != 0,
+                                ))
+                                .is_null()
                             {
                                 sfree(data.seed as *mut libc::c_void);
                                 data.seed = 0 as *mut libc::c_char;
                             }
                             if (data.desc).is_null() {
-                                ret = b"Game description in save file is missing\0"
-                                    as *const u8 as *const libc::c_char;
+                                ret = b"Game description in save file is missing\0" as *const u8
+                                    as *const libc::c_char;
                             } else if !(((*(*me).ourgame).validate_desc)
-                                .expect(
-                                    "non-null function pointer",
-                                )(data.cparams, data.desc))
-                                .is_null()
+                                .expect("non-null function pointer")(
+                                data.cparams, data.desc
+                            ))
+                            .is_null()
                             {
-                                ret = b"Game description in save file is invalid\0"
-                                    as *const u8 as *const libc::c_char;
+                                ret = b"Game description in save file is invalid\0" as *const u8
+                                    as *const libc::c_char;
                             } else if !(data.privdesc).is_null()
                                 && !(((*(*me).ourgame).validate_desc)
-                                    .expect(
-                                        "non-null function pointer",
-                                    )(data.cparams, data.privdesc))
-                                    .is_null()
+                                    .expect("non-null function pointer")(
+                                    data.cparams,
+                                    data.privdesc,
+                                ))
+                                .is_null()
                             {
                                 ret = b"Game private description in save file is invalid\0"
-                                    as *const u8 as *const libc::c_char;
+                                    as *const u8
+                                    as *const libc::c_char;
                             } else if data.statepos < 1 as libc::c_int
                                 || data.statepos > data.nstates
                             {
-                                ret = b"Game position in save file is out of range\0"
-                                    as *const u8 as *const libc::c_char;
+                                ret = b"Game position in save file is out of range\0" as *const u8
+                                    as *const libc::c_char;
                             } else if (data.states).is_null() {
                                 ret = b"No state count provided in save file\0" as *const u8
                                     as *const libc::c_char;
                             } else {
-                                let ref mut fresh26 = (*(data.states)
-                                    .offset(0 as libc::c_int as isize))
-                                    .state;
+                                let ref mut fresh26 =
+                                    (*(data.states).offset(0 as libc::c_int as isize)).state;
                                 *fresh26 = ((*(*me).ourgame).new_game)
-                                    .expect(
-                                        "non-null function pointer",
-                                    )(
+                                    .expect("non-null function pointer")(
                                     me,
                                     data.cparams,
                                     if !(data.privdesc).is_null() {
@@ -5157,7 +4802,8 @@ unsafe extern "C" fn midend_deserialise_internal(
                                     }
                                     if (*(data.states).offset(i as isize)).movetype
                                         != NEWGAME as libc::c_int
-                                    {} else {
+                                    {
+                                    } else {
                                         __assert_fail(
                                             b"data.states[i].movetype != NEWGAME\0" as *const u8
                                                 as *const libc::c_char,
@@ -5175,7 +4821,8 @@ unsafe extern "C" fn midend_deserialise_internal(
                                     'c_13194: {
                                         if (*(data.states).offset(i as isize)).movetype
                                             != NEWGAME as libc::c_int
-                                        {} else {
+                                        {
+                                        } else {
                                             __assert_fail(
                                                 b"data.states[i].movetype != NEWGAME\0" as *const u8
                                                     as *const libc::c_char,
@@ -5193,18 +4840,19 @@ unsafe extern "C" fn midend_deserialise_internal(
                                     };
                                     match (*(data.states).offset(i as isize)).movetype {
                                         1 | 2 => {
-                                            let ref mut fresh27 = (*(data.states).offset(i as isize))
-                                                .state;
+                                            let ref mut fresh27 =
+                                                (*(data.states).offset(i as isize)).state;
                                             *fresh27 = ((*(*me).ourgame).execute_move)
-                                                .expect(
-                                                    "non-null function pointer",
-                                                )(
-                                                (*(data.states).offset((i - 1 as libc::c_int) as isize))
-                                                    .state,
+                                                .expect("non-null function pointer")(
+                                                (*(data.states)
+                                                    .offset((i - 1 as libc::c_int) as isize))
+                                                .state,
                                                 (*(data.states).offset(i as isize)).movestr,
                                             );
-                                            if ((*(data.states).offset(i as isize)).state).is_null() {
-                                                ret = b"Save file contained an invalid move\0" as *const u8
+                                            if ((*(data.states).offset(i as isize)).state).is_null()
+                                            {
+                                                ret = b"Save file contained an invalid move\0"
+                                                    as *const u8
                                                     as *const libc::c_char;
                                                 current_block = 17011192871324626656;
                                                 break;
@@ -5212,25 +4860,23 @@ unsafe extern "C" fn midend_deserialise_internal(
                                         }
                                         3 => {
                                             if !(((*(*me).ourgame).validate_desc)
-                                                .expect(
-                                                    "non-null function pointer",
-                                                )(
+                                                .expect("non-null function pointer")(
                                                 data.cparams,
                                                 (*(data.states).offset(i as isize)).movestr,
                                             ))
-                                                .is_null()
+                                            .is_null()
                                             {
-                                                ret = b"Save file contained an invalid restart move\0"
-                                                    as *const u8 as *const libc::c_char;
+                                                ret =
+                                                    b"Save file contained an invalid restart move\0"
+                                                        as *const u8
+                                                        as *const libc::c_char;
                                                 current_block = 17011192871324626656;
                                                 break;
                                             } else {
-                                                let ref mut fresh28 = (*(data.states).offset(i as isize))
-                                                    .state;
+                                                let ref mut fresh28 =
+                                                    (*(data.states).offset(i as isize)).state;
                                                 *fresh28 = ((*(*me).ourgame).new_game)
-                                                    .expect(
-                                                        "non-null function pointer",
-                                                    )(
+                                                    .expect("non-null function pointer")(
                                                     me,
                                                     data.cparams,
                                                     (*(data.states).offset(i as isize)).movestr,
@@ -5245,34 +4891,33 @@ unsafe extern "C" fn midend_deserialise_internal(
                                 match current_block {
                                     17011192871324626656 => {}
                                     _ => {
-                                        data
-                                            .ui = ((*(*me).ourgame).new_ui)
-                                            .expect(
-                                                "non-null function pointer",
-                                            )((*(data.states).offset(0 as libc::c_int as isize)).state);
+                                        data.ui = ((*(*me).ourgame).new_ui)
+                                            .expect("non-null function pointer")(
+                                            (*(data.states).offset(0 as libc::c_int as isize))
+                                                .state,
+                                        );
                                         midend_apply_prefs(me, data.ui);
                                         if !(data.uistr).is_null()
                                             && ((*(*me).ourgame).decode_ui).is_some()
                                         {
                                             ((*(*me).ourgame).decode_ui)
-                                                .expect(
-                                                    "non-null function pointer",
-                                                )(
+                                                .expect("non-null function pointer")(
                                                 data.ui,
                                                 data.uistr,
-                                                (*(data.states)
-                                                    .offset((data.statepos - 1 as libc::c_int) as isize))
-                                                    .state,
+                                                (*(data.states).offset(
+                                                    (data.statepos - 1 as libc::c_int) as isize,
+                                                ))
+                                                .state,
                                             );
                                         }
-                                        if !(check.is_some()
-                                            && {
-                                                ret = check
-                                                    .expect("non-null function pointer")(cctx, me, &mut data);
-                                                !ret.is_null()
-                                            })
-                                        {
-                                            let mut tmp_1: *mut libc::c_char = 0 as *mut libc::c_char;
+                                        if !(check.is_some() && {
+                                            ret = check.expect("non-null function pointer")(
+                                                cctx, me, &mut data,
+                                            );
+                                            !ret.is_null()
+                                        }) {
+                                            let mut tmp_1: *mut libc::c_char =
+                                                0 as *mut libc::c_char;
                                             tmp_1 = (*me).desc;
                                             (*me).desc = data.desc;
                                             data.desc = tmp_1;
@@ -5289,8 +4934,8 @@ unsafe extern "C" fn midend_deserialise_internal(
                                             (*me).statesize = data.nstates;
                                             data.nstates = (*me).nstates;
                                             (*me).nstates = (*me).statesize;
-                                            let mut tmp_2: *mut midend_state_entry = 0
-                                                as *mut midend_state_entry;
+                                            let mut tmp_2: *mut midend_state_entry =
+                                                0 as *mut midend_state_entry;
                                             tmp_2 = (*me).states;
                                             (*me).states = data.states;
                                             data.states = tmp_2;
@@ -5319,27 +4964,26 @@ unsafe extern "C" fn midend_deserialise_internal(
                                             midend_set_timer(me);
                                             if !((*me).drawstate).is_null() {
                                                 ((*(*me).ourgame).free_drawstate)
-                                                    .expect(
-                                                        "non-null function pointer",
-                                                    )((*me).drawing, (*me).drawstate);
+                                                    .expect("non-null function pointer")(
+                                                    (*me).drawing,
+                                                    (*me).drawstate,
+                                                );
                                             }
-                                            (*me)
-                                                .drawstate = ((*(*me).ourgame).new_drawstate)
-                                                .expect(
-                                                    "non-null function pointer",
-                                                )(
+                                            (*me).drawstate = ((*(*me).ourgame).new_drawstate)
+                                                .expect("non-null function pointer")(
                                                 (*me).drawing,
-                                                (*((*me).states)
-                                                    .offset(((*me).statepos - 1 as libc::c_int) as isize))
-                                                    .state,
+                                                (*((*me).states).offset(
+                                                    ((*me).statepos - 1 as libc::c_int) as isize,
+                                                ))
+                                                .state,
                                             );
                                             (*me).first_draw = 1 as libc::c_int != 0;
                                             midend_size_new_drawstate(me);
                                             if ((*me).game_id_change_notify_function).is_some() {
                                                 ((*me).game_id_change_notify_function)
-                                                    .expect(
-                                                        "non-null function pointer",
-                                                    )((*me).game_id_change_notify_ctx);
+                                                    .expect("non-null function pointer")(
+                                                    (*me).game_id_change_notify_ctx,
+                                                );
                                             }
                                             ret = 0 as *const libc::c_char;
                                         }
@@ -5375,10 +5019,9 @@ unsafe extern "C" fn midend_deserialise_internal(
         i_0 = 0 as libc::c_int;
         while i_0 < data.nstates {
             if !((*(data.states).offset(i_0 as isize)).state).is_null() {
-                ((*(*me).ourgame).free_game)
-                    .expect(
-                        "non-null function pointer",
-                    )((*(data.states).offset(i_0 as isize)).state);
+                ((*(*me).ourgame).free_game).expect("non-null function pointer")(
+                    (*(data.states).offset(i_0 as isize)).state,
+                );
             }
             sfree((*(data.states).offset(i_0 as isize)).movestr as *mut libc::c_void);
             i_0 += 1;
@@ -5391,7 +5034,7 @@ unsafe extern "C" fn midend_deserialise_internal(
 #[no_mangle]
 pub unsafe extern "C" fn midend_deserialise(
     mut me: *mut midend,
-    mut read: Option::<
+    mut read: Option<
         unsafe extern "C" fn(*mut libc::c_void, *mut libc::c_void, libc::c_int) -> bool,
     >,
     mut rctx: *mut libc::c_void,
@@ -5401,7 +5044,7 @@ pub unsafe extern "C" fn midend_deserialise(
 #[no_mangle]
 pub unsafe extern "C" fn identify_game(
     mut name: *mut *mut libc::c_char,
-    mut read: Option::<
+    mut read: Option<
         unsafe extern "C" fn(*mut libc::c_void, *mut libc::c_void, libc::c_int) -> bool,
     >,
     mut rctx: *mut libc::c_void,
@@ -5411,21 +5054,22 @@ pub unsafe extern "C" fn identify_game(
     let mut gotstates: libc::c_int = 0 as libc::c_int;
     let mut started: bool = 0 as libc::c_int != 0;
     let mut val: *mut libc::c_char = 0 as *mut libc::c_char;
-    let mut ret: *const libc::c_char = b"Data does not appear to be a saved game file\0"
-        as *const u8 as *const libc::c_char;
+    let mut ret: *const libc::c_char =
+        b"Data does not appear to be a saved game file\0" as *const u8 as *const libc::c_char;
     *name = 0 as *mut libc::c_char;
-    's_12: while nstates <= 0 as libc::c_int || statepos < 0 as libc::c_int
+    's_12: while nstates <= 0 as libc::c_int
+        || statepos < 0 as libc::c_int
         || gotstates < nstates - 1 as libc::c_int
     {
         let mut key: [libc::c_char; 9] = [0; 9];
         let mut c: libc::c_char = 0;
         let mut len: libc::c_int = 0;
         loop {
-            if !read
-                .expect(
-                    "non-null function pointer",
-                )(rctx, key.as_mut_ptr() as *mut libc::c_void, 1 as libc::c_int)
-            {
+            if !read.expect("non-null function pointer")(
+                rctx,
+                key.as_mut_ptr() as *mut libc::c_void,
+                1 as libc::c_int,
+            ) {
                 break 's_12;
             } else if !(key[0 as libc::c_int as usize] as libc::c_int == '\r' as i32
                 || key[0 as libc::c_int as usize] as libc::c_int == '\n' as i32)
@@ -5433,26 +5077,25 @@ pub unsafe extern "C" fn identify_game(
                 break;
             }
         }
-        if !read
-            .expect(
-                "non-null function pointer",
-            )(
+        if !read.expect("non-null function pointer")(
             rctx,
             key.as_mut_ptr().offset(1 as libc::c_int as isize) as *mut libc::c_void,
             8 as libc::c_int,
-        )
-        {
+        ) {
             break;
         } else if key[8 as libc::c_int as usize] as libc::c_int != ':' as i32 {
             if started {
-                ret = b"Data was incorrectly formatted for a saved game file\0"
-                    as *const u8 as *const libc::c_char;
+                ret = b"Data was incorrectly formatted for a saved game file\0" as *const u8
+                    as *const libc::c_char;
             }
             break;
         } else {
-            len = strcspn(key.as_mut_ptr(), b": \0" as *const u8 as *const libc::c_char)
-                as libc::c_int;
-            if len <= 8 as libc::c_int {} else {
+            len = strcspn(
+                key.as_mut_ptr(),
+                b": \0" as *const u8 as *const libc::c_char,
+            ) as libc::c_int;
+            if len <= 8 as libc::c_int {
+            } else {
                 __assert_fail(
                     b"len <= 8\0" as *const u8 as *const libc::c_char,
                     b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
@@ -5467,7 +5110,8 @@ pub unsafe extern "C" fn identify_game(
                 );
             }
             'c_19749: {
-                if len <= 8 as libc::c_int {} else {
+                if len <= 8 as libc::c_int {
+                } else {
                     __assert_fail(
                         b"len <= 8\0" as *const u8 as *const libc::c_char,
                         b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
@@ -5485,30 +5129,26 @@ pub unsafe extern "C" fn identify_game(
             key[len as usize] = '\0' as i32 as libc::c_char;
             len = 0 as libc::c_int;
             loop {
-                if !read
-                    .expect(
-                        "non-null function pointer",
-                    )(
+                if !read.expect("non-null function pointer")(
                     rctx,
                     &mut c as *mut libc::c_char as *mut libc::c_void,
                     1 as libc::c_int,
-                )
-                {
+                ) {
                     break 's_12;
                 } else {
                     if c as libc::c_int == ':' as i32 {
                         break;
                     }
-                    if c as libc::c_int >= '0' as i32 && c as libc::c_int <= '9' as i32
-                        && len
-                            < (2147483647 as libc::c_int - 10 as libc::c_int)
-                                / 10 as libc::c_int
+                    if c as libc::c_int >= '0' as i32
+                        && c as libc::c_int <= '9' as i32
+                        && len < (2147483647 as libc::c_int - 10 as libc::c_int) / 10 as libc::c_int
                     {
                         len = len * 10 as libc::c_int + (c as libc::c_int - '0' as i32);
                     } else {
                         if started {
                             ret = b"Data was incorrectly formatted for a saved game file\0"
-                                as *const u8 as *const libc::c_char;
+                                as *const u8
+                                as *const libc::c_char;
                         }
                         break 's_12;
                     }
@@ -5516,13 +5156,9 @@ pub unsafe extern "C" fn identify_game(
             }
             val = smalloc(
                 ((len + 1 as libc::c_int) as libc::c_ulong)
-                    .wrapping_mul(
-                        ::core::mem::size_of::<libc::c_char>() as libc::c_ulong,
-                    ),
+                    .wrapping_mul(::core::mem::size_of::<libc::c_char>() as libc::c_ulong),
             ) as *mut libc::c_char;
-            if !read
-                .expect("non-null function pointer")(rctx, val as *mut libc::c_void, len)
-            {
+            if !read.expect("non-null function pointer")(rctx, val as *mut libc::c_void, len) {
                 break;
             } else {
                 *val.offset(len as isize) = '\0' as i32 as libc::c_char;
@@ -5539,8 +5175,7 @@ pub unsafe extern "C" fn identify_game(
                     {
                         break;
                     }
-                    ret = b"Saved data ended unexpectedly\0" as *const u8
-                        as *const libc::c_char;
+                    ret = b"Saved data ended unexpectedly\0" as *const u8 as *const libc::c_char;
                     started = 1 as libc::c_int != 0;
                 } else if strcmp(
                     key.as_mut_ptr(),
@@ -5587,10 +5222,7 @@ pub unsafe extern "C" fn midend_print_puzzle(
                 as *const libc::c_char;
         }
         msg = b"Solve operation failed\0" as *const u8 as *const libc::c_char;
-        movestr = ((*(*me).ourgame).solve)
-            .expect(
-                "non-null function pointer",
-            )(
+        movestr = ((*(*me).ourgame).solve).expect("non-null function pointer")(
             (*((*me).states).offset(0 as libc::c_int as isize)).state,
             (*((*me).states).offset(((*me).statepos - 1 as libc::c_int) as isize)).state,
             (*me).aux_info,
@@ -5599,36 +5231,33 @@ pub unsafe extern "C" fn midend_print_puzzle(
         if movestr.is_null() {
             return msg;
         }
-        soln = ((*(*me).ourgame).execute_move)
-            .expect(
-                "non-null function pointer",
-            )(
+        soln = ((*(*me).ourgame).execute_move).expect("non-null function pointer")(
             (*((*me).states).offset(((*me).statepos - 1 as libc::c_int) as isize)).state,
             movestr,
         );
-        if !soln.is_null() {} else {
+        if !soln.is_null() {
+        } else {
             __assert_fail(
                 b"soln\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
                 2864 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 61],
-                    &[libc::c_char; 61],
-                >(b"const char *midend_print_puzzle(midend *, document *, _Bool)\0"))
-                    .as_ptr(),
+                (*::core::mem::transmute::<&[u8; 61], &[libc::c_char; 61]>(
+                    b"const char *midend_print_puzzle(midend *, document *, _Bool)\0",
+                ))
+                .as_ptr(),
             );
         }
         'c_20171: {
-            if !soln.is_null() {} else {
+            if !soln.is_null() {
+            } else {
                 __assert_fail(
                     b"soln\0" as *const u8 as *const libc::c_char,
                     b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
                     2864 as libc::c_int as libc::c_uint,
-                    (*::core::mem::transmute::<
-                        &[u8; 61],
-                        &[libc::c_char; 61],
-                    >(b"const char *midend_print_puzzle(midend *, document *, _Bool)\0"))
-                        .as_ptr(),
+                    (*::core::mem::transmute::<&[u8; 61], &[libc::c_char; 61]>(
+                        b"const char *midend_print_puzzle(midend *, document *, _Bool)\0",
+                    ))
+                    .as_ptr(),
                 );
             }
         };
@@ -5636,21 +5265,18 @@ pub unsafe extern "C" fn midend_print_puzzle(
     } else {
         soln = 0 as *mut game_state;
     }
-    let mut ui: *mut game_ui = ((*(*me).ourgame).new_ui)
-        .expect(
-            "non-null function pointer",
-        )((*((*me).states).offset(0 as libc::c_int as isize)).state);
+    let mut ui: *mut game_ui = ((*(*me).ourgame).new_ui).expect("non-null function pointer")(
+        (*((*me).states).offset(0 as libc::c_int as isize)).state,
+    );
     midend_apply_prefs(me, ui);
     document_add_puzzle(
         doc,
         (*me).ourgame,
-        ((*(*me).ourgame).dup_params)
-            .expect("non-null function pointer")((*me).curparams),
+        ((*(*me).ourgame).dup_params).expect("non-null function pointer")((*me).curparams),
         ui,
-        ((*(*me).ourgame).dup_game)
-            .expect(
-                "non-null function pointer",
-            )((*((*me).states).offset(0 as libc::c_int as isize)).state),
+        ((*(*me).ourgame).dup_game).expect("non-null function pointer")(
+            (*((*me).states).offset(0 as libc::c_int as isize)).state,
+        ),
         soln,
     );
     return 0 as *const libc::c_char;
@@ -5670,47 +5296,41 @@ unsafe extern "C" fn midend_apply_prefs(mut me: *mut midend, mut ui: *mut game_u
         ui,
         Some(
             midend_serialise_buf_read
-                as unsafe extern "C" fn(
-                    *mut libc::c_void,
-                    *mut libc::c_void,
-                    libc::c_int,
-                ) -> bool,
+                as unsafe extern "C" fn(*mut libc::c_void, *mut libc::c_void, libc::c_int) -> bool,
         ),
         rctx.as_mut_ptr() as *mut libc::c_void,
     );
     if err.is_null()
-        && !(b"Bad internal serialisation of preferences\0" as *const u8
-            as *const libc::c_char)
+        && !(b"Bad internal serialisation of preferences\0" as *const u8 as *const libc::c_char)
             .is_null()
-    {} else {
+    {
+    } else {
         __assert_fail(
             b"!err && \"Bad internal serialisation of preferences\"\0" as *const u8
                 as *const libc::c_char,
             b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
             2895 as libc::c_int as libc::c_uint,
-            (*::core::mem::transmute::<
-                &[u8; 45],
-                &[libc::c_char; 45],
-            >(b"void midend_apply_prefs(midend *, game_ui *)\0"))
-                .as_ptr(),
+            (*::core::mem::transmute::<&[u8; 45], &[libc::c_char; 45]>(
+                b"void midend_apply_prefs(midend *, game_ui *)\0",
+            ))
+            .as_ptr(),
         );
     }
     'c_4794: {
         if err.is_null()
-            && !(b"Bad internal serialisation of preferences\0" as *const u8
-                as *const libc::c_char)
+            && !(b"Bad internal serialisation of preferences\0" as *const u8 as *const libc::c_char)
                 .is_null()
-        {} else {
+        {
+        } else {
             __assert_fail(
                 b"!err && \"Bad internal serialisation of preferences\"\0" as *const u8
                     as *const libc::c_char,
                 b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
                 2895 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 45],
-                    &[libc::c_char; 45],
-                >(b"void midend_apply_prefs(midend *, game_ui *)\0"))
-                    .as_ptr(),
+                (*::core::mem::transmute::<&[u8; 45], &[libc::c_char; 45]>(
+                    b"void midend_apply_prefs(midend *, game_ui *)\0",
+                ))
+                .as_ptr(),
             );
         }
     };
@@ -5729,16 +5349,15 @@ unsafe extern "C" fn midend_get_prefs(
     n_be_prefs = 0 as libc::c_int;
     if ((*(*me).ourgame).get_prefs).is_some() {
         if !ui.is_null() {
-            be_prefs = ((*(*me).ourgame).get_prefs)
-                .expect("non-null function pointer")(ui);
+            be_prefs = ((*(*me).ourgame).get_prefs).expect("non-null function pointer")(ui);
         } else if !((*me).ui).is_null() {
-            be_prefs = ((*(*me).ourgame).get_prefs)
-                .expect("non-null function pointer")((*me).ui);
+            be_prefs = ((*(*me).ourgame).get_prefs).expect("non-null function pointer")((*me).ui);
         } else {
             let mut tmp_ui: *mut game_ui = ((*(*me).ourgame).new_ui)
-                .expect("non-null function pointer")(0 as *const game_state);
-            be_prefs = ((*(*me).ourgame).get_prefs)
-                .expect("non-null function pointer")(tmp_ui);
+                .expect("non-null function pointer")(
+                0 as *const game_state
+            );
+            be_prefs = ((*(*me).ourgame).get_prefs).expect("non-null function pointer")(tmp_ui);
             ((*(*me).ourgame).free_ui).expect("non-null function pointer")(tmp_ui);
         }
         while (*be_prefs.offset(n_be_prefs as isize)).type_0 != C_END as libc::c_int {
@@ -5752,29 +5371,29 @@ unsafe extern "C" fn midend_get_prefs(
             .wrapping_mul(::core::mem::size_of::<config_item>() as libc::c_ulong),
     ) as *mut config_item;
     pos = 0 as libc::c_int;
-    if pos < n_me_prefs {} else {
+    if pos < n_me_prefs {
+    } else {
         __assert_fail(
             b"pos < n_me_prefs\0" as *const u8 as *const libc::c_char,
             b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
             2924 as libc::c_int as libc::c_uint,
-            (*::core::mem::transmute::<
-                &[u8; 51],
-                &[libc::c_char; 51],
-            >(b"config_item *midend_get_prefs(midend *, game_ui *)\0"))
-                .as_ptr(),
+            (*::core::mem::transmute::<&[u8; 51], &[libc::c_char; 51]>(
+                b"config_item *midend_get_prefs(midend *, game_ui *)\0",
+            ))
+            .as_ptr(),
         );
     }
     'c_5745: {
-        if pos < n_me_prefs {} else {
+        if pos < n_me_prefs {
+        } else {
             __assert_fail(
                 b"pos < n_me_prefs\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
                 2924 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 51],
-                    &[libc::c_char; 51],
-                >(b"config_item *midend_get_prefs(midend *, game_ui *)\0"))
-                    .as_ptr(),
+                (*::core::mem::transmute::<&[u8; 51], &[libc::c_char; 51]>(
+                    b"config_item *midend_get_prefs(midend *, game_ui *)\0",
+                ))
+                .as_ptr(),
             );
         }
     };
@@ -5814,12 +5433,15 @@ unsafe extern "C" fn midend_set_prefs(
     pos;
     if ((*(*me).ourgame).get_prefs).is_some() {
         if ui.is_null() {
-            tmpui = ((*(*me).ourgame).new_ui)
-                .expect("non-null function pointer")(0 as *const game_state);
+            tmpui = ((*(*me).ourgame).new_ui).expect("non-null function pointer")(
+                0 as *const game_state,
+            );
             ui = tmpui;
         }
-        ((*(*me).ourgame).set_prefs)
-            .expect("non-null function pointer")(ui, all_prefs.offset(pos as isize));
+        ((*(*me).ourgame).set_prefs).expect("non-null function pointer")(
+            ui,
+            all_prefs.offset(pos as isize),
+        );
     }
     (*me).be_prefs.len = 0 as libc::c_int;
     midend_serialise_prefs(
@@ -5827,11 +5449,7 @@ unsafe extern "C" fn midend_set_prefs(
         ui,
         Some(
             midend_serialise_buf_write
-                as unsafe extern "C" fn(
-                    *mut libc::c_void,
-                    *const libc::c_void,
-                    libc::c_int,
-                ) -> (),
+                as unsafe extern "C" fn(*mut libc::c_void, *const libc::c_void, libc::c_int) -> (),
         ),
         &mut (*me).be_prefs as *mut midend_serialise_buf as *mut libc::c_void,
     );
@@ -5842,7 +5460,7 @@ unsafe extern "C" fn midend_set_prefs(
 unsafe extern "C" fn midend_serialise_prefs(
     mut me: *mut midend,
     mut ui: *mut game_ui,
-    mut write: Option::<
+    mut write: Option<
         unsafe extern "C" fn(*mut libc::c_void, *const libc::c_void, libc::c_int) -> (),
     >,
     mut wctx: *mut libc::c_void,
@@ -5850,7 +5468,8 @@ unsafe extern "C" fn midend_serialise_prefs(
     let mut cfg: *mut config_item = 0 as *mut config_item;
     let mut i: libc::c_int = 0;
     cfg = midend_get_prefs(me, ui);
-    if !cfg.is_null() {} else {
+    if !cfg.is_null() {
+    } else {
         __assert_fail(
             b"cfg\0" as *const u8 as *const libc::c_char,
             b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
@@ -5865,7 +5484,8 @@ unsafe extern "C" fn midend_serialise_prefs(
         );
     }
     'c_5574: {
-        if !cfg.is_null() {} else {
+        if !cfg.is_null() {
+        } else {
             __assert_fail(
                 b"cfg\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
@@ -5883,14 +5503,13 @@ unsafe extern "C" fn midend_serialise_prefs(
     i = 0 as libc::c_int;
     while (*cfg.offset(i as isize)).type_0 != C_END as libc::c_int {
         let mut it: *mut config_item = &mut *cfg.offset(i as isize) as *mut config_item;
-        if *((*it).kw)
-            .offset(
-                strspn(
-                    (*it).kw,
-                    b"abcdefghijklmnopqrstuvwxyz-\0" as *const u8 as *const libc::c_char,
-                ) as isize,
-            ) as libc::c_int == '\0' as i32
-        {} else {
+        if *((*it).kw).offset(strspn(
+            (*it).kw,
+            b"abcdefghijklmnopqrstuvwxyz-\0" as *const u8 as *const libc::c_char,
+        ) as isize) as libc::c_int
+            == '\0' as i32
+        {
+        } else {
             __assert_fail(
                 b"it->kw[strspn(it->kw, \"abcdefghijklmnopqrstuvwxyz-\")] == '\\0'\0"
                     as *const u8 as *const libc::c_char,
@@ -5906,15 +5525,13 @@ unsafe extern "C" fn midend_serialise_prefs(
             );
         }
         'c_5496: {
-            if *((*it).kw)
-                .offset(
-                    strspn(
-                        (*it).kw,
-                        b"abcdefghijklmnopqrstuvwxyz-\0" as *const u8
-                            as *const libc::c_char,
-                    ) as isize,
-                ) as libc::c_int == '\0' as i32
-            {} else {
+            if *((*it).kw).offset(strspn(
+                (*it).kw,
+                b"abcdefghijklmnopqrstuvwxyz-\0" as *const u8 as *const libc::c_char,
+            ) as isize) as libc::c_int
+                == '\0' as i32
+            {
+            } else {
                 __assert_fail(
                     b"it->kw[strspn(it->kw, \"abcdefghijklmnopqrstuvwxyz-\")] == '\\0'\0"
                         as *const u8 as *const libc::c_char,
@@ -5930,14 +5547,12 @@ unsafe extern "C" fn midend_serialise_prefs(
                 );
             }
         };
-        write
-            .expect(
-                "non-null function pointer",
-            )(wctx, (*it).kw as *const libc::c_void, strlen((*it).kw) as libc::c_int);
-        write
-            .expect(
-                "non-null function pointer",
-            )(
+        write.expect("non-null function pointer")(
+            wctx,
+            (*it).kw as *const libc::c_void,
+            strlen((*it).kw) as libc::c_int,
+        );
+        write.expect("non-null function pointer")(
             wctx,
             b"=\0" as *const u8 as *const libc::c_char as *const libc::c_void,
             1 as libc::c_int,
@@ -5945,23 +5560,15 @@ unsafe extern "C" fn midend_serialise_prefs(
         match (*it).type_0 {
             2 => {
                 if (*it).u.boolean.bval {
-                    write
-                        .expect(
-                            "non-null function pointer",
-                        )(
+                    write.expect("non-null function pointer")(
                         wctx,
-                        b"true\0" as *const u8 as *const libc::c_char
-                            as *const libc::c_void,
+                        b"true\0" as *const u8 as *const libc::c_char as *const libc::c_void,
                         4 as libc::c_int,
                     );
                 } else {
-                    write
-                        .expect(
-                            "non-null function pointer",
-                        )(
+                    write.expect("non-null function pointer")(
                         wctx,
-                        b"false\0" as *const u8 as *const libc::c_char
-                            as *const libc::c_void,
+                        b"false\0" as *const u8 as *const libc::c_char as *const libc::c_void,
                         5 as libc::c_int,
                     );
                 }
@@ -5972,22 +5579,15 @@ unsafe extern "C" fn midend_serialise_prefs(
                     let fresh33 = p;
                     p = p.offset(1);
                     let mut c: libc::c_char = *fresh33;
-                    write
-                        .expect(
-                            "non-null function pointer",
-                        )(
+                    write.expect("non-null function pointer")(
                         wctx,
                         &mut c as *mut libc::c_char as *const libc::c_void,
                         1 as libc::c_int,
                     );
                     if c as libc::c_int == '\n' as i32 {
-                        write
-                            .expect(
-                                "non-null function pointer",
-                            )(
+                        write.expect("non-null function pointer")(
                             wctx,
-                            b" \0" as *const u8 as *const libc::c_char
-                                as *const libc::c_void,
+                            b" \0" as *const u8 as *const libc::c_char as *const libc::c_void,
                             1 as libc::c_int,
                         );
                     }
@@ -6002,15 +5602,14 @@ unsafe extern "C" fn midend_serialise_prefs(
                 sepstr[0 as libc::c_int as usize] = *fresh34;
                 sepstr[1 as libc::c_int as usize] = '\0' as i32 as libc::c_char;
                 while n > 0 as libc::c_int {
-                    let mut q: *const libc::c_char = strchr(
-                        p_0,
-                        sepstr[0 as libc::c_int as usize] as libc::c_int,
-                    );
+                    let mut q: *const libc::c_char =
+                        strchr(p_0, sepstr[0 as libc::c_int as usize] as libc::c_int);
                     if !q.is_null()
                         && !(b"Value out of range in C_CHOICES\0" as *const u8
                             as *const libc::c_char)
                             .is_null()
-                    {} else {
+                    {
+                    } else {
                         __assert_fail(
                             b"q != NULL && \"Value out of range in C_CHOICES\"\0"
                                 as *const u8 as *const libc::c_char,
@@ -6030,7 +5629,8 @@ unsafe extern "C" fn midend_serialise_prefs(
                             && !(b"Value out of range in C_CHOICES\0" as *const u8
                                 as *const libc::c_char)
                                 .is_null()
-                        {} else {
+                        {
+                        } else {
                             __assert_fail(
                                 b"q != NULL && \"Value out of range in C_CHOICES\"\0"
                                     as *const u8 as *const libc::c_char,
@@ -6050,10 +5650,7 @@ unsafe extern "C" fn midend_serialise_prefs(
                     n -= 1;
                     n;
                 }
-                write
-                    .expect(
-                        "non-null function pointer",
-                    )(
+                write.expect("non-null function pointer")(
                     wctx,
                     p_0 as *const libc::c_void,
                     strcspn(p_0, sepstr.as_mut_ptr()) as libc::c_int,
@@ -6061,10 +5658,7 @@ unsafe extern "C" fn midend_serialise_prefs(
             }
             _ => {}
         }
-        write
-            .expect(
-                "non-null function pointer",
-            )(
+        write.expect("non-null function pointer")(
             wctx,
             b"\n\0" as *const u8 as *const libc::c_char as *const libc::c_void,
             1 as libc::c_int,
@@ -6079,62 +5673,60 @@ unsafe extern "C" fn buffer_append(mut buf: *mut buffer, mut c: libc::c_char) {
         let mut new_size: size_t = ((*buf).size)
             .wrapping_add((*buf).size / 4 as libc::c_int as size_t)
             .wrapping_add(128 as libc::c_int as size_t);
-        if new_size > (*buf).size {} else {
+        if new_size > (*buf).size {
+        } else {
             __assert_fail(
                 b"new_size > buf->size\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
                 3040 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 42],
-                    &[libc::c_char; 42],
-                >(b"void buffer_append(struct buffer *, char)\0"))
-                    .as_ptr(),
+                (*::core::mem::transmute::<&[u8; 42], &[libc::c_char; 42]>(
+                    b"void buffer_append(struct buffer *, char)\0",
+                ))
+                .as_ptr(),
             );
         }
         'c_6417: {
-            if new_size > (*buf).size {} else {
+            if new_size > (*buf).size {
+            } else {
                 __assert_fail(
                     b"new_size > buf->size\0" as *const u8 as *const libc::c_char,
                     b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
                     3040 as libc::c_int as libc::c_uint,
-                    (*::core::mem::transmute::<
-                        &[u8; 42],
-                        &[libc::c_char; 42],
-                    >(b"void buffer_append(struct buffer *, char)\0"))
-                        .as_ptr(),
+                    (*::core::mem::transmute::<&[u8; 42], &[libc::c_char; 42]>(
+                        b"void buffer_append(struct buffer *, char)\0",
+                    ))
+                    .as_ptr(),
                 );
             }
         };
-        (*buf)
-            .data = srealloc(
+        (*buf).data = srealloc(
             (*buf).data as *mut libc::c_void,
-            new_size
-                .wrapping_mul(::core::mem::size_of::<libc::c_char>() as libc::c_ulong),
+            new_size.wrapping_mul(::core::mem::size_of::<libc::c_char>() as libc::c_ulong),
         ) as *mut libc::c_char;
         (*buf).size = new_size;
-        if (*buf).len < (*buf).size {} else {
+        if (*buf).len < (*buf).size {
+        } else {
             __assert_fail(
                 b"buf->len < buf->size\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
                 3043 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 42],
-                    &[libc::c_char; 42],
-                >(b"void buffer_append(struct buffer *, char)\0"))
-                    .as_ptr(),
+                (*::core::mem::transmute::<&[u8; 42], &[libc::c_char; 42]>(
+                    b"void buffer_append(struct buffer *, char)\0",
+                ))
+                .as_ptr(),
             );
         }
         'c_6329: {
-            if (*buf).len < (*buf).size {} else {
+            if (*buf).len < (*buf).size {
+            } else {
                 __assert_fail(
                     b"buf->len < buf->size\0" as *const u8 as *const libc::c_char,
                     b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
                     3043 as libc::c_int as libc::c_uint,
-                    (*::core::mem::transmute::<
-                        &[u8; 42],
-                        &[libc::c_char; 42],
-                    >(b"void buffer_append(struct buffer *, char)\0"))
-                        .as_ptr(),
+                    (*::core::mem::transmute::<&[u8; 42], &[libc::c_char; 42]>(
+                        b"void buffer_append(struct buffer *, char)\0",
+                    ))
+                    .as_ptr(),
                 );
             }
         };
@@ -6142,29 +5734,29 @@ unsafe extern "C" fn buffer_append(mut buf: *mut buffer, mut c: libc::c_char) {
     let fresh35 = (*buf).len;
     (*buf).len = ((*buf).len).wrapping_add(1);
     *((*buf).data).offset(fresh35 as isize) = c;
-    if (*buf).len < (*buf).size {} else {
+    if (*buf).len < (*buf).size {
+    } else {
         __assert_fail(
             b"buf->len < buf->size\0" as *const u8 as *const libc::c_char,
             b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
             3046 as libc::c_int as libc::c_uint,
-            (*::core::mem::transmute::<
-                &[u8; 42],
-                &[libc::c_char; 42],
-            >(b"void buffer_append(struct buffer *, char)\0"))
-                .as_ptr(),
+            (*::core::mem::transmute::<&[u8; 42], &[libc::c_char; 42]>(
+                b"void buffer_append(struct buffer *, char)\0",
+            ))
+            .as_ptr(),
         );
     }
     'c_6263: {
-        if (*buf).len < (*buf).size {} else {
+        if (*buf).len < (*buf).size {
+        } else {
             __assert_fail(
                 b"buf->len < buf->size\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/midend.c\0" as *const u8 as *const libc::c_char,
                 3046 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 42],
-                    &[libc::c_char; 42],
-                >(b"void buffer_append(struct buffer *, char)\0"))
-                    .as_ptr(),
+                (*::core::mem::transmute::<&[u8; 42], &[libc::c_char; 42]>(
+                    b"void buffer_append(struct buffer *, char)\0",
+                ))
+                .as_ptr(),
             );
         }
     };
@@ -6173,7 +5765,7 @@ unsafe extern "C" fn buffer_append(mut buf: *mut buffer, mut c: libc::c_char) {
 unsafe extern "C" fn midend_deserialise_prefs(
     mut me: *mut midend,
     mut ui: *mut game_ui,
-    mut read: Option::<
+    mut read: Option<
         unsafe extern "C" fn(*mut libc::c_void, *mut libc::c_void, libc::c_int) -> bool,
     >,
     mut rctx: *mut libc::c_void,
@@ -6181,16 +5773,14 @@ unsafe extern "C" fn midend_deserialise_prefs(
     let mut cfg: *mut config_item = 0 as *mut config_item;
     let mut it: *mut config_item = 0 as *mut config_item;
     let mut i: libc::c_int = 0;
-    let mut buf: [buffer; 1] = [
-        {
-            let mut init = buffer {
-                data: 0 as *mut libc::c_char,
-                len: 0 as libc::c_int as size_t,
-                size: 0 as libc::c_int as size_t,
-            };
-            init
-        },
-    ];
+    let mut buf: [buffer; 1] = [{
+        let mut init = buffer {
+            data: 0 as *mut libc::c_char,
+            len: 0 as libc::c_int as size_t,
+            size: 0 as libc::c_int as size_t,
+        };
+        init
+    }];
     let mut errmsg: *const libc::c_char = 0 as *const libc::c_char;
     let mut read_char: libc::c_char = 0;
     let mut ungot_char: libc::c_char = '\0' as i32 as libc::c_char;
@@ -6201,30 +5791,20 @@ unsafe extern "C" fn midend_deserialise_prefs(
         if have_ungot_a_char {
             read_char = ungot_char;
             have_ungot_a_char = 0 as libc::c_int != 0;
-        } else if !read
-            .expect(
-                "non-null function pointer",
-            )(
+        } else if !read.expect("non-null function pointer")(
             rctx,
             &mut read_char as *mut libc::c_char as *mut libc::c_void,
             1 as libc::c_int,
-        )
-        {
+        ) {
             break;
         }
-        if read_char as libc::c_int == '#' as i32
-            || read_char as libc::c_int == '\n' as i32
-        {
+        if read_char as libc::c_int == '#' as i32 || read_char as libc::c_int == '\n' as i32 {
             while read_char as libc::c_int != '\n' as i32 {
-                if !read
-                    .expect(
-                        "non-null function pointer",
-                    )(
+                if !read.expect("non-null function pointer")(
                     rctx,
                     &mut read_char as *mut libc::c_char as *mut libc::c_void,
                     1 as libc::c_int,
-                )
-                {
+                ) {
                     break 's_18;
                 }
             }
@@ -6232,21 +5812,16 @@ unsafe extern "C" fn midend_deserialise_prefs(
             (*buf.as_mut_ptr()).len = 0 as libc::c_int as size_t;
             loop {
                 buffer_append(buf.as_mut_ptr(), read_char);
-                if !read
-                    .expect(
-                        "non-null function pointer",
-                    )(
+                if !read.expect("non-null function pointer")(
                     rctx,
                     &mut read_char as *mut libc::c_char as *mut libc::c_void,
                     1 as libc::c_int,
-                )
-                {
+                ) {
                     errmsg = b"Partial line at end of preferences file\0" as *const u8
                         as *const libc::c_char;
                     break 's_18;
                 } else if read_char as libc::c_int == '\n' as i32 {
-                    errmsg = b"Expected '=' after keyword\0" as *const u8
-                        as *const libc::c_char;
+                    errmsg = b"Expected '=' after keyword\0" as *const u8 as *const libc::c_char;
                     break 's_18;
                 } else if read_char as libc::c_int == '=' as i32 {
                     break;
@@ -6263,27 +5838,19 @@ unsafe extern "C" fn midend_deserialise_prefs(
             }
             (*buf.as_mut_ptr()).len = 0 as libc::c_int as size_t;
             loop {
-                if !read
-                    .expect(
-                        "non-null function pointer",
-                    )(
+                if !read.expect("non-null function pointer")(
                     rctx,
                     &mut read_char as *mut libc::c_char as *mut libc::c_void,
                     1 as libc::c_int,
-                )
-                {
+                ) {
                     eof = 1 as libc::c_int != 0;
                     break;
                 } else if read_char as libc::c_int == '\n' as i32 {
-                    if read
-                        .expect(
-                            "non-null function pointer",
-                        )(
+                    if read.expect("non-null function pointer")(
                         rctx,
                         &mut read_char as *mut libc::c_char as *mut libc::c_void,
                         1 as libc::c_int,
-                    )
-                    {
+                    ) {
                         if read_char as libc::c_int == ' ' as i32 {
                             buffer_append(buf.as_mut_ptr(), '\n' as i32 as libc::c_char);
                         } else {
@@ -6317,8 +5884,8 @@ unsafe extern "C" fn midend_deserialise_prefs(
                     {
                         (*it).u.boolean.bval = 0 as libc::c_int != 0;
                     } else {
-                        errmsg = b"Value for boolean was not 'true' or 'false'\0"
-                            as *const u8 as *const libc::c_char;
+                        errmsg = b"Value for boolean was not 'true' or 'false'\0" as *const u8
+                            as *const libc::c_char;
                         break;
                     }
                 }
@@ -6344,8 +5911,7 @@ unsafe extern "C" fn midend_deserialise_prefs(
                         if !(*fresh38 != 0) {
                             break;
                         }
-                        let mut len: libc::c_int = strcspn(p, sepstr.as_mut_ptr())
-                            as libc::c_int;
+                        let mut len: libc::c_int = strcspn(p, sepstr.as_mut_ptr()) as libc::c_int;
                         if (*buf.as_mut_ptr()).len == len as size_t
                             && memcmp(
                                 p as *const libc::c_void,
@@ -6365,8 +5931,7 @@ unsafe extern "C" fn midend_deserialise_prefs(
                     if found {
                         continue;
                     }
-                    errmsg = b"Invalid value for enumeration\0" as *const u8
-                        as *const libc::c_char;
+                    errmsg = b"Invalid value for enumeration\0" as *const u8 as *const libc::c_char;
                     break;
                 }
                 _ => {}

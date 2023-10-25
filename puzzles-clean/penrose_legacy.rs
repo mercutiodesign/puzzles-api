@@ -25,7 +25,7 @@ pub struct penrose_legacy_state {
     pub new_tile: tile_callback,
     pub ctx: *mut libc::c_void,
 }
-pub type tile_callback = Option::<
+pub type tile_callback = Option<
     unsafe extern "C" fn(
         *mut penrose_legacy_state,
         *mut vector,
@@ -37,10 +37,7 @@ pub type C2RustUnnamed = libc::c_uint;
 pub const PENROSE_P3: C2RustUnnamed = 1;
 pub const PENROSE_P2: C2RustUnnamed = 0;
 #[inline(always)]
-unsafe extern "C" fn __tg_pow(
-    mut __x: libc::c_double,
-    mut __y: libc::c_double,
-) -> libc::c_double {
+unsafe extern "C" fn __tg_pow(mut __x: libc::c_double, mut __y: libc::c_double) -> libc::c_double {
     return pow(__x, __y);
 }
 #[inline(always)]
@@ -48,7 +45,12 @@ unsafe extern "C" fn __tg_sqrt(mut __x: libc::c_double) -> libc::c_double {
     return sqrt(__x);
 }
 unsafe extern "C" fn v_origin() -> vector {
-    let mut v: vector = vector { a: 0, b: 0, c: 0, d: 0 };
+    let mut v: vector = vector {
+        a: 0,
+        b: 0,
+        c: 0,
+        d: 0,
+    };
     v.d = 0 as libc::c_int;
     v.c = v.d;
     v.b = v.c;
@@ -83,7 +85,12 @@ unsafe extern "C" fn v_trans(mut v: vector, mut trans: vector) -> vector {
     return v;
 }
 unsafe extern "C" fn v_rotate_36(mut v: vector) -> vector {
-    let mut vv: vector = vector { a: 0, b: 0, c: 0, d: 0 };
+    let mut vv: vector = vector {
+        a: 0,
+        b: 0,
+        c: 0,
+        d: 0,
+    };
     vv.a = -v.d;
     vv.b = v.d + v.a;
     vv.c = -v.d + v.b;
@@ -92,29 +99,29 @@ unsafe extern "C" fn v_rotate_36(mut v: vector) -> vector {
 }
 unsafe extern "C" fn v_rotate(mut v: vector, mut ang: libc::c_int) -> vector {
     let mut i: libc::c_int = 0;
-    if ang % 36 as libc::c_int == 0 as libc::c_int {} else {
+    if ang % 36 as libc::c_int == 0 as libc::c_int {
+    } else {
         __assert_fail(
             b"(ang % 36) == 0\0" as *const u8 as *const libc::c_char,
             b"/puzzles/penrose-legacy.c\0" as *const u8 as *const libc::c_char,
             173 as libc::c_int as libc::c_uint,
-            (*::core::mem::transmute::<
-                &[u8; 29],
-                &[libc::c_char; 29],
-            >(b"vector v_rotate(vector, int)\0"))
-                .as_ptr(),
+            (*::core::mem::transmute::<&[u8; 29], &[libc::c_char; 29]>(
+                b"vector v_rotate(vector, int)\0",
+            ))
+            .as_ptr(),
         );
     }
     'c_7496: {
-        if ang % 36 as libc::c_int == 0 as libc::c_int {} else {
+        if ang % 36 as libc::c_int == 0 as libc::c_int {
+        } else {
             __assert_fail(
                 b"(ang % 36) == 0\0" as *const u8 as *const libc::c_char,
                 b"/puzzles/penrose-legacy.c\0" as *const u8 as *const libc::c_char,
                 173 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 29],
-                    &[libc::c_char; 29],
-                >(b"vector v_rotate(vector, int)\0"))
-                    .as_ptr(),
+                (*::core::mem::transmute::<&[u8; 29], &[libc::c_char; 29]>(
+                    b"vector v_rotate(vector, int)\0",
+                ))
+                .as_ptr(),
             );
         }
     };
@@ -131,7 +138,12 @@ unsafe extern "C" fn v_rotate(mut v: vector, mut ang: libc::c_int) -> vector {
     return v;
 }
 unsafe extern "C" fn v_growphi(mut v: vector) -> vector {
-    let mut vv: vector = vector { a: 0, b: 0, c: 0, d: 0 };
+    let mut vv: vector = vector {
+        a: 0,
+        b: 0,
+        c: 0,
+        d: 0,
+    };
     vv.a = v.a + v.b - v.d;
     vv.b = v.c + v.d;
     vv.c = v.a + v.b;
@@ -139,7 +151,12 @@ unsafe extern "C" fn v_growphi(mut v: vector) -> vector {
     return vv;
 }
 unsafe extern "C" fn v_shrinkphi(mut v: vector) -> vector {
-    let mut vv: vector = vector { a: 0, b: 0, c: 0, d: 0 };
+    let mut vv: vector = vector {
+        a: 0,
+        b: 0,
+        c: 0,
+        d: 0,
+    };
     vv.a = v.b - v.d;
     vv.b = v.c + v.d - v.b;
     vv.c = v.a + v.b - v.c;
@@ -168,43 +185,63 @@ unsafe extern "C" fn penrose_p2_large(
     mut v_orig: vector,
     mut v_edge: vector,
 ) -> libc::c_int {
-    let mut vv_orig: vector = vector { a: 0, b: 0, c: 0, d: 0 };
-    let mut vv_edge: vector = vector { a: 0, b: 0, c: 0, d: 0 };
+    let mut vv_orig: vector = vector {
+        a: 0,
+        b: 0,
+        c: 0,
+        d: 0,
+    };
+    let mut vv_edge: vector = vector {
+        a: 0,
+        b: 0,
+        c: 0,
+        d: 0,
+    };
     if flip > 0 as libc::c_int {
-        let mut vs: [vector; 4] = [vector { a: 0, b: 0, c: 0, d: 0 }; 4];
+        let mut vs: [vector; 4] = [vector {
+            a: 0,
+            b: 0,
+            c: 0,
+            d: 0,
+        }; 4];
         vs[0 as libc::c_int as usize] = v_orig;
-        vs[1 as libc::c_int
-            as usize] = xform_coord(
+        vs[1 as libc::c_int as usize] = xform_coord(
             v_edge,
             0 as libc::c_int,
             vs[0 as libc::c_int as usize],
             -(36 as libc::c_int),
         );
-        vs[2 as libc::c_int
-            as usize] = xform_coord(
+        vs[2 as libc::c_int as usize] = xform_coord(
             v_edge,
             0 as libc::c_int,
             vs[0 as libc::c_int as usize],
             0 as libc::c_int,
         );
-        vs[3 as libc::c_int
-            as usize] = xform_coord(
+        vs[3 as libc::c_int as usize] = xform_coord(
             v_edge,
             0 as libc::c_int,
             vs[0 as libc::c_int as usize],
             36 as libc::c_int,
         );
-        ((*state).new_tile)
-            .expect(
-                "non-null function pointer",
-            )(state, vs.as_mut_ptr(), 4 as libc::c_int, depth);
+        ((*state).new_tile).expect("non-null function pointer")(
+            state,
+            vs.as_mut_ptr(),
+            4 as libc::c_int,
+            depth,
+        );
     }
     if depth >= (*state).max_depth {
         return 0 as libc::c_int;
     }
     vv_orig = v_trans(v_orig, v_rotate(v_edge, -(36 as libc::c_int) * flip));
     vv_edge = v_rotate(v_edge, 108 as libc::c_int * flip);
-    penrose_p2_small(state, depth + 1 as libc::c_int, flip, v_orig, v_shrinkphi(v_edge));
+    penrose_p2_small(
+        state,
+        depth + 1 as libc::c_int,
+        flip,
+        v_orig,
+        v_shrinkphi(v_edge),
+    );
     penrose_p2_large(
         state,
         depth + 1 as libc::c_int,
@@ -228,35 +265,44 @@ unsafe extern "C" fn penrose_p2_small(
     mut v_orig: vector,
     mut v_edge: vector,
 ) -> libc::c_int {
-    let mut vv_orig: vector = vector { a: 0, b: 0, c: 0, d: 0 };
+    let mut vv_orig: vector = vector {
+        a: 0,
+        b: 0,
+        c: 0,
+        d: 0,
+    };
     if flip > 0 as libc::c_int {
-        let mut vs: [vector; 4] = [vector { a: 0, b: 0, c: 0, d: 0 }; 4];
+        let mut vs: [vector; 4] = [vector {
+            a: 0,
+            b: 0,
+            c: 0,
+            d: 0,
+        }; 4];
         vs[0 as libc::c_int as usize] = v_orig;
-        vs[1 as libc::c_int
-            as usize] = xform_coord(
+        vs[1 as libc::c_int as usize] = xform_coord(
             v_edge,
             0 as libc::c_int,
             vs[0 as libc::c_int as usize],
             -(72 as libc::c_int),
         );
-        vs[2 as libc::c_int
-            as usize] = xform_coord(
+        vs[2 as libc::c_int as usize] = xform_coord(
             v_edge,
             -(1 as libc::c_int),
             vs[0 as libc::c_int as usize],
             -(36 as libc::c_int),
         );
-        vs[3 as libc::c_int
-            as usize] = xform_coord(
+        vs[3 as libc::c_int as usize] = xform_coord(
             v_edge,
             0 as libc::c_int,
             vs[0 as libc::c_int as usize],
             0 as libc::c_int,
         );
-        ((*state).new_tile)
-            .expect(
-                "non-null function pointer",
-            )(state, vs.as_mut_ptr(), 4 as libc::c_int, depth);
+        ((*state).new_tile).expect("non-null function pointer")(
+            state,
+            vs.as_mut_ptr(),
+            4 as libc::c_int,
+            depth,
+        );
     }
     if depth >= (*state).max_depth {
         return 0 as libc::c_int;
@@ -285,35 +331,44 @@ unsafe extern "C" fn penrose_p3_large(
     mut v_orig: vector,
     mut v_edge: vector,
 ) -> libc::c_int {
-    let mut vv_orig: vector = vector { a: 0, b: 0, c: 0, d: 0 };
+    let mut vv_orig: vector = vector {
+        a: 0,
+        b: 0,
+        c: 0,
+        d: 0,
+    };
     if flip > 0 as libc::c_int {
-        let mut vs: [vector; 4] = [vector { a: 0, b: 0, c: 0, d: 0 }; 4];
+        let mut vs: [vector; 4] = [vector {
+            a: 0,
+            b: 0,
+            c: 0,
+            d: 0,
+        }; 4];
         vs[0 as libc::c_int as usize] = v_orig;
-        vs[1 as libc::c_int
-            as usize] = xform_coord(
+        vs[1 as libc::c_int as usize] = xform_coord(
             v_edge,
             0 as libc::c_int,
             vs[0 as libc::c_int as usize],
             -(36 as libc::c_int),
         );
-        vs[2 as libc::c_int
-            as usize] = xform_coord(
+        vs[2 as libc::c_int as usize] = xform_coord(
             v_edge,
             1 as libc::c_int,
             vs[0 as libc::c_int as usize],
             0 as libc::c_int,
         );
-        vs[3 as libc::c_int
-            as usize] = xform_coord(
+        vs[3 as libc::c_int as usize] = xform_coord(
             v_edge,
             0 as libc::c_int,
             vs[0 as libc::c_int as usize],
             36 as libc::c_int,
         );
-        ((*state).new_tile)
-            .expect(
-                "non-null function pointer",
-            )(state, vs.as_mut_ptr(), 4 as libc::c_int, depth);
+        ((*state).new_tile).expect("non-null function pointer")(
+            state,
+            vs.as_mut_ptr(),
+            4 as libc::c_int,
+            depth,
+        );
     }
     if depth >= (*state).max_depth {
         return 0 as libc::c_int;
@@ -350,35 +405,44 @@ unsafe extern "C" fn penrose_p3_small(
     mut v_orig: vector,
     mut v_edge: vector,
 ) -> libc::c_int {
-    let mut vv_orig: vector = vector { a: 0, b: 0, c: 0, d: 0 };
+    let mut vv_orig: vector = vector {
+        a: 0,
+        b: 0,
+        c: 0,
+        d: 0,
+    };
     if flip > 0 as libc::c_int {
-        let mut vs: [vector; 4] = [vector { a: 0, b: 0, c: 0, d: 0 }; 4];
+        let mut vs: [vector; 4] = [vector {
+            a: 0,
+            b: 0,
+            c: 0,
+            d: 0,
+        }; 4];
         vs[0 as libc::c_int as usize] = v_orig;
-        vs[1 as libc::c_int
-            as usize] = xform_coord(
+        vs[1 as libc::c_int as usize] = xform_coord(
             v_edge,
             0 as libc::c_int,
             vs[0 as libc::c_int as usize],
             -(36 as libc::c_int),
         );
-        vs[3 as libc::c_int
-            as usize] = xform_coord(
+        vs[3 as libc::c_int as usize] = xform_coord(
             v_edge,
             0 as libc::c_int,
             vs[0 as libc::c_int as usize],
             0 as libc::c_int,
         );
-        vs[2 as libc::c_int
-            as usize] = xform_coord(
+        vs[2 as libc::c_int as usize] = xform_coord(
             v_edge,
             0 as libc::c_int,
             vs[3 as libc::c_int as usize],
             -(36 as libc::c_int),
         );
-        ((*state).new_tile)
-            .expect(
-                "non-null function pointer",
-            )(state, vs.as_mut_ptr(), 4 as libc::c_int, depth);
+        ((*state).new_tile).expect("non-null function pointer")(
+            state,
+            vs.as_mut_ptr(),
+            4 as libc::c_int,
+            depth,
+        );
     }
     if depth >= (*state).max_depth {
         return 0 as libc::c_int;
@@ -422,9 +486,9 @@ pub unsafe extern "C" fn penrose_legacy(
     vo = v_rotate(vo, angle);
     vb = v_rotate(vb, angle);
     if which == PENROSE_P2 as libc::c_int {
-        return penrose_p2_large(state, 0 as libc::c_int, 1 as libc::c_int, vo, vb)
+        return penrose_p2_large(state, 0 as libc::c_int, 1 as libc::c_int, vo, vb);
     } else {
-        return penrose_p3_small(state, 0 as libc::c_int, 1 as libc::c_int, vo, vb)
+        return penrose_p3_small(state, 0 as libc::c_int, 1 as libc::c_int, vo, vb);
     };
 }
 #[no_mangle]
@@ -445,8 +509,7 @@ pub unsafe extern "C" fn penrose_legacy_calculate_size(
     } else {
         tilesize = tilesize * 5 as libc::c_int / 4 as libc::c_int;
     }
-    rradius = tilesize as libc::c_double * 3.11f64
-        * __tg_sqrt((w * w + h * h) as libc::c_double);
+    rradius = tilesize as libc::c_double * 3.11f64 * __tg_sqrt((w * w + h * h) as libc::c_double);
     size = tilesize as libc::c_double;
     while size * 0.22426f64 < rradius {
         n += 1;
