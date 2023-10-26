@@ -431,8 +431,6 @@ pub unsafe extern "C" fn grid_nearest_edge(
     }
     return best_edge;
 }
-unsafe extern "C" fn grid_debug_basic(mut g: *mut grid) {}
-unsafe extern "C" fn grid_debug_derived(mut g: *mut grid) {}
 unsafe extern "C" fn grid_edge_bydots_cmpfn(
     mut v1: *mut libc::c_void,
     mut v2: *mut libc::c_void,
@@ -659,7 +657,6 @@ unsafe extern "C" fn grid_trim_vigorously(mut g: *mut grid) {
 unsafe extern "C" fn grid_make_consistent(mut g: *mut grid) {
     let mut i: libc::c_int = 0;
     let mut incomplete_edges: *mut tree234 = 0 as *mut tree234;
-    grid_debug_basic(g);
     incomplete_edges = newtree234(Some(
         grid_edge_bydots_cmpfn
             as unsafe extern "C" fn(*mut libc::c_void, *mut libc::c_void) -> libc::c_int,
@@ -1245,7 +1242,6 @@ unsafe extern "C" fn grid_make_consistent(mut g: *mut grid) {
         i += 1;
         i;
     }
-    grid_debug_derived(g);
 }
 unsafe extern "C" fn grid_point_cmp_fn(
     mut v1: *mut libc::c_void,
@@ -4567,7 +4563,8 @@ unsafe extern "C" fn grid_desc_to_penrose_params(
     {
         (*params).orientation = c as libc::c_int - '0' as i32;
     } else {
-        return b"expected digit at start of grid description\0" as *const u8 as *const libc::c_char;
+        return b"expected digit at start of grid description\0" as *const u8
+            as *const libc::c_char;
     }
     c = *desc.offset(1 as libc::c_int as isize);
     if c as libc::c_int >= '0' as i32 && (c as libc::c_int) < '3' as i32 {

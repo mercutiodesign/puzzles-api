@@ -548,11 +548,11 @@ pub unsafe extern "C" fn findrelpos234(
         kcount = 0 as libc::c_int;
         while kcount < 4 as libc::c_int {
             if kcount >= 3 as libc::c_int || ((*n).elems[kcount as usize]).is_null() || {
-                c = (if cmpret != 0 {
+                c = if cmpret != 0 {
                     cmpret
                 } else {
                     cmp.expect("non-null function pointer")(e, (*n).elems[kcount as usize])
-                });
+                };
                 c < 0 as libc::c_int
             } {
                 break;
@@ -876,17 +876,6 @@ unsafe extern "C" fn delpos234_internal(
                             ))
                             .as_ptr(),
                         );
-                        'c_6939: {
-                            __assert_fail(
-                                b"0\0" as *const u8 as *const libc::c_char,
-                                b"/puzzles/tree234.c\0" as *const u8 as *const libc::c_char,
-                                892 as libc::c_int as libc::c_uint,
-                                (*::core::mem::transmute::<&[u8; 41], &[libc::c_char; 41]>(
-                                    b"void *delpos234_internal(tree234 *, int)\0",
-                                ))
-                                .as_ptr(),
-                            );
-                        };
                     }
                 }
             }

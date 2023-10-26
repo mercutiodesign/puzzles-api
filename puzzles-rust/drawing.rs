@@ -379,13 +379,11 @@ pub unsafe extern "C" fn text_fallback(
                 break;
             }
             p = p.offset(1);
-            p;
         }
         if *p == 0 {
             return dupstr(*strings.offset(i as isize));
         }
         i += 1;
-        i;
     }
     if (b"Should never get here\0" as *const u8 as *const libc::c_char).is_null() {
     } else {
@@ -399,20 +397,20 @@ pub unsafe extern "C" fn text_fallback(
             .as_ptr(),
         );
     }
-    'c_7049: {
-        if (b"Should never get here\0" as *const u8 as *const libc::c_char).is_null() {
-        } else {
-            __assert_fail(
-                b"!\"Should never get here\"\0" as *const u8 as *const libc::c_char,
-                b"/puzzles/drawing.c\0" as *const u8 as *const libc::c_char,
-                193 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<&[u8; 57], &[libc::c_char; 57]>(
-                    b"char *text_fallback(drawing *, const char *const *, int)\0",
-                ))
-                .as_ptr(),
-            );
-        }
-    };
+
+    if (b"Should never get here\0" as *const u8 as *const libc::c_char).is_null() {
+    } else {
+        __assert_fail(
+            b"!\"Should never get here\"\0" as *const u8 as *const libc::c_char,
+            b"/puzzles/drawing.c\0" as *const u8 as *const libc::c_char,
+            193 as libc::c_int as libc::c_uint,
+            (*::core::mem::transmute::<&[u8; 57], &[libc::c_char; 57]>(
+                b"char *text_fallback(drawing *, const char *const *, int)\0",
+            ))
+            .as_ptr(),
+        );
+    }
+
     return 0 as *mut libc::c_char;
 }
 #[no_mangle]
@@ -433,20 +431,20 @@ pub unsafe extern "C" fn status_bar(mut dr: *mut drawing, mut text: *const libc:
             .as_ptr(),
         );
     }
-    'c_7258: {
-        if !((*dr).me).is_null() {
-        } else {
-            __assert_fail(
-                b"dr->me\0" as *const u8 as *const libc::c_char,
-                b"/puzzles/drawing.c\0" as *const u8 as *const libc::c_char,
-                204 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<&[u8; 41], &[libc::c_char; 41]>(
-                    b"void status_bar(drawing *, const char *)\0",
-                ))
-                .as_ptr(),
-            );
-        }
-    };
+
+    if !((*dr).me).is_null() {
+    } else {
+        __assert_fail(
+            b"dr->me\0" as *const u8 as *const libc::c_char,
+            b"/puzzles/drawing.c\0" as *const u8 as *const libc::c_char,
+            204 as libc::c_int as libc::c_uint,
+            (*::core::mem::transmute::<&[u8; 41], &[libc::c_char; 41]>(
+                b"void status_bar(drawing *, const char *)\0",
+            ))
+            .as_ptr(),
+        );
+    }
+
     rewritten = midend_rewrite_statusbar((*dr).me, text);
     if ((*dr).laststatus).is_null() || strcmp(rewritten, (*dr).laststatus) != 0 {
         ((*(*dr).api).status_bar).expect("non-null function pointer")((*dr).handle, rewritten);
@@ -554,24 +552,20 @@ pub unsafe extern "C" fn print_get_colour(
             .as_ptr(),
         );
     }
-    'c_7668: {
-        if colour >= 0 as libc::c_int && colour < (*dr).ncolours {
-        } else {
-            __assert_fail(
-                b"colour >= 0 && colour < dr->ncolours\0" as *const u8
-                    as *const libc::c_char,
-                b"/puzzles/drawing.c\0" as *const u8 as *const libc::c_char,
-                274 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<
-                    &[u8; 79],
-                    &[libc::c_char; 79],
-                >(
-                    b"void print_get_colour(drawing *, int, _Bool, int *, float *, float *, float *)\0",
-                ))
-                    .as_ptr(),
-            );
-        }
-    };
+
+    if colour >= 0 as libc::c_int && colour < (*dr).ncolours {
+    } else {
+        __assert_fail(
+            b"colour >= 0 && colour < dr->ncolours\0" as *const u8 as *const libc::c_char,
+            b"/puzzles/drawing.c\0" as *const u8 as *const libc::c_char,
+            274 as libc::c_int as libc::c_uint,
+            (*::core::mem::transmute::<&[u8; 79], &[libc::c_char; 79]>(
+                b"void print_get_colour(drawing *, int, _Bool, int *, float *, float *, float *)\0",
+            ))
+            .as_ptr(),
+        );
+    }
+
     if (*((*dr).colours).offset(colour as isize)).hatch_when == 2 as libc::c_int
         || (*((*dr).colours).offset(colour as isize)).hatch_when == 1 as libc::c_int
             && !printing_in_colour

@@ -28,7 +28,6 @@ unsafe extern "C" fn factx(mut x: libc::c_long, mut y: libc::c_long) -> libc::c_
     while i <= x {
         acc *= i;
         i += 1;
-        i;
     }
     return acc;
 }
@@ -40,7 +39,6 @@ pub unsafe extern "C" fn reset_combi(mut combi: *mut combi_ctx) {
     while i < (*combi).r {
         *((*combi).a).offset(i as isize) = i;
         i += 1;
-        i;
     }
 }
 #[no_mangle]
@@ -60,20 +58,20 @@ pub unsafe extern "C" fn new_combi(mut r: libc::c_int, mut n: libc::c_int) -> *m
             .as_ptr(),
         );
     }
-    'c_3271: {
-        if r <= n {
-        } else {
-            __assert_fail(
-                b"r <= n\0" as *const u8 as *const libc::c_char,
-                b"/puzzles/combi.c\0" as *const u8 as *const libc::c_char,
-                29 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<&[u8; 31], &[libc::c_char; 31]>(
-                    b"combi_ctx *new_combi(int, int)\0",
-                ))
-                .as_ptr(),
-            );
-        }
-    };
+
+    if r <= n {
+    } else {
+        __assert_fail(
+            b"r <= n\0" as *const u8 as *const libc::c_char,
+            b"/puzzles/combi.c\0" as *const u8 as *const libc::c_char,
+            29 as libc::c_int as libc::c_uint,
+            (*::core::mem::transmute::<&[u8; 31], &[libc::c_char; 31]>(
+                b"combi_ctx *new_combi(int, int)\0",
+            ))
+            .as_ptr(),
+        );
+    }
+
     if n >= 1 as libc::c_int {
     } else {
         __assert_fail(
@@ -86,20 +84,20 @@ pub unsafe extern "C" fn new_combi(mut r: libc::c_int, mut n: libc::c_int) -> *m
             .as_ptr(),
         );
     }
-    'c_3230: {
-        if n >= 1 as libc::c_int {
-        } else {
-            __assert_fail(
-                b"n >= 1\0" as *const u8 as *const libc::c_char,
-                b"/puzzles/combi.c\0" as *const u8 as *const libc::c_char,
-                30 as libc::c_int as libc::c_uint,
-                (*::core::mem::transmute::<&[u8; 31], &[libc::c_char; 31]>(
-                    b"combi_ctx *new_combi(int, int)\0",
-                ))
-                .as_ptr(),
-            );
-        }
-    };
+
+    if n >= 1 as libc::c_int {
+    } else {
+        __assert_fail(
+            b"n >= 1\0" as *const u8 as *const libc::c_char,
+            b"/puzzles/combi.c\0" as *const u8 as *const libc::c_char,
+            30 as libc::c_int as libc::c_uint,
+            (*::core::mem::transmute::<&[u8; 31], &[libc::c_char; 31]>(
+                b"combi_ctx *new_combi(int, int)\0",
+            ))
+            .as_ptr(),
+        );
+    }
+
     combi = smalloc(::core::mem::size_of::<combi_ctx>() as libc::c_ulong) as *mut combi_ctx;
     memset(
         combi as *mut libc::c_void,
@@ -132,14 +130,12 @@ pub unsafe extern "C" fn next_combi(mut combi: *mut combi_ctx) -> *mut combi_ctx
         }
         while *((*combi).a).offset(i as isize) == (*combi).n - (*combi).r + i {
             i -= 1;
-            i;
         }
         *((*combi).a).offset(i as isize) += 1 as libc::c_int;
         j = i + 1 as libc::c_int;
         while j < (*combi).r {
             *((*combi).a).offset(j as isize) = *((*combi).a).offset(i as isize) + j - i;
             j += 1;
-            j;
         }
     }
     (*combi).nleft -= 1;

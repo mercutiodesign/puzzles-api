@@ -5,10 +5,11 @@
     non_snake_case,
     non_upper_case_globals,
     unused_assignments,
-    unused_mut
+    unused_mut,
+    unused_labels,
+    path_statements
 )]
 #![feature(extern_types, label_break_value)]
-use ::c2rust_out::*;
 extern "C" {
     pub type _IO_wide_data;
     pub type _IO_codecvt;
@@ -687,7 +688,6 @@ static mut solver_diffs: [libc::c_int; 4] = [
     DIFF_HARD as libc::c_int,
     DIFF_EASY as libc::c_int,
 ];
-static mut NUM_SOLVERS: libc::c_int = 0;
 static mut gridnames: [*const libc::c_char; 18] = [
     b"Squares\0" as *const u8 as *const libc::c_char,
     b"Triangular\0" as *const u8 as *const libc::c_char,
@@ -4716,7 +4716,7 @@ unsafe extern "C" fn solve_game_rec(mut sstate_start: *const solver_state) -> *m
     let mut threshold_diff: libc::c_int = 0 as libc::c_int;
     let mut threshold_index: libc::c_int = 0 as libc::c_int;
     sstate = dup_solver_state(sstate_start);
-    while i < NUM_SOLVERS {
+    while i < solver_diffs.len() as i32 {
         if (*sstate).solver_status as libc::c_uint == SOLVER_MISTAKE as libc::c_int as libc::c_uint
         {
             return sstate;
@@ -4740,7 +4740,6 @@ unsafe extern "C" fn solve_game_rec(mut sstate_start: *const solver_state) -> *m
             }
         }
         i += 1;
-        i;
     }
     if (*sstate).solver_status as libc::c_uint == SOLVER_SOLVED as libc::c_int as libc::c_uint
         || (*sstate).solver_status as libc::c_uint
@@ -5981,13 +5980,3 @@ pub fn main() {
         ) as i32)
     }
 }
-unsafe extern "C" fn run_static_initializers() {
-    NUM_SOLVERS = (::core::mem::size_of::<[libc::c_int; 4]>() as libc::c_ulong)
-        .wrapping_div(::core::mem::size_of::<libc::c_int>() as libc::c_ulong)
-        as libc::c_int;
-}
-#[used]
-#[cfg_attr(target_os = "linux", link_section = ".init_array")]
-#[cfg_attr(target_os = "windows", link_section = ".CRT$XIB")]
-#[cfg_attr(target_os = "macos", link_section = "__DATA,__mod_init_func")]
-static INIT_ARRAY: [unsafe extern "C" fn(); 1] = [run_static_initializers];

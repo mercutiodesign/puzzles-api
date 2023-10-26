@@ -120,14 +120,12 @@ pub unsafe extern "C" fn dsf_reinit(mut dsf: *mut DSF) {
                 >> 1 as libc::c_int)
             | 1 as libc::c_int as libc::c_uint;
         i = i.wrapping_add(1);
-        i;
     }
     if !((*dsf).min).is_null() {
         i = 0 as libc::c_int as size_t;
         while i < (*dsf).size {
             *((*dsf).min).offset(i as isize) = i as libc::c_uint;
             i = i.wrapping_add(1);
-            i;
         }
     }
 }
